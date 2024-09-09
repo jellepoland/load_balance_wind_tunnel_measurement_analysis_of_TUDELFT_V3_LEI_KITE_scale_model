@@ -1,13 +1,11 @@
 [project]
 
-name = "exampleproject"
+name = "load_balance_analysis_scripts"
 # Define the name of your project here. This is mandatory. Once you publish your package for the first time,
 # this name will be locked and associated with your project. It affects how users will
 # install your package via pip, like so:
 
-# $ pip install exampleproject
-
-# Your project will be accessible at: https://pypi.org/project/exampleproject/
+# $ pip install load_balance_analysis_scripts
 
 version = "0.1.0"
 # Version numbers should conform to PEP 440, and are also mandatory (but they can be set dynamic)
@@ -83,8 +81,11 @@ classifiers = [
 dependencies = [
   "numpy", 
   "pandas>=1.5.3", 
-  "matplotlib>=3.7.1"
+  "matplotlib>=3.7.1",
+  "ipykernel",
+  "VSM @ git+https://github.com/ocayon/Vortex-Step-Method.git@v1.0.0"
 ]
+
 
 # You can define additional groups of dependencies here (e.g., development dependencies).
 # These can be installed using the "extras" feature of pip, like so:
