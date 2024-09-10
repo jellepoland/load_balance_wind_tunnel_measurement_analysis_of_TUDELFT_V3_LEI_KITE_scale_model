@@ -316,7 +316,7 @@ def main(results_path, root_dir):
             # ]
             figsize = (16, 6)
             columns = ["C_L", "C_D", "C_pitch"]
-            y_labels = ["C_L", "C_D", "C_{pitch}"]
+            y_labels = ["C_L", "C_D", "C_{M,x}"]
             subplot_titles = [
                 "Lift coefficient",
                 "Drag Coefficient",
@@ -340,7 +340,7 @@ def main(results_path, root_dir):
             if aoa in alphas_to_be_plotted:
                 figsize = (16, 12)
                 columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
-                y_labels = ["C_L", "C_D", "C_S", "C_{pitch}", "C_{roll}", "C_{yaw}"]
+                y_labels = ["C_L", "C_D", "C_S", "C_{M,x}", "C_{M,y}", "C_{M,z}"]
                 subplot_titles = [
                     "Lift coefficient",
                     "Drag Coefficient",
