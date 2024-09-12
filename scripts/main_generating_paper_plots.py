@@ -16,6 +16,10 @@ def main():
     uncertainty_boxplots_main(results_path, root_dir)
     literature_comparison_main(results_path, root_dir)
 
+    print(
+        f"\n--> New plots generated in saved inside the latex-folder, located at: \n {results_path}"
+    )
+
 
 if __name__ == "__main__":
     main()

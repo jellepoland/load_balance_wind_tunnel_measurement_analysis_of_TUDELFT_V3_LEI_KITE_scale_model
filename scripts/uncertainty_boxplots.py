@@ -99,6 +99,8 @@ def generate_boxplots_vs_aoa(
     # ]
     elif len(columns) == 3:
         fig, axs = plt.subplots(1, 3, figsize=figsize)
+    elif len(columns) == 2:
+        fig, axs = plt.subplots(1, 2, figsize=figsize)
 
     cmap = plt.get_cmap("rainbow")
     colors = cmap(np.linspace(0, 1, len(columns)))
@@ -110,20 +112,28 @@ def generate_boxplots_vs_aoa(
         box_data = [combined_df[combined_df["aoa"] == aoa][load] for aoa in unique_aoa]
         positions = unique_aoa
 
-        bplot = axs[i].boxplot(
-            box_data,
-            positions=positions,
-            widths=0.6,
-            showfliers=False,
-            patch_artist=True,
-        )
-        for patch, color in zip(
-            bplot["boxes"], cmap(np.linspace(0, 1, len(unique_aoa)))
-        ):
-            patch.set_facecolor(color)
+        # # box plot
+        # bplot = axs[i].boxplot(
+        #     box_data,
+        #     positions=positions,
+        #     widths=0.6,
+        #     showfliers=False,
+        #     patch_artist=True,
+        # )
+        # for patch, color in zip(
+        #     bplot["boxes"], cmap(np.linspace(0, 1, len(unique_aoa)))
+        # ):
+        #     color = "grey"
+        #     patch.set_facecolor(color)
 
+        # means = [data.mean() for data in box_data]
+
+        # standard deviation
         means = [data.mean() for data in box_data]
+        std = [data.std() for data in box_data]
+        axs[i].errorbar(positions, means, yerr=std, fmt="o", color="black", capsize=5)
         axs[i].plot(positions, means, marker="o", linestyle="--", color="black")
+
         axs[i].set_title(f"{subplot_titles[i]}")
         axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
         axs[i].set_xticks(range(-15, 26, 5))
@@ -314,13 +324,15 @@ def main(results_path, root_dir):
             #     "Roll moment coefficient",
             #     "Yaw moment coefficient",
             # ]
-            figsize = (16, 6)
-            columns = ["C_L", "C_D", "C_pitch"]
-            y_labels = ["C_L", "C_D", "C_{M,x}"]
+            figsize = (16, 8)
+            # columns = ["C_L", "C_D", "C_pitch"]
+            # y_labels = ["C_L", "C_D", "C_{M,x}"]
+            columns = ["C_L", "C_D"]
+            y_labels = ["C_L", "C_D"]
             subplot_titles = [
                 "Lift coefficient",
                 "Drag Coefficient",
-                "Pitch moment coefficient",
+                # "Pitch moment coefficient",
             ]
 
             generate_boxplots_vs_aoa(
@@ -335,31 +347,32 @@ def main(results_path, root_dir):
                 subplot_titles,
             )  # Generate and save boxplots vs AoA
 
-        unique_aoas = combined_df["aoa"].unique()
-        for aoa in unique_aoas:
-            if aoa in alphas_to_be_plotted:
-                figsize = (16, 12)
-                columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
-                y_labels = ["C_L", "C_D", "C_S", "C_{M,x}", "C_{M,y}", "C_{M,z}"]
-                subplot_titles = [
-                    "Lift coefficient",
-                    "Drag Coefficient",
-                    "Side Force coefficient",
-                    "Pitch moment coefficient",
-                    "Roll moment coefficient",
-                    "Yaw moment coefficient",
-                ]
-                generate_boxplots_vs_sideslip(
-                    combined_df[combined_df["aoa"] == aoa],
-                    vw,
-                    aoa,
-                    results_path,
-                    figsize,
-                    fontsize,
-                    columns,
-                    y_labels,
-                    subplot_titles,
-                )  # Generate and save boxplots vs sideslip
+        # we only need the boxplots over an angle of attack sweep
+        # unique_aoas = combined_df["aoa"].unique()
+        # for aoa in unique_aoas:
+        #     if aoa in alphas_to_be_plotted:
+        #         figsize = (16, 12)
+        #         columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
+        #         y_labels = ["C_L", "C_D", "C_S", "C_{M,x}", "C_{M,y}", "C_{M,z}"]
+        #         subplot_titles = [
+        #             "Lift coefficient",
+        #             "Drag Coefficient",
+        #             "Side Force coefficient",
+        #             "Pitch moment coefficient",
+        #             "Roll moment coefficient",
+        #             "Yaw moment coefficient",
+        #         ]
+        #         generate_boxplots_vs_sideslip(
+        #             combined_df[combined_df["aoa"] == aoa],
+        #             vw,
+        #             aoa,
+        #             results_path,
+        #             figsize,
+        #             fontsize,
+        #             columns,
+        #             y_labels,
+        #             subplot_titles,
+        #         )  # Generate and save boxplots vs sideslip
 
 
 if __name__ == "__main__":

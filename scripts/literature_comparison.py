@@ -194,59 +194,6 @@ def loading_data_vsm_old_alpha() -> tuple:
     ]
 
 
-def loading_data_lebesque_beta():
-    # compare non zero sideslip, lebesque
-    leb_beta_cl = [0, 4.021482277121375, 8.004296455424276, 12.012889366272825]
-    leb_cl = [
-        1.0480851063829788,
-        1.0340425531914894,
-        0.994468085106383,
-        0.7948936170212766,
-    ]
-
-    leb_beta_cd = [
-        0.0032206119162641045,
-        4.009661835748792,
-        8.003220611916264,
-        11.98389694041868,
-    ]
-    leb_cd = [
-        0.11070208728652751,
-        0.11886148007590132,
-        0.14106261859582542,
-        0.22910815939278936,
-    ]
-
-    leb_beta_cs = [0.012499999999999956, 4, 8, 11.9875]
-    leb_cs = (
-        np.array([0, 0.2528089887640449, 0.49438202247191004, 0.447191011235955]) / 3.7
-    )
-
-    leb_beta_clcd = [
-        -0.002945508100147265,
-        3.991163475699558,
-        7.985272459499264,
-        11.991163475699558,
-    ]
-    leb_clcd = [
-        9.46641791044776,
-        8.692164179104477,
-        7.059701492537313,
-        3.486940298507463,
-    ]
-
-    return [
-        leb_beta_cl,
-        leb_cl,
-        leb_beta_cd,
-        leb_cd,
-        leb_beta_cs,
-        leb_cs,
-        leb_beta_clcd,
-        leb_clcd,
-    ]
-
-
 # def loading_data_vsm_old_beta():
 
 #     # cayon
@@ -373,14 +320,14 @@ def plotting_polars_alpha(
 
     data_frame_list = [
         # data_windtunnel_alpha_re_42e4,
-        data_lebesque_alpha_re_300e4,
+        # data_lebesque_alpha_re_300e4,
         data_lebesque_alpha_re_100e4,
         data_VSM_alpha_re_56e4,
         data_windtunnel_alpha_re_56e4,
     ]
     labels = [
         # rf"Re = $4.2\cdot10^5$ Wind Tunnel",
-        rf"Re = $30\cdot10^5$ CFD (Lebesque, 2022)",
+        # rf"Re = $30\cdot10^5$ CFD (Lebesque, 2022)",
         rf"Re = $10\cdot10^5$ CFD (Lebesque, 2022)",
         rf"Re = $5.6\cdot10^5$ VSM",
         rf"Re = $5.6\cdot10^5$ Wind Tunnel",
@@ -390,7 +337,7 @@ def plotting_polars_alpha(
     fig, axs = plt.subplots(1, 3, figsize=figsize)
 
     for i, (data_frame, label) in enumerate(zip(data_frame_list, labels)):
-        if i == 3:
+        if i == 2:
             linestyle = "o--"
             axs[0].plot(
                 data_frame["aoa_kite"], data_frame["C_L"], linestyle, label=label
@@ -405,28 +352,30 @@ def plotting_polars_alpha(
                 label=label,
             )
 
-        elif i == 2:
+        elif i == 1:
             linestyle = "s--"
-            axs[0].plot(data_frame["aoa"], data_frame["CL"], linestyle, label=label)
-            axs[1].plot(data_frame["aoa"], data_frame["CD"], linestyle, label=label)
-            axs[2].plot(
-                data_frame["aoa"],
-                data_frame["CL"] / data_frame["CD"],
-                linestyle,
-                label=label,
-            )
+            # axs[0].plot(data_frame["aoa"], data_frame["CL"], linestyle, label=label)
+            # axs[1].plot(data_frame["aoa"], data_frame["CD"], linestyle, label=label)
+            # axs[2].plot(
+            #     data_frame["aoa"],
+            #     data_frame["CL"] / data_frame["CD"],
+            #     linestyle,
+            #     label=label,
+            # )
+
+            # Adding stall-corrected values
             linestyle = "s--"
             axs[0].plot(
                 data_frame["aoa"],
                 data_frame["CL_stall"],
                 linestyle,
-                label=label + " STALL",
+                label=label,
             )
             axs[1].plot(
                 data_frame["aoa"],
                 data_frame["CD_stall"],
                 linestyle,
-                label=label + " STALL",
+                label=label,
             )
             axs[2].plot(
                 data_frame["aoa"],
@@ -500,6 +449,7 @@ def plotting_polars_beta(
     results_path: str,
     figsize: tuple,
     fontsize: int,
+    ratio_projected_area_to_side_area: float = 3.7,
 ):
 
     # Load Wind tunnel data
@@ -516,24 +466,30 @@ def plotting_polars_beta(
     )
     data_VSM_beta_re_56e4 = pd.read_csv(path_to_csv_VSM_beta_re_56e4)
 
-    # Load Lebesque's data
-    (
-        leb_beta_cl,
-        leb_cl,
-        leb_beta_cd,
-        leb_cd,
-        leb_beta_cs,
-        leb_cs,
-        leb_beta_clcd,
-        leb_clcd,
-    ) = loading_data_lebesque_beta()
+    # Load Lebesque data
+    path_to_csv_lebesque_re_100e4 = (
+        Path(root_dir)
+        / "processed_data"
+        / "V3_CL_CD_CS_RANS_Lebesque_2024_Rey_100e4_beta_sweep.csv"
+    )
+    data_lebesque_re_100e4 = pd.read_csv(path_to_csv_lebesque_re_100e4)
+    # path_to_csv_lebesque_re_300e4 = (
+    #     Path(root_dir)
+    #     / "processed_data"
+    #     / "V3_CL_CD_CS_RANS_Lebesque_2024_Rey_300e4_beta_sweep.csv"
+    # )
+    # data_lebesque_re_300e4 = pd.read_csv(path_to_csv_lebesque_re_300e4)
 
     data_frame_list = [
+        # data_lebesque_re_300e4,
+        data_lebesque_re_100e4,
         data_VSM_beta_re_56e4,
         # data_windtunnel_beta_re_42e4,
         data_windtunnel_beta_re_56e4,
     ]
     labels = [
+        # rf"Re = $30e\cdot10^5$ CFD (Lebesque, 2022)",
+        rf"Re = $10e\cdot10^5$ CFD (Lebesque, 2022)",
         rf"Re = $5.6\cdot10^5$ VSM",
         # rf"Re = $4.2\cdot10^5$ Wind Tunnel",
         rf"Re = $5.6\cdot10^5$ Wind Tunnel",
@@ -542,14 +498,8 @@ def plotting_polars_beta(
     # Plot CL, CD, and CS curves in subplots
     fig, axs = plt.subplots(1, 3, figsize=figsize)
 
-    # Adding Lebesque's data first
-    label_lebesque = [rf"Re = $10\cdot10^5$ CFD (Lebesque, 2022)"]
-    axs[0].plot(leb_beta_cl, leb_cl, "s--", label=label_lebesque[0])
-    axs[1].plot(leb_beta_cd, leb_cd, "s--", label=label_lebesque[0])
-    axs[2].plot(leb_beta_cs, leb_cs, "s--", label=label_lebesque[0])
-
     for i, (data_frame, label) in enumerate(zip(data_frame_list, labels)):
-        if i == 1:  # if windtunnel
+        if i == 2:  # if windtunnel
             linestyle = "o--"
             axs[0].plot(
                 data_frame["sideslip"], data_frame["C_L"], linestyle, label=label
@@ -560,30 +510,40 @@ def plotting_polars_beta(
             axs[2].plot(
                 data_frame["sideslip"], data_frame["C_S"], linestyle, label=label
             )
-        elif i == 0:  # if VSM
+        elif i == 1:  # if VSM
             linestyle = "s--"
-            axs[0].plot(data_frame["beta"], data_frame["CL"], linestyle, label=label)
-            axs[1].plot(data_frame["beta"], data_frame["CD"], linestyle, label=label)
-            axs[2].plot(data_frame["beta"], data_frame["CS"], linestyle, label=label)
+            # axs[0].plot(data_frame["beta"], data_frame["CL"], linestyle, label=label)
+            # axs[1].plot(data_frame["beta"], data_frame["CD"], linestyle, label=label)
+            # axs[2].plot(data_frame["beta"], data_frame["CS"], linestyle, label=label)
 
             # Adding stall-corrected values
             axs[0].plot(
                 data_frame["beta"],
                 data_frame["CL_stall"],
                 linestyle,
-                label=label + " STALL",
+                label=label,
             )
             axs[1].plot(
                 data_frame["beta"],
                 data_frame["CD_stall"],
                 linestyle,
-                label=label + " STALL",
+                label=label,
             )
             axs[2].plot(
                 data_frame["beta"],
                 data_frame["CS_stall"],
                 linestyle,
-                label=label + " STALL",
+                label=label,
+            )
+        else:  # if Lebesque
+            linestyle = "s--"
+            axs[0].plot(data_frame["beta"], data_frame["CL"], linestyle, label=label)
+            axs[1].plot(data_frame["beta"], data_frame["CD"], linestyle, label=label)
+            axs[2].plot(
+                data_frame["beta"],
+                data_frame["CS"] / ratio_projected_area_to_side_area,
+                linestyle,
+                label=label,
             )
 
     # Formatting the axis
@@ -592,7 +552,7 @@ def plotting_polars_beta(
     axs[0].set_title("Lift Coefficient")
     axs[0].grid()
     axs[0].set_xlim(0, 20)
-    axs[0].set_ylim(0.3, 1.2)
+    axs[0].set_ylim(0.4, 1.1)
     axs[0].legend()
 
     axs[1].set_xlabel(r"$\beta$ [$^o$]", fontsize=fontsize)
@@ -600,7 +560,7 @@ def plotting_polars_beta(
     axs[1].set_title("Drag Coefficient")
     axs[1].grid()
     axs[1].set_xlim(0, 20)
-    axs[1].set_ylim(0.05, 0.25)
+    axs[1].set_ylim(0.075, 0.25)
 
     axs[2].set_xlabel(r"$\beta$ [$^o$]", fontsize=fontsize)
     axs[2].set_ylabel(r"$C_S$ [-]", fontsize=fontsize)
@@ -635,6 +595,7 @@ def main(results_path, root_dir):
         results_path,
         figsize,
         fontsize,
+        ratio_projected_area_to_side_area=3.7,
     )
 
 
