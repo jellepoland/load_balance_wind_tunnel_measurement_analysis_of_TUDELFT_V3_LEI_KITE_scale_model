@@ -185,6 +185,57 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                                 label=rf"$Re = {Re}$ $\cdot$ $10^5$",
                             )
 
+                            pos_values, neg_values = [], []
+
+                            for j, column_j in enumerate(vw_group[column].values):
+                                beta = vw_group["sideslip"].values[j]
+                                # print(f"--> beta: {beta}")
+                                # print(f"column: {column_j}")
+
+                                if beta > 1:
+                                    pos_values.append(column_j)
+                                elif beta < 1:
+                                    neg_values.append(column_j)
+
+                            # print(f"neg_values: {neg_values}")
+                            # print(f"pos_values: {pos_values[::-1]}")
+                            diff = []
+                            for idx, (pos, neg) in enumerate(
+                                zip(pos_values, neg_values[::-1])
+                            ):
+                                # print(f"\n pos: {pos}")
+                                # print(f"neg: {neg}")
+                                # print(f"diff: {np.abs(1 - np.abs(pos / neg))}")
+                                if idx > 3:
+                                    diff.append(np.abs(1 - np.abs(pos / neg)))
+
+                            print(
+                                f" y_labels[i]: {y_labels[i]} alpha: {alpha}, Re: {Re}, --> diff average : {np.average(diff)*100:.02f}%"
+                            )
+                            # diff = [
+                            #     np.abs(np.abs(pos - neg) / pos)
+                            #     for pos, neg in zip(pos_values, neg_values[::-1])
+                            # ]
+                            # print(f"diff: {diff}")
+                            # print(
+                            #     f'\n y_labels[i]: {y_labels[i]}, alpha: {alpha}, \n beta: {vw_group["sideslip"].values}, \n Re: {Re}, \n column: {vw_group[column].values}'
+                            # )
+
+                            # pos_values = vw_group[column].values[0:8]
+                            # neg_values = vw_group[column].values[9:]
+                            # print(
+                            #     f"pos_values: {len(pos_values)} {pos_values}, \n neg_values: {len(neg_values)} {neg_values[:-1]}"
+                            # )
+                            # delta = [
+                            #     np.abs(np.abs(pos - neg) / pos)
+                            #     for i, (pos, neg) in enumerate(
+                            #         zip(pos_values, neg_values[::-1])
+                            #     )
+                            # ]
+                            # print(f"delta: {len(delta)} {delta}")
+                            # print(f" average delta: {np.average(delta)}")
+                            # print(f" mean delta: {np.average(delta)*100}%")
+
                     axs[i].set_title(subplot_titles[i])
                     axs[i].set_xlabel(r"$\beta$ [$^o$]", fontsize=fontsize)
                     axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
