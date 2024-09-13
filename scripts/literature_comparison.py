@@ -353,14 +353,26 @@ def plotting_polars_alpha(
             )
 
         elif i == 1:
-            linestyle = "s--"
-            # axs[0].plot(data_frame["aoa"], data_frame["CL"], linestyle, label=label)
-            # axs[1].plot(data_frame["aoa"], data_frame["CD"], linestyle, label=label)
+
+            # # No stall model
+            # linestyle = "s--"
+            # axs[0].plot(
+            #     data_frame["aoa"],
+            #     data_frame["CL"],
+            #     linestyle,
+            #     label=label + " no stall model",
+            # )
+            # axs[1].plot(
+            #     data_frame["aoa"],
+            #     data_frame["CD"],
+            #     linestyle,
+            #     label=label + " no stall model",
+            # )
             # axs[2].plot(
             #     data_frame["aoa"],
             #     data_frame["CL"] / data_frame["CD"],
             #     linestyle,
-            #     label=label,
+            #     label=label + " no stall model",
             # )
 
             # Adding stall-corrected values
