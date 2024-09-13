@@ -164,7 +164,7 @@ def running_vsm_to_generate_csv_data(root_dir: str, vw: float) -> None:
         path_to_csv = (
             Path(root_dir)
             / "processed_data"
-            / f"VSM_results_alpha_sweep_Rey_{(Rey/1e5):.1f}.csv"
+            / f"VSM_results_alpha_sweep_Rey_{(Rey/1e5):.1f}_new.csv"
         )
         alpha_path_list.append(path_to_csv)
         # Create dataframe and save to CSV
@@ -225,7 +225,7 @@ def running_vsm_to_generate_csv_data(root_dir: str, vw: float) -> None:
         path_to_csv = (
             Path(root_dir)
             / "processed_data"
-            / f"VSM_results_beta_sweep_Rey_{(Rey/1e5):.1f}.csv"
+            / f"VSM_results_beta_sweep_Rey_{(Rey/1e5):.1f}_new.csv"
         )
         beta_path_list.append(path_to_csv)
         # Create dataframe and save to CSV
