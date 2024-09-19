@@ -190,6 +190,67 @@ def running_vsm_to_generate_csv_data(root_dir: str, vw: float) -> None:
         }
     ).to_csv(path_to_csv, index=False)
 
+    ### beta sweep
+    alpha = 11.95
+    betas_to_be_plotted = [
+        # -20,
+        # -14,
+        # -12,
+        # -10,
+        # -8,
+        # -6,
+        # -4,
+        # -2,
+        0,
+        2,
+        4,
+        6,
+        8,
+        12,
+        14,
+        20,
+    ]
+    polar_data, _ = generate_polar_data(
+        solver=VSM,
+        wing_aero=wing_aero_CAD_19ribs,
+        angle_range=betas_to_be_plotted,
+        angle_type="side_slip",
+        angle_of_attack=np.deg2rad(alpha),
+        side_slip=0,
+        yaw_rate=0,
+        Umag=vw,
+    )
+    polar_data_stall, _ = generate_polar_data(
+        solver=VSM_with_stall_correction,
+        wing_aero=wing_aero_CAD_19ribs,
+        angle_range=betas_to_be_plotted,
+        angle_type="side_slip",
+        angle_of_attack=np.deg2rad(alpha),
+        side_slip=0,
+        yaw_rate=0,
+        Umag=vw,
+    )
+    # Create dataframe and save to CSV
+    path_to_csv = (
+        Path(root_dir)
+        / "processed_data"
+        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}.csv"
+    )
+    pd.DataFrame(
+        {
+            "beta": polar_data[0],
+            "CL": polar_data[1],
+            "CL_stall": polar_data_stall[1],
+            "CD": polar_data[2],
+            "CD_stall": polar_data_stall[2],
+            "CL/CD": np.array(polar_data[1]) / np.array(polar_data[2]),
+            "CL/CD_stall": np.array(polar_data_stall[1])
+            / np.array(polar_data_stall[2]),
+            "CS": polar_data[3],
+            "CS_stall": polar_data_stall[3],
+        }
+    ).to_csv(path_to_csv, index=False)
+
     return
 
 

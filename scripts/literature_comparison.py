@@ -515,7 +515,7 @@ def plotting_polars_beta(
     path_to_csv_VSM_beta_re_56e4_alpha_1195 = (
         Path(root_dir)
         / "processed_data"
-        / "VSM_results_beta_sweep_Rey_5.6_alpha_1175.csv"
+        / "VSM_results_beta_sweep_Rey_5.6_alpha_1195.csv"
     )
     data_VSM_beta_re_56e4_alpha_1195 = pd.read_csv(
         path_to_csv_VSM_beta_re_56e4_alpha_1195
