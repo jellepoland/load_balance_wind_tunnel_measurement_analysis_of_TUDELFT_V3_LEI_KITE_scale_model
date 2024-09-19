@@ -130,6 +130,7 @@ def running_vsm_to_generate_csv_data(root_dir: str, vw: float) -> None:
     ).to_csv(path_to_csv, index=False)
 
     ### beta sweep
+    alpha = 6.75
     betas_to_be_plotted = [
         # -20,
         # -14,
@@ -153,7 +154,7 @@ def running_vsm_to_generate_csv_data(root_dir: str, vw: float) -> None:
         wing_aero=wing_aero_CAD_19ribs,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
-        angle_of_attack=11.75,
+        angle_of_attack=np.deg2rad(alpha),
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
@@ -163,7 +164,7 @@ def running_vsm_to_generate_csv_data(root_dir: str, vw: float) -> None:
         wing_aero=wing_aero_CAD_19ribs,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
-        angle_of_attack=np.deg2rad(11.75),
+        angle_of_attack=np.deg2rad(alpha),
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
@@ -172,7 +173,7 @@ def running_vsm_to_generate_csv_data(root_dir: str, vw: float) -> None:
     path_to_csv = (
         Path(root_dir)
         / "processed_data"
-        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}.csv"
+        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}.csv"
     )
     pd.DataFrame(
         {
