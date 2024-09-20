@@ -273,7 +273,7 @@ def plot_zigzag(
             ax.set_ylim([0.06, 0.16])
         elif idx == 2:  # C_pitch
             ax.set_ylim([0.1, 0.55])
-        ax.set_xlabel(r"$Re \times 10^5$ [-]", fontsize=fontsize)
+        ax.set_xlabel(r"Re $\times 10^5$ [-]", fontsize=fontsize)
         ax.set_ylabel(rf"${yaxis_names[idx]}$ [-]", fontsize=fontsize)
         # ax.set_title(plot_titles[idx])
         ax.grid(True)

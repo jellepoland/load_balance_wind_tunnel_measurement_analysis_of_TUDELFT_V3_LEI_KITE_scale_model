@@ -91,7 +91,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
                             label=rf"$Re = {Re}$ $\cdot$ $10^5$",
                         )
 
-                axs[i].set_title(subplot_titles[i])
+                # axs[i].set_title(subplot_titles[i])
                 axs[i].set_xlabel(r"$\alpha$ [deg]", fontsize=fontsize)
                 axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
                 if i == 0:
@@ -236,7 +236,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                             # print(f" average delta: {np.average(delta)}")
                             # print(f" mean delta: {np.average(delta)*100}%")
 
-                    axs[i].set_title(subplot_titles[i])
+                    # axs[i].set_title(subplot_titles[i])
                     axs[i].set_xlabel(r"$\beta$ [$^o$]", fontsize=fontsize)
                     axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
                     if i == 1:

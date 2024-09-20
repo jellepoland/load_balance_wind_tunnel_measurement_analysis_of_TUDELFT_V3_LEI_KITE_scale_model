@@ -134,7 +134,7 @@ def generate_boxplots_vs_aoa(
         axs[i].errorbar(positions, means, yerr=std, fmt="o", color="black", capsize=5)
         axs[i].plot(positions, means, marker="o", linestyle="--", color="black")
 
-        axs[i].set_title(f"{subplot_titles[i]}")
+        # axs[i].set_title(f"{subplot_titles[i]}")
         axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
         axs[i].set_xticks(range(-15, 26, 5))
         axs[i].set_xticklabels(range(-15, 26, 5))
@@ -220,7 +220,7 @@ def generate_boxplots_vs_sideslip(
 
             means = [data.mean() for data in box_data]
             axs[i].plot(positions, means, marker="o", linestyle="--", color="black")
-            axs[i].set_title(f"{subplot_titles[i]}")
+            # axs[i].set_title(f"{subplot_titles[i]}")
             axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
             axs[i].set_xticks(
                 np.arange(
