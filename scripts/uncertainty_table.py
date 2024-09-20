@@ -19,7 +19,9 @@ def defining_root_dir() -> str:
 
 def print_std_SNR_uncertainty(root_dir: str) -> pd.DataFrame:
     # Load SNR data
-    path_to_csv = Path(root_dir) / "processed_data" / "stats_all_jelle.csv"
+    path_to_csv = (
+        Path(root_dir) / "processed_data" / "uncertainty_table" / "stats_all_jelle.csv"
+    )
     df_all = pd.read_csv(path_to_csv)
 
     df_vw_5 = df_all.loc[df_all["vw"] == 5]
@@ -124,11 +126,15 @@ def print_std_SNR_uncertainty(root_dir: str) -> pd.DataFrame:
 def print_repeatability_uncertainty(root_dir: str) -> pd.DataFrame:
 
     # Read the interpolation coefficients
-    path_interp_coeffs = Path(root_dir) / "processed_data" / "interp_coeff.csv"
+    path_interp_coeffs = (
+        Path(root_dir) / "processed_data" / "uncertainty_table" / "interp_coeff.csv"
+    )
     interp_coeffs = pd.read_csv(path_interp_coeffs)
 
     # Read the labbook data
-    path_labbook_double = Path(root_dir) / "processed_data" / "labbook_double.csv"
+    path_labbook_double = (
+        Path(root_dir) / "processed_data" / "uncertainty_table" / "labbook_double.csv"
+    )
     data = pd.read_csv(path_labbook_double, delimiter=";")
     data["measurement"] = data.groupby("Filename").cumcount()
 
@@ -140,7 +146,10 @@ def print_repeatability_uncertainty(root_dir: str) -> pd.DataFrame:
 
     # Read another data file and add information
     path_double_aoa_12_vw_20_unsteady = (
-        Path(root_dir) / "processed_data" / "double_aoa_12_vw_20_unsteady.txt"
+        Path(root_dir)
+        / "processed_data"
+        / "uncertainty_table"
+        / "double_aoa_12_vw_20_unsteady.txt"
     )
     df = pd.read_csv(
         path_double_aoa_12_vw_20_unsteady, delimiter="\t", names=column_names

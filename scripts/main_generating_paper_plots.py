@@ -2,6 +2,7 @@ from pathlib import Path
 import reynolds_variation_plots
 import literature_comparison
 import uncertainty_table
+import zigzag
 
 
 def main():
@@ -12,6 +13,7 @@ def main():
     )
     reynolds_variation_plots.main(results_path, root_dir)
     literature_comparison.main(results_path, root_dir)
+    zigzag.main(results_path, root_dir)
     uncertainty_table.main(root_dir)
 
     print(

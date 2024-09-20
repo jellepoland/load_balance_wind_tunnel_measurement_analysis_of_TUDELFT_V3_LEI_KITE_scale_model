@@ -305,16 +305,25 @@ def plotting_polars_alpha(
     data_windtunnel_alpha_re_56e4 = filtered_df_grouped.get_group(20)
     # VSM
     path_to_csv_VSM_alpha_re_56e4 = (
-        Path(root_dir) / "processed_data" / "VSM_results_alpha_sweep_Rey_5.6.csv"
+        Path(root_dir)
+        / "processed_data"
+        / "literature_comparison"
+        / "VSM_results_alpha_sweep_Rey_5.6.csv"
     )
     data_VSM_alpha_re_56e4 = pd.read_csv(path_to_csv_VSM_alpha_re_56e4)
     # Lebesque
     path_to_csv_lebesque_Rey_100e4 = (
-        Path(root_dir) / "processed_data" / "V3_CL_CD_RANS_Lebesque_2024_Rey_100e4.csv"
+        Path(root_dir)
+        / "processed_data"
+        / "literature_comparison"
+        / "V3_CL_CD_RANS_Lebesque_2024_Rey_100e4.csv"
     )
     data_lebesque_alpha_re_100e4 = pd.read_csv(path_to_csv_lebesque_Rey_100e4)
     path_to_csv_lebesque_Rey_300e4 = (
-        Path(root_dir) / "processed_data" / "V3_CL_CD_RANS_Lebesque_2024_Rey_300e4.csv"
+        Path(root_dir)
+        / "processed_data"
+        / "literature_comparison"
+        / "V3_CL_CD_RANS_Lebesque_2024_Rey_300e4.csv"
     )
     data_lebesque_alpha_re_300e4 = pd.read_csv(path_to_csv_lebesque_Rey_300e4)
 
@@ -455,7 +464,7 @@ def plotting_polars_alpha(
     # formatting axis
     axs[0].set_xlabel(r"$\alpha$ [$^o$]", fontsize=fontsize)
     axs[0].set_ylabel(r"$C_L$ [-]", fontsize=fontsize)
-    axs[0].set_title("Lift Coefficient")
+    # axs[0].set_title("Lift Coefficient")
     axs[0].set_xlim(-12.65, 24)
     axs[0].grid()
     # axs[0].set_xlim([-5, 24])
@@ -464,7 +473,7 @@ def plotting_polars_alpha(
 
     axs[1].set_xlabel(r"$\alpha$ [$^o$]", fontsize=fontsize)
     axs[1].set_ylabel(r"$C_D$ [-]", fontsize=fontsize)
-    axs[1].set_title("Drag Coefficient")
+    # axs[1].set_title("Drag Coefficient")
     axs[1].grid()
     axs[1].set_xlim(-12.65, 24)
     # axs[1].set_xlim([-5, 24])
@@ -473,7 +482,7 @@ def plotting_polars_alpha(
 
     axs[2].set_xlabel(r"$\alpha$ [$^o$]", fontsize=fontsize)
     axs[2].set_ylabel(r"$L/D$ [-]", fontsize=fontsize)
-    axs[2].set_title("Lift/drag ratio")
+    # axs[2].set_title("Lift/drag ratio")
     axs[2].grid()
     axs[2].set_xlim(-12.65, 24)
     # axs[2].set_xlim([-5, 24])
@@ -515,6 +524,7 @@ def plotting_polars_beta(
     path_to_csv_VSM_beta_re_56e4_alpha_1195 = (
         Path(root_dir)
         / "processed_data"
+        / "literature_comparison"
         / "VSM_results_beta_sweep_Rey_5.6_alpha_1195.csv"
     )
     data_VSM_beta_re_56e4_alpha_1195 = pd.read_csv(
@@ -525,6 +535,7 @@ def plotting_polars_beta(
     path_to_csv_VSM_beta_re_56e4_alpha_675 = (
         Path(root_dir)
         / "processed_data"
+        / "literature_comparison"
         / "VSM_results_beta_sweep_Rey_5.6_alpha_675.csv"
     )
     data_VSM_beta_re_56e4_alpha_675 = pd.read_csv(
@@ -535,6 +546,7 @@ def plotting_polars_beta(
     path_to_csv_lebesque_re_100e4_alpha_1195 = (
         Path(root_dir)
         / "processed_data"
+        / "literature_comparison"
         / "V3_CL_CD_CS_RANS_Lebesque_2024_Rey_100e4_beta_sweep.csv"
     )
     data_lebesque_re_100e4_alpha_1195 = pd.read_csv(
