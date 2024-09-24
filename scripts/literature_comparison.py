@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from pathlib import Path
+from save_to_pdf_tex import savepdf_tex
 
 
 def defining_root_dir() -> str:
@@ -493,6 +494,9 @@ def plotting_polars_alpha(
     plot_filepath = Path(results_path) / f"literature_polars_alpha.pdf"
     plt.savefig(plot_filepath)
 
+    # saving using Inkscape
+    # savepdf_tex(plt.gcf(), Path(results_path) / "pdf_tex" / "literature_polars_alpha")
+
 
 def plotting_polars_beta(
     root_dir: str,
@@ -571,13 +575,13 @@ def plotting_polars_beta(
     ]
     labels = [
         # rf"Re = $30e\cdot10^5$ CFD (Lebesque, 2022)",
-        rf"CFD $\alpha$ = 11.95$\degree$ Re = $10\cdot10^5$",
-        rf"VSM $\alpha$ = 11.95$\degree$ Re = $5.6\cdot10^5$",
-        rf"VSM $\alpha$ = 6.75$\degree$ Re = $5.6\cdot10^5$",
+        rf"CFD $\alpha$ = 11.95$^\circ$ Re = $10\cdot10^5$",
+        rf"VSM $\alpha$ = 11.95$^\circ$ Re = $5.6\cdot10^5$",
+        rf"VSM $\alpha$ = 6.75$^\circ$ Re = $5.6\cdot10^5$",
         # rf"Re = $4.2\cdot10^5$ Wind Tunnel",
-        rf"WT $\alpha$ = 11.95$\degree$ Re = $5.6\cdot10^5$",
-        rf"WT $\alpha$ = 6.75$\degree$ Re = $5.6\cdot10^5$",
-        # rf"Wind Tunnel $\alpha$ = 4.75$\degree$, Re = $5.6\cdot10^5$",
+        rf"WT $\alpha$ = 11.95$^\circ$ Re = $5.6\cdot10^5$",
+        rf"WT $\alpha$ = 6.75$^\circ$ Re = $5.6\cdot10^5$",
+        # rf"Wind Tunnel $\alpha$ = 4.75$^\circ$, Re = $5.6\cdot10^5$",
     ]
     colors = ["black", "blue", "blue", "red", "red"]
     linestyles = ["s-", "s-", "s--", "o-", "o--"]
@@ -689,11 +693,26 @@ def plotting_polars_beta(
     plot_filepath = Path(results_path) / "literature_polars_beta.pdf"
     plt.savefig(plot_filepath)
 
+    # saving using Inkscape
+    # savepdf_tex(plt.gcf(), Path(results_path) / "pdf_tex" / "literature_polars_beta")
+
+    # save using pgf
+    plt.savefig(Path(results_path) / "pdf_tex" / "literature_polars_beta.pgf")
+
 
 def main(results_path, root_dir):
 
-    # defining some plot specifics
+    # # defining some plot specifics
     plt.rcParams.update({"font.size": 14})
+    # # Enable LaTeX text rendering
+    # plt.rcParams.update(
+    #     {
+    #         "pgf.texsystem": "pdflatex",
+    #         "text.usetex": True,  # Use LaTeX for rendering text
+    #         "font.family": "serif",  # Use a serif font
+    #     }
+    # )
+
     fontsize = 18
 
     figsize = (20, 6)

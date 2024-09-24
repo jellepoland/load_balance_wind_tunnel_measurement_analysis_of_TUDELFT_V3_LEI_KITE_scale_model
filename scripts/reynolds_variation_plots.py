@@ -92,7 +92,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
                         )
 
                 # axs[i].set_title(subplot_titles[i])
-                axs[i].set_xlabel(r"$\alpha$ [deg]", fontsize=fontsize)
+                axs[i].set_xlabel(r"$\alpha$ [$^\circ$]", fontsize=fontsize)
                 axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
                 if i == 0:
                     axs[i].legend()
@@ -237,7 +237,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                             # print(f" mean delta: {np.average(delta)*100}%")
 
                     # axs[i].set_title(subplot_titles[i])
-                    axs[i].set_xlabel(r"$\beta$ [$^o$]", fontsize=fontsize)
+                    axs[i].set_xlabel(r"$\beta$ [$^\circ$]", fontsize=fontsize)
                     axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
                     if i == 1:
                         axs[i].legend()
@@ -293,6 +293,7 @@ def main(results_path, root_dir):
     # selection
     betas_to_be_plotted = [0]
     alphas_to_be_plotted = [2.35, 4.75, 6.75]
+    alphas_to_be_plotted = [6.75]
 
     ### Other figure settings
     plt.rcParams.update({"font.size": 14})

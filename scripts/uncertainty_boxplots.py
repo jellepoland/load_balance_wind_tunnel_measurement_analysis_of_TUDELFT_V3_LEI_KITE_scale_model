@@ -142,7 +142,7 @@ def generate_boxplots_vs_aoa(
         axs[i].grid()
 
     for ax in axs:
-        ax.set_xlabel(r"$\alpha$ [deg]", fontsize=fontsize)
+        ax.set_xlabel(r"$\alpha$ [$^\circ$]", fontsize=fontsize)
 
     plt.tight_layout()
     # output_dir = f"plots_unsteady_final/vw_{vw}/alpha"
@@ -235,7 +235,7 @@ def generate_boxplots_vs_sideslip(
             axs[i].grid()
 
         for ax in axs:
-            ax.set_xlabel(r"$\beta$ [deg]", fontsize=fontsize)
+            ax.set_xlabel(r"$\beta$ [$^\circ$]", fontsize=fontsize)
 
         plt.tight_layout()
         # output_dir = f"plots_unsteady_final/vw_{vw}/beta"
@@ -293,7 +293,7 @@ def main(results_path, root_dir):
     ]
 
     # selection
-    plot_speeds = ["15", "20"]
+    plot_speeds = ["20"]
     betas_to_be_plotted = [0]
     alphas_to_be_plotted = [2.35, 4.75, 6.75]
 

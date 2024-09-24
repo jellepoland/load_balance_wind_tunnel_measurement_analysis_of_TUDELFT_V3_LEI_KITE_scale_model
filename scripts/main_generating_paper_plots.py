@@ -1,4 +1,5 @@
 from pathlib import Path
+import matplotlib.pyplot as plt
 import reynolds_variation_plots
 import literature_comparison
 import uncertainty_table
@@ -6,6 +7,15 @@ import zigzag
 
 
 def main():
+    plt.rcParams.update(
+        {
+            "pgf.texsystem": "pdflatex",
+            "font.family": "serif",  # use serif/main font for text elements
+            "text.usetex": True,  # use inline math for ticks
+            "pgf.rcfonts": False,  # don't setup fonts from rc parameters
+        }
+    )
+
     root_dir = reynolds_variation_plots.defining_root_dir()
     results_path = Path(root_dir) / "results"
     results_path = Path(
