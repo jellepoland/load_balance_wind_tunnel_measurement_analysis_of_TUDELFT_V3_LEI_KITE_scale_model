@@ -3,18 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from pathlib import Path
-
-
-def defining_root_dir() -> str:
-    # Find the root directory of the repository
-    root_dir = os.path.abspath(os.path.dirname(__file__))
-    while not os.path.isfile(os.path.join(root_dir, ".gitignore")):
-        root_dir = os.path.abspath(os.path.join(root_dir, ".."))
-        if root_dir == "/":
-            raise FileNotFoundError(
-                "Could not find the root directory of the repository."
-            )
-    return root_dir
+from settings import saving_pdf_and_pdf_tex, x_axis_labels, y_axis_labels
 
 
 def loading_data(root_dir: str) -> pd.DataFrame:
@@ -88,12 +77,12 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
                             vw_group["aoa_kite"],
                             vw_group[column],
                             "o-.",
-                            label=rf"$Re = {Re}$ $\cdot$ $10^5$",
+                            label=rf"Re = {Re} $\times$ $10^5$",
                         )
 
                 # axs[i].set_title(subplot_titles[i])
-                axs[i].set_xlabel(r"$\alpha$ [$^\circ$]", fontsize=fontsize)
-                axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
+                axs[i].set_xlabel(x_axis_labels["alpha"])  # , fontsize=fontsize)
+                axs[i].set_ylabel(y_axis_labels[y_labels[i]])  # , fontsize=fontsize)
                 if i == 0:
                     axs[i].legend()
                 # axs[i].set_xlim([-5,24])
@@ -105,16 +94,13 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
             # Save the plot in the plots folder
             # plot_filename = f"plots/sideslip_{sideslip}_plot.png"
             # plot_filename = foldername + '/alpha' + f"/sideslip_{sideslip}_plot.pdf"
-            plot_filename = (
-                Path(results_path)
-                / f"re_variation_alpha_sweep_at_fixed_beta_{sideslip:.2f}.pdf"
-            )
             plt.tight_layout()
-            plt.savefig(plot_filename)
-            plt.close()
+
+            filename = f"re_variation_alpha_sweep_at_fixed_beta_{sideslip:.2f}"
+            saving_pdf_and_pdf_tex(results_path, filename)
 
             # Print a message when the plot is saved
-            print(f"Plot for sideslip {sideslip} saved as {plot_filename}")
+            print(f"Plot for sideslip {sideslip} saved as {filename}")
 
 
 def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
@@ -182,7 +168,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                                 vw_group["sideslip"],
                                 vw_group[column],
                                 "o-.",
-                                label=rf"$Re = {Re}$ $\cdot$ $10^5$",
+                                label=rf"Re = {Re} $\times$ $10^5$",
                             )
 
                             pos_values, neg_values = [], []
@@ -237,8 +223,10 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                             # print(f" mean delta: {np.average(delta)*100}%")
 
                     # axs[i].set_title(subplot_titles[i])
-                    axs[i].set_xlabel(r"$\beta$ [$^\circ$]", fontsize=fontsize)
-                    axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
+                    axs[i].set_xlabel(x_axis_labels["beta"])  # , fontsize=fontsize)
+                    axs[i].set_ylabel(
+                        y_axis_labels[y_labels[i]]
+                    )  # , fontsize=fontsize)
                     if i == 1:
                         axs[i].legend()
                     axs[i].set_xlim([-21, 21])
@@ -253,16 +241,12 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                 # plot_filename = (
                 #     foldername + "/beta" + f"/alpha_{np.around(alpha,2)}_plot.pdf"
                 # )
-                plot_filename = (
-                    Path(results_path)
-                    / f"re_variation_beta_sweep_at_fixed_alpha_{alpha:.2f}.pdf"
-                )
                 plt.tight_layout()
-                plt.savefig(plot_filename)
-                plt.close()
+                filename = f"re_variation_beta_sweep_at_fixed_alpha_{alpha:.2f}"
+                saving_pdf_and_pdf_tex(results_path, filename)
 
                 # Print a message when the plot is saved
-                print(f"Plot for angle of attack {alpha} saved as {plot_filename}")
+                print(f"Plot for angle of attack {alpha} saved as {filename}")
 
 
 def main(results_path, root_dir):
@@ -296,11 +280,10 @@ def main(results_path, root_dir):
     alphas_to_be_plotted = [6.75]
 
     ### Other figure settings
-    plt.rcParams.update({"font.size": 14})
     figsize = (16, 12)
     fontsize = 18
     columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
-    y_labels = ["C_L", "C_D", "C_S", "C_{M,x}", "C_{M,y}", "C_{M,z}"]
+    y_labels = ["CL", "CD", "CS", "CMx", "CMy", "CMz"]
     subplot_titles = [
         "Lift coefficient",
         "Drag Coefficient",
@@ -335,6 +318,8 @@ def main(results_path, root_dir):
 
 
 if __name__ == "__main__":
+    from settings import defining_root_dir
+
     root_dir = defining_root_dir()
     results_path = Path(root_dir) / "results"
     main(results_path, root_dir)

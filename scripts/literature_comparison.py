@@ -3,19 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from pathlib import Path
-from save_to_pdf_tex import savepdf_tex
-
-
-def defining_root_dir() -> str:
-    # Find the root directory of the repository
-    root_dir = os.path.abspath(os.path.dirname(__file__))
-    while not os.path.isfile(os.path.join(root_dir, ".gitignore")):
-        root_dir = os.path.abspath(os.path.join(root_dir, ".."))
-        if root_dir == "/":
-            raise FileNotFoundError(
-                "Could not find the root directory of the repository."
-            )
-    return root_dir
+from settings import root_dir, saving_pdf_and_pdf_tex, x_axis_labels, y_axis_labels
 
 
 def loading_data_vsm_old_alpha() -> tuple:
@@ -292,7 +280,7 @@ def loading_data_vsm_old_alpha() -> tuple:
 
 def plotting_polars_alpha(
     root_dir: str,
-    results_path: str,
+    results_dir: str,
     figsize: tuple,
     fontsize: int,
 ):
@@ -336,11 +324,11 @@ def plotting_polars_alpha(
         data_windtunnel_alpha_re_56e4,
     ]
     labels = [
-        # rf"Re = $4.2\cdot10^5$ Wind Tunnel",
-        # rf"Re = $30\cdot10^5$ CFD (Lebesque, 2022)",
-        rf"CFD Re = $10\cdot10^5$",
-        rf"VSM Re = $5.6\cdot10^5$",
-        rf"WT Re = $5.6\cdot10^5$",
+        # rf"Re = $4.2\times10^5$ Wind Tunnel",
+        # rf"Re = $30\times10^5$ CFD (Lebesque, 2022)",
+        rf"CFD Re = $10\times10^5$",
+        rf"VSM Re = $5.6\times10^5$",
+        rf"WT Re = $5.6\times10^5$",
     ]
 
     colors = ["black", "blue", "red"]
@@ -456,51 +444,61 @@ def plotting_polars_alpha(
     #     cay_cdcl_cd,
     #     cay_cdcl_cl,
     # ) = loading_data_vsm_old_alpha()
-    # label_cay = r"Re = $3\cdot10^6$ (Cayon, 2022)"
+    # label_cay = r"Re = $3\times10^6$ (Cayon, 2022)"
     # axs[0, 0].plot(cay_alpha_cl, cay_cl_aoa, "o--", label=label_cay)
     # axs[0, 1].plot(cay_alpha_cd, cay_cd_aoa, "o--", label=label_cay)
     # axs[1, 0].plot(cay_alpha_clcd, cay_clcd_aoa, "o--", label=label_cay)
     # axs[1, 1].plot(cay_cdcl_cd, cay_cdcl_cl, "o--", label=label_cay)
 
     # formatting axis
-    axs[0].set_xlabel(r"$\alpha$ [$^o$]", fontsize=fontsize)
-    axs[0].set_ylabel(r"$C_L$ [-]", fontsize=fontsize)
-    # axs[0].set_title("Lift Coefficient")
-    axs[0].set_xlim(-12.65, 24)
+    axs[0].set_xlabel(x_axis_labels["alpha"])
+    axs[0].set_ylabel(y_axis_labels["CL"])
     axs[0].grid()
-    # axs[0].set_xlim([-5, 24])
-    axs[0].set_ylim(-1.0, 1.5)
     axs[0].legend(loc="lower right")
 
-    axs[1].set_xlabel(r"$\alpha$ [$^o$]", fontsize=fontsize)
-    axs[1].set_ylabel(r"$C_D$ [-]", fontsize=fontsize)
-    # axs[1].set_title("Drag Coefficient")
+    axs[1].set_xlabel(x_axis_labels["alpha"])
+    axs[1].set_ylabel(y_axis_labels["CD"])
     axs[1].grid()
-    axs[1].set_xlim(-12.65, 24)
-    # axs[1].set_xlim([-5, 24])
-    axs[1].set_ylim(0, 0.5)
-    # axs[1].legend(loc="upper left")
 
-    axs[2].set_xlabel(r"$\alpha$ [$^o$]", fontsize=fontsize)
-    axs[2].set_ylabel(r"$L/D$ [-]", fontsize=fontsize)
-    # axs[2].set_title("Lift/drag ratio")
+    axs[2].set_xlabel(x_axis_labels["alpha"])
+    axs[2].set_ylabel(y_axis_labels["L/D"])
     axs[2].grid()
-    axs[2].set_xlim(-12.65, 24)
-    # axs[2].set_xlim([-5, 24])
-    axs[2].set_ylim(-10, 11)
+
+    # axs[0].set_xlabel(r"$\alpha$ [$^o$]")  # , fontsize=fontsize)
+    # axs[0].set_ylabel(r"$C_L$ [-]")  # , fontsize=fontsize)
+    # # axs[0].set_title("Lift Coefficient")
+    # axs[0].set_xlim(-12.65, 24)
+    # axs[0].grid()
+    # # axs[0].set_xlim([-5, 24])
+    # axs[0].set_ylim(-1.0, 1.5)
+    # axs[0].legend(loc="lower right")
+
+    # axs[1].set_xlabel(r"$\alpha$ [$^o$]")  # , fontsize=fontsize)
+    # axs[1].set_ylabel(r"$C_D$ [-]")  # , fontsize=fontsize)
+    # # axs[1].set_title("Drag Coefficient")
+    # axs[1].grid()
+    # axs[1].set_xlim(-12.65, 24)
+    # # axs[1].set_xlim([-5, 24])
+    # axs[1].set_ylim(0, 0.5)
+    # # axs[1].legend(loc="upper left")
+
+    # axs[2].set_xlabel(r"$\alpha$ [$^o$]")  # , fontsize=fontsize)
+    # axs[2].set_ylabel(r"$L/D$ [-]")  # , fontsize=fontsize)
+    # # axs[2].set_title("Lift/drag ratio")
+    # axs[2].grid()
+    # axs[2].set_xlim(-12.65, 24)
+    # # axs[2].set_xlim([-5, 24])
+    # axs[2].set_ylim(-10, 11)
 
     # plotting and saving
     plt.tight_layout()
-    plot_filepath = Path(results_path) / f"literature_polars_alpha.pdf"
-    plt.savefig(plot_filepath)
-
-    # saving using Inkscape
-    # savepdf_tex(plt.gcf(), Path(results_path) / "pdf_tex" / "literature_polars_alpha")
+    file_name = "literature_polars_alpha"
+    saving_pdf_and_pdf_tex(results_dir, file_name)
 
 
 def plotting_polars_beta(
     root_dir: str,
-    results_path: str,
+    results_dir: str,
     figsize: tuple,
     fontsize: int,
     ratio_projected_area_to_side_area: float = 3.7,
@@ -574,14 +572,14 @@ def plotting_polars_beta(
         # data_windtunnel_beta_re_56e4_alpha_475,
     ]
     labels = [
-        # rf"Re = $30e\cdot10^5$ CFD (Lebesque, 2022)",
-        rf"CFD $\alpha$ = 11.95$^\circ$ Re = $10\cdot10^5$",
-        rf"VSM $\alpha$ = 11.95$^\circ$ Re = $5.6\cdot10^5$",
-        rf"VSM $\alpha$ = 6.75$^\circ$ Re = $5.6\cdot10^5$",
-        # rf"Re = $4.2\cdot10^5$ Wind Tunnel",
-        rf"WT $\alpha$ = 11.95$^\circ$ Re = $5.6\cdot10^5$",
-        rf"WT $\alpha$ = 6.75$^\circ$ Re = $5.6\cdot10^5$",
-        # rf"Wind Tunnel $\alpha$ = 4.75$^\circ$, Re = $5.6\cdot10^5$",
+        # rf"Re = $30e\times10^5$ CFD (Lebesque, 2022)",
+        rf"CFD $\alpha$ = 11.95$^\circ$ Re = $10\times10^5$",
+        rf"VSM $\alpha$ = 11.95$^\circ$ Re = $5.6\times10^5$",
+        rf"VSM $\alpha$ = 6.75$^\circ$ Re = $5.6\times10^5$",
+        # rf"Re = $4.2\times10^5$ Wind Tunnel",
+        rf"WT $\alpha$ = 11.95$^\circ$ Re = $5.6\times10^5$",
+        rf"WT $\alpha$ = 6.75$^\circ$ Re = $5.6\times10^5$",
+        # rf"Wind Tunnel $\alpha$ = 4.75$^\circ$, Re = $5.6\times10^5$",
     ]
     colors = ["black", "blue", "blue", "red", "red"]
     linestyles = ["s-", "s-", "s--", "o-", "o--"]
@@ -665,60 +663,38 @@ def plotting_polars_beta(
             )
 
     # Formatting the axis
-    axs[0].set_xlabel(r"$\beta$ [$^o$]", fontsize=fontsize)
-    axs[0].set_ylabel(r"$C_L$ [-]", fontsize=fontsize)
-    # axs[0].set_title("Lift Coefficient")
+    axs[0].set_xlabel(x_axis_labels["beta"])
+    axs[0].set_ylabel(y_axis_labels["CL"])
     axs[0].grid()
     axs[0].set_xlim(0, 20)
     axs[0].set_ylim(0.35, 1.1)
     axs[0].legend(loc="lower left")
 
-    axs[1].set_xlabel(r"$\beta$ [$^o$]", fontsize=fontsize)
-    axs[1].set_ylabel(r"$C_D$ [-]", fontsize=fontsize)
-    # axs[1].set_title("Drag Coefficient")
+    axs[1].set_xlabel(x_axis_labels["beta"])
+    axs[1].set_ylabel(y_axis_labels["CD"])
     axs[1].grid()
     axs[1].set_xlim(0, 20)
     axs[1].set_ylim(0.0, 0.25)
 
-    axs[2].set_xlabel(r"$\beta$ [$^o$]", fontsize=fontsize)
-    axs[2].set_ylabel(r"$C_S$ [-]", fontsize=fontsize)
-    # axs[2].set_title("Side Force Coefficient")
+    axs[2].set_xlabel(x_axis_labels["beta"])
+    axs[2].set_ylabel(y_axis_labels["CS"])
     axs[2].grid()
     axs[2].set_xlim(0, 20)
     axs[2].set_ylim(-0.05, 0.6)
-    # axs[2].legend(loc="upper left")
 
     # Plotting and saving
     plt.tight_layout()
-    plot_filepath = Path(results_path) / "literature_polars_beta.pdf"
-    plt.savefig(plot_filepath)
-
-    # saving using Inkscape
-    # savepdf_tex(plt.gcf(), Path(results_path) / "pdf_tex" / "literature_polars_beta")
-
-    # save using pgf
-    plt.savefig(Path(results_path) / "pdf_tex" / "literature_polars_beta.pgf")
+    file_name = "literature_polars_beta"
+    saving_pdf_and_pdf_tex(results_dir, file_name)
 
 
-def main(results_path, root_dir):
-
-    # # defining some plot specifics
-    plt.rcParams.update({"font.size": 14})
-    # # Enable LaTeX text rendering
-    # plt.rcParams.update(
-    #     {
-    #         "pgf.texsystem": "pdflatex",
-    #         "text.usetex": True,  # Use LaTeX for rendering text
-    #         "font.family": "serif",  # Use a serif font
-    #     }
-    # )
+def main(results_dir, root_dir):
 
     fontsize = 18
-
     figsize = (20, 6)
     plotting_polars_alpha(
         root_dir,
-        results_path,
+        results_dir,
         figsize,
         fontsize,
     )
@@ -726,7 +702,7 @@ def main(results_path, root_dir):
     figsize = (20, 6)
     plotting_polars_beta(
         root_dir,
-        results_path,
+        results_dir,
         figsize,
         fontsize,
         ratio_projected_area_to_side_area=3.7,
@@ -734,6 +710,7 @@ def main(results_path, root_dir):
 
 
 if __name__ == "__main__":
-    root_dir = defining_root_dir()
-    results_path = Path(root_dir) / "results"
-    main(results_path, root_dir)
+    from settings import root_dir
+
+    results_dir = Path(root_dir) / "results"
+    main(results_dir, root_dir)

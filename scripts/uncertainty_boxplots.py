@@ -3,19 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from pathlib import Path
-import matplotlib.cm as cm
-
-
-def defining_root_dir() -> str:
-    # Find the root directory of the repository
-    root_dir = os.path.abspath(os.path.dirname(__file__))
-    while not os.path.isfile(os.path.join(root_dir, ".gitignore")):
-        root_dir = os.path.abspath(os.path.join(root_dir, ".."))
-        if root_dir == "/":
-            raise FileNotFoundError(
-                "Could not find the root directory of the repository."
-            )
-    return root_dir
+from settings import saving_pdf_and_pdf_tex, x_axis_labels, y_axis_labels
 
 
 def read_and_process_files(
@@ -135,24 +123,21 @@ def generate_boxplots_vs_aoa(
         axs[i].plot(positions, means, marker="o", linestyle="--", color="black")
 
         # axs[i].set_title(f"{subplot_titles[i]}")
-        axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
+        axs[i].set_ylabel(y_axis_labels[y_labels[i]])  # , fontsize=fontsize)
         axs[i].set_xticks(range(-15, 26, 5))
         axs[i].set_xticklabels(range(-15, 26, 5))
         axs[i].set_xlim(-15, 25)
         axs[i].grid()
 
     for ax in axs:
-        ax.set_xlabel(r"$\alpha$ [$^\circ$]", fontsize=fontsize)
+        ax.set_xlabel(x_axis_labels["alpha"])  # , fontsize=fontsize)
 
     plt.tight_layout()
     # output_dir = f"plots_unsteady_final/vw_{vw}/alpha"
     # os.makedirs(output_dir, exist_ok=True)
-    plot_filename = (
-        Path(results_path)
-        / f"boxplot_alpha_sweep_at_fixed_beta_{sideslip:.2f}_vw_{vw}.pdf"
-    )
-    plt.savefig(plot_filename)
-    plt.close()
+
+    filename = f"boxplot_alpha_sweep_at_fixed_beta_{sideslip:.2f}_vw_{vw}"
+    saving_pdf_and_pdf_tex(results_path, filename)
 
 
 def generate_boxplots_vs_sideslip(
@@ -177,7 +162,7 @@ def generate_boxplots_vs_sideslip(
     - j (int): Index of the current wind speed in the list.
     """
     columns = ["C_D", "C_S", "C_L", "C_roll", "C_pitch", "C_yaw"]
-    y_labels = ["C_D", "C_S", "C_L", "C_{roll}", "C_{pitch}", "C_{yaw}"]
+    y_labels = ["CD", "CS", "CL", "CMx", "CMy", "CMz"]
     subplot_titles = [
         "Drag coefficient",
         "Side force coefficient",
@@ -221,7 +206,7 @@ def generate_boxplots_vs_sideslip(
             means = [data.mean() for data in box_data]
             axs[i].plot(positions, means, marker="o", linestyle="--", color="black")
             # axs[i].set_title(f"{subplot_titles[i]}")
-            axs[i].set_ylabel(rf"${y_labels[i]}$ [-]", fontsize=fontsize)
+            axs[i].set_ylabel(rf"${y_labels[i]}$ [-]")  # , fontsize=fontsize)
             axs[i].set_xticks(
                 np.arange(
                     np.floor(min(unique_sideslip)), np.ceil(max(unique_sideslip)) + 1, 4
@@ -235,7 +220,7 @@ def generate_boxplots_vs_sideslip(
             axs[i].grid()
 
         for ax in axs:
-            ax.set_xlabel(r"$\beta$ [$^\circ$]", fontsize=fontsize)
+            ax.set_xlabel(x_axis_labels["beta"])  # , fontsize=fontsize)
 
         plt.tight_layout()
         # output_dir = f"plots_unsteady_final/vw_{vw}/beta"
@@ -298,7 +283,7 @@ def main(results_path, root_dir):
     alphas_to_be_plotted = [2.35, 4.75, 6.75]
 
     ### Other figure settings
-    plt.rcParams.update({"font.size": 14})
+    # plt.rcParams.update({"font.size": 14})
     figsize = (16, 12)
     fontsize = 18
 
@@ -328,7 +313,7 @@ def main(results_path, root_dir):
             # columns = ["C_L", "C_D", "C_pitch"]
             # y_labels = ["C_L", "C_D", "C_{M,x}"]
             columns = ["C_L", "C_D"]
-            y_labels = ["C_L", "C_D"]
+            y_labels = ["CL", "CD"]
             subplot_titles = [
                 "Lift coefficient",
                 "Drag Coefficient",
@@ -376,6 +361,7 @@ def main(results_path, root_dir):
 
 
 if __name__ == "__main__":
-    root_dir = defining_root_dir()
+    from settings import root_dir
+
     results_path = Path(root_dir) / "results"
     main(results_path, root_dir)

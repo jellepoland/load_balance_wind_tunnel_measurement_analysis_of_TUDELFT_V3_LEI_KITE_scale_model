@@ -5,18 +5,6 @@ import numpy as np
 from pathlib import Path
 
 
-def defining_root_dir() -> str:
-    # Find the root directory of the repository
-    root_dir = os.path.abspath(os.path.dirname(__file__))
-    while not os.path.isfile(os.path.join(root_dir, ".gitignore")):
-        root_dir = os.path.abspath(os.path.join(root_dir, ".."))
-        if root_dir == "/":
-            raise FileNotFoundError(
-                "Could not find the root directory of the repository."
-            )
-    return root_dir
-
-
 def print_sensor_drift_values(root_dir: str) -> None:
 
     folder_dir = Path(root_dir) / "processed_data" / "sensor_drift"
@@ -62,6 +50,7 @@ def print_sensor_drift_values(root_dir: str) -> None:
     Mz_min = -60
     Mz_max = 60
 
+    print("\nSensor drift values:")
     print(
         f"Fx: mean: {np.mean(CL_list):.2f}, std: {np.std(CL_list):.2f}, min: {Fx_min:.2f}, max: {Fx_max:.2f}"
     )
@@ -87,5 +76,6 @@ def main(root_dir: str) -> None:
 
 
 if __name__ == "__main__":
-    root_dir = defining_root_dir()
+    from settings import root_dir
+
     main(root_dir)

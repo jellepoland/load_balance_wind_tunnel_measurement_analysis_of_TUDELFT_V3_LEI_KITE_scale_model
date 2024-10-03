@@ -5,18 +5,6 @@ import numpy as np
 from pathlib import Path
 
 
-def defining_root_dir() -> str:
-    # Find the root directory of the repository
-    root_dir = os.path.abspath(os.path.dirname(__file__))
-    while not os.path.isfile(os.path.join(root_dir, ".gitignore")):
-        root_dir = os.path.abspath(os.path.join(root_dir, ".."))
-        if root_dir == "/":
-            raise FileNotFoundError(
-                "Could not find the root directory of the repository."
-            )
-    return root_dir
-
-
 def print_std_SNR_uncertainty(root_dir: str) -> pd.DataFrame:
     # Load SNR data
     path_to_csv = (
@@ -125,6 +113,7 @@ def print_std_SNR_uncertainty(root_dir: str) -> pd.DataFrame:
 
 def print_repeatability_uncertainty(root_dir: str) -> pd.DataFrame:
 
+    print("\n--> Repeatability uncertainty:")
     # Read the interpolation coefficients
     path_interp_coeffs = (
         Path(root_dir) / "processed_data" / "uncertainty_table" / "interp_coeff.csv"
@@ -315,5 +304,6 @@ def main(root_dir):
 
 
 if __name__ == "__main__":
-    root_dir = defining_root_dir()
+    from settings import root_dir
+
     main(root_dir)
