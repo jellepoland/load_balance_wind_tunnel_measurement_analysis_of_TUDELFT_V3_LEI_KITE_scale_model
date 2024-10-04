@@ -495,6 +495,12 @@ def create_grouped_plot(
     # Group data by Reynolds number
     reynolds_groups = {1.4: [], 2.8: [], 4.2: [], 5.6: []}
 
+    # Add shaded regions first so they appear behind the data points
+    shaded_regions = [0, 2]  # Indices
+    for ax in axs:
+        for region_idx in shaded_regions:
+            ax.axvspan(region_idx - 0.5, region_idx + 0.5, color="gray", alpha=0.15)
+
     for rey, data, label in zip(rey_list, data_to_print, labels_to_print):
         # Determine which Reynolds number group this belongs to
         for key in reynolds_groups.keys():
@@ -531,8 +537,6 @@ def create_grouped_plot(
             for x_pos, (data, label), color, marker in zip(
                 x_positions, group_data, color_list, marker_list
             ):
-                # color = "blue" if "without" in label else "red"
-                # marker = "o" if "without" in label else "x"
                 ax.errorbar(
                     x_pos,
                     data[ax_idx][0],
@@ -543,6 +547,7 @@ def create_grouped_plot(
                 )
 
         # Set x-axis
+        # ax.set_xlim(0, 6)
         ax.set_xticks(range(n_groups))
         ax.set_xticklabels(group_names)
         ax.set_xlabel(r"Re $\times 10^5$ [-]")
