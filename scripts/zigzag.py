@@ -112,49 +112,6 @@ def read_all_lvm_into_df(lvm_dir: str) -> list:
     return all_data
 
 
-# def substracting_runs_with_zero_wind(merged_df: pd.DataFrame) -> pd.DataFrame:
-#     # Renaming columns
-#     merged_df.rename(columns={"vw": "vw_actual"}, inplace=True)
-
-#     # Measurements of runs without wind
-#     output_normal = np.array(
-#         [3.616845, 4.836675, 802.681168, 4.386467, 171.123110, -0.111237]
-#     )
-#     output_zigzag = np.array(
-#         [3.545030, 4.522181, 802.495461, 4.192615, 171.237310, -0.041342]
-#     )
-#     output_normal_vw5 = np.array(
-#         [3.412569, 5.041744, 800.806084, 4.026951, 172.121360, 0.034760]
-#     )
-
-#     cols = ["F_X", "F_Y", "F_Z", "M_X", "M_Y", "M_Z"]
-
-#     if merged_df["Filename"].str.startswith("ZZ").any():
-#         merged_df.loc[merged_df["Filename"].str.startswith("ZZ"), cols] -= output_zigzag
-
-#     elif merged_df["Filename"].str.startswith("normal").any():
-#         selected_rows = merged_df[
-#             (merged_df["Filename"].str.startswith("normal"))
-#             & (merged_df["vw_actual"] != 5)
-#         ]
-#         selected_rows_indices = selected_rows.index
-
-#         # Subtract output_normal from the selected rows
-#         merged_df.loc[selected_rows_indices, cols] -= output_normal
-
-#         # Ensure the output_normal is correctly aligned with the selected rows
-#         selected_rows = merged_df[
-#             (merged_df["Filename"].str.startswith("normal"))
-#             & (merged_df["vw_actual"] == 5)
-#         ]
-#         selected_rows_indices = selected_rows.index
-
-#         # Subtract output_normal from the selected rows
-#         merged_df.loc[selected_rows_indices, cols] -= output_normal_vw5
-
-#     return merged_df
-
-
 def substracting_runs_with_zero_wind(
     merged_df: pd.DataFrame, processed_data_zigzag_dir: str = "pop"
 ) -> pd.DataFrame:
@@ -194,43 +151,6 @@ def substracting_runs_with_zero_wind(
 
     # Subtract zero_run_series from the corresponding columns in merged_df
     merged_df[cols] = merged_df[cols] - zero_run_series
-
-    # # Measurements of runs without wind
-    # output_normal = np.array(
-    #     [3.616845, 4.836675, 802.681168, 4.386467, 171.123110, -0.111237]
-    # )
-    # output_zigzag = np.array(
-    #     [3.545030, 4.522181, 802.495461, 4.192615, 171.237310, -0.041342]
-    # )
-    # output_normal_vw5 = np.array(
-    #     [3.412569, 5.041744, 800.806084, 4.026951, 172.121360, 0.034760]
-    # )
-
-    # cols = ["F_X", "F_Y", "F_Z", "M_X", "M_Y", "M_Z"]
-
-    # if merged_df["Filename"].str.startswith("ZZ").any():
-    #     merged_df.loc[merged_df["Filename"].str.startswith("ZZ"), cols] -= output_zigzag
-
-    # elif merged_df["Filename"].str.startswith("normal").any():
-    #     selected_rows = merged_df[
-    #         (merged_df["Filename"].str.startswith("normal"))
-    #         & (merged_df["vw_actual"] != 5)
-    #     ]
-    #     selected_rows_indices = selected_rows.index
-
-    #     # Subtract output_normal from the selected rows
-    #     merged_df.loc[selected_rows_indices, cols] -= output_normal
-
-    #     # Ensure the output_normal is correctly aligned with the selected rows
-    #     selected_rows = merged_df[
-    #         (merged_df["Filename"].str.startswith("normal"))
-    #         & (merged_df["vw_actual"] == 5)
-    #     ]
-    #     selected_rows_indices = selected_rows.index
-
-    #     # Subtract output_normal from the selected rows
-    #     merged_df.loc[selected_rows_indices, cols] -= output_normal_vw5
-
     return merged_df
 
 
