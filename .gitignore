@@ -1,7 +1,7 @@
 # User defined files and folders
 Mark_van_Spronsen/
 data/
-
+processed_data/normal_csv/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
