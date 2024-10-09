@@ -4,37 +4,6 @@ import pandas as pd
 from utils import project_dir
 
 
-# def read_lvm(filename: str) -> pd.DataFrame:
-#     # Read the entire data file
-#     df = pd.read_csv(filename, skiprows=21, delimiter="\t", engine="python")
-#     # df.drop(
-#     #     columns=df.columns[-1], inplace=True
-#     # )
-#     # Assuming the last column is to be dropped
-#     needed_cols = [0, 1, 2, 3, 4, 5, 6]  # indices of the columns you want to keep
-#     df = df.iloc[:, needed_cols]
-#     df.columns = ["time", "F_X", "F_Y", "F_Z", "M_X", "M_Y", "M_Z"]
-
-#     # Extract the filename and remove "_unsteady.lvm" from the end
-#     df["Filename"] = os.path.basename(filename).replace("_unsteady.lvm", "")
-
-#     # Extract angle of attack information if available
-#     if "aoa" in df.columns:
-#         df["aoa"] = df["aoa"].fillna(
-#             method="ffill"
-#         )  # Fill NaN values with the previous non-NaN value
-
-#     # Calculate sample index based on the number of rows and the assumption that each sample has 19800 entries
-#     num_samples = len(df) // 19800
-#     df["sample index"] = sum([[i] * 19800 for i in range(num_samples)], [])
-
-#     # Select only the first 17 samples
-#     selected_rows = 19800 * 17  # Select the first 17 samples
-#     df = df.iloc[:selected_rows]
-
-#     return df
-
-
 def read_lvm(filename: str) -> pd.DataFrame:
     # Read the entire data file
     df = pd.read_csv(filename, skiprows=21, delimiter="\t", engine="python")
@@ -262,12 +231,16 @@ def reading_all_folders(
         # Saving each filename as a separate CSV file
         for filename in unique_filenames:
             df_filename = df_folder[df_folder["Filename"] == filename]
-            output_path = output_folder_dir / f"{filename}.csv"
+            output_path = output_folder_dir / f"raw_{filename}.csv"
             df_filename.to_csv(output_path, index=False)
 
 
-if __name__ == "__main__":
+def main():
     labbook_path = Path(project_dir) / "data" / "labbook.csv"
     parent_folder_dir = Path(project_dir) / "data" / "normal"
     save_parent_dir = Path(project_dir) / "processed_data" / "normal_csv"
     reading_all_folders(labbook_path, parent_folder_dir, save_parent_dir)
+
+
+if __name__ == "__main__":
+    main()
