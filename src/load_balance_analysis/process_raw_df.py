@@ -243,7 +243,21 @@ def processing_raw_lvm_data_into_csv(
                 c_ref,
             )
 
-            # 5. Add dynamic viscosity and Reynolds number
+            # 5. Correct for sideslip
+
+            ## defining rotation matrix
+            R_yaw = np.array(
+                [
+                    [np.cos(beta), -np.sin(beta), 0],
+                    [np.sin(beta), np.cos(beta), 0],
+                    [0, 0, 1],
+                ]
+            )
+            ## calculating true forces and moments
+            F_D_true = np.dot(R_yaw, F_D_meas)
+            F_S_true = np.dot(R_yaw, F_S_meas)
+
+            # Add dynamic viscosity and Reynolds number
             df = add_dyn_visc_and_reynolds(
                 df, delta_celsius_kelvin, mu_0, T_0, C_suth, c_ref
             )
