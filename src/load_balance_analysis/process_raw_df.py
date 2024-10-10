@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from pathlib import Path
+import os
 from utils import project_dir
 
 
@@ -151,6 +152,46 @@ def translate_coordinate_system(
     return df_result
 
 
+def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    [F_X_new]   [cos(β)  -sin(β)  0] [F_X_old]
+    [F_Y_new] = [sin(β)   cos(β)  0] [F_Y_old]
+    [F_Z_new]   [  0       0      1] [F_Z_old]
+    """
+    ## Grabbing sideslip array and converting to radians
+    beta = np.deg2rad(df["sideslip"])
+
+    ## Defining rotation matrix for each row
+    def create_rotation_matrix(beta_angle):
+        return np.array(
+            [
+                [np.cos(beta_angle), -np.sin(beta_angle), 0],
+                [np.sin(beta_angle), np.cos(beta_angle), 0],
+                [0, 0, 1],
+            ]
+        )
+
+    # Create arrays for forces and moments
+    forces = np.array([df["F_X"], df["F_Y"], df["F_Z"]]).T
+    moments = np.array([df["M_X"], df["M_Y"], df["M_Z"]]).T
+
+    # Initialize arrays for corrected forces and moments
+    corrected_forces = np.zeros_like(forces)
+    corrected_moments = np.zeros_like(moments)
+
+    # Apply rotation to each row
+    for i in range(len(df)):
+        R = create_rotation_matrix(beta[i])
+        corrected_forces[i] = R @ forces[i]
+        corrected_moments[i] = R @ moments[i]
+
+    # Update dataframe with corrected values
+    df["F_X"], df["F_Y"], df["F_Z"] = corrected_forces.T
+    df["M_X"], df["M_Y"], df["M_Z"] = corrected_moments.T
+
+    return df
+
+
 def add_dyn_visc_and_reynolds(
     df: pd.DataFrame,
     delta_celsius_kelvin: float,
@@ -183,6 +224,7 @@ def processing_raw_lvm_data_into_csv(
     mu_0: float,
     T_0: float,
     C_suth: float,
+    delta_aoa: float,
 ):
 
     # loop through all files in the folder
@@ -244,18 +286,11 @@ def processing_raw_lvm_data_into_csv(
             )
 
             # 5. Correct for sideslip
+            # df = correcting_for_sideslip(df)
 
-            ## defining rotation matrix
-            R_yaw = np.array(
-                [
-                    [np.cos(beta), -np.sin(beta), 0],
-                    [np.sin(beta), np.cos(beta), 0],
-                    [0, 0, 1],
-                ]
-            )
-            ## calculating true forces and moments
-            F_D_true = np.dot(R_yaw, F_D_meas)
-            F_S_true = np.dot(R_yaw, F_S_meas)
+            # TODO: would be better to keep the aoa value out of the csv as its already specified in the folder_name
+            # 6. Correcting the angle of attack, rounding to 1 decimal (like the folder name)
+            df["aoa_kite"] = round(df["aoa"] - delta_aoa, 1)
 
             # Add dynamic viscosity and Reynolds number
             df = add_dyn_visc_and_reynolds(
@@ -263,41 +298,110 @@ def processing_raw_lvm_data_into_csv(
             )
 
             # Save the processed data to a csv file
-            file_name_without_raw = df["Filename"].unique()[0]
-            df.to_csv(folder_dir / f"{file_name_without_raw}.csv", index=False)
+            # file_name_without_raw = df["Filename"].unique()[0]
+            vw_unique_round = np.round(df["vw"].unique()[0], 0)
+            new_file_name = f"vw_{vw_unique_round:.0f}"
+            df.to_csv(folder_dir / f"{new_file_name}.csv", index=False)
+
+
+def main():
+    # S_ref = 0.46
+    # c_ref = 0.4
+    # interp_coeffs_path = (
+    #     Path(project_dir) / "processed_data" / "normal_csv" / "interp_coeff.csv"
+    # )
+    # # parameters necessary to translate moments (aka determine position of cg)
+    # x_hinge = (
+    #     441.5  # x distance between force balance coord. sys. and hinge point in mm
+    # )
+    # z_hinge = 1359  # z distance between force balance coord. sys. and hinge point in mm
+    # l_cg = 625.4  # distance between hinge point and kite CG
+    # alpha_cg_delta = 23.82
+    # delta_celsius_kelvin = 273.15
+    # mu_0 = 1.716e-5
+    # T_0 = 273.15
+    # C_suth = 110.4
+    # delta_aoa = 7.25
+
+    # # processing all the folders
+    # for folder in os.listdir(Path(project_dir) / "processed_data" / "normal_csv"):
+    #     if "alpha" in folder:
+    #         folder_dir = Path(project_dir) / "processed_data" / "normal_csv" / folder
+    #         processing_raw_lvm_data_into_csv(
+    #             folder_dir,
+    #             S_ref,
+    #             c_ref,
+    #             interp_coeffs_path,
+    #             x_hinge,
+    #             z_hinge,
+    #             l_cg,
+    #             alpha_cg_delta,
+    #             delta_celsius_kelvin,
+    #             mu_0,
+    #             T_0,
+    #             C_suth,
+    #             delta_aoa,
+    #         )
+
+    # Looping through all the folders again, to bundle the sideslip data
+    vw_5, vw_10, vw_15, vw_20, vw_25 = [], [], [], [], []
+    for folder in os.listdir(Path(project_dir) / "processed_data" / "normal_csv"):
+        folder_dir = Path(project_dir) / "processed_data" / "normal_csv" / folder
+        # make sure interp_coeff.csv is not processed
+        if "alpha" in folder:
+            # looping through each file in the folder
+            for file in os.listdir(folder_dir):
+                print(f"file:{file}")
+                file_path = Path(folder_dir) / file
+                df = pd.read_csv(file_path)
+                if file == "vw_5.csv":
+                    vw_5.append(df)
+                elif file == "vw_10.csv":
+                    vw_10.append(df)
+                elif file == "vw_15.csv":
+                    vw_15.append(df)
+                elif file == "vw_20.csv":
+                    vw_20.append(df)
+                elif file == "vw_25.csv":
+                    vw_25.append(df)
+
+    # Concatenating the dataframes
+    vw_5 = pd.concat(vw_5)
+    vw_10 = pd.concat(vw_10)
+    vw_15 = pd.concat(vw_15)
+    vw_20 = pd.concat(vw_20)
+    vw_25 = pd.concat(vw_25)
+
+    # Filtering the dataframes on sideslip == 0
+    vw_5 = vw_5[vw_5["sideslip"] == 0]
+    vw_10 = vw_10[vw_10["sideslip"] == 0]
+    vw_15 = vw_15[vw_15["sideslip"] == 0]
+    vw_20 = vw_20[vw_20["sideslip"] == 0]
+    vw_25 = vw_25[vw_25["sideslip"] == 0]
+
+    # Saving the concatenated dataframes
+    folder_name = "beta_0"
+    vw_5.to_csv(
+        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / "vw_5.csv",
+        index=False,
+    )
+    vw_10.to_csv(
+        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / "vw_10.csv",
+        index=False,
+    )
+    vw_15.to_csv(
+        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / "vw_15.csv",
+        index=False,
+    )
+    vw_20.to_csv(
+        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / "vw_20.csv",
+        index=False,
+    )
+    vw_25.to_csv(
+        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / "vw_25.csv",
+        index=False,
+    )
 
 
 if __name__ == "__main__":
-
-    S_ref = 0.46
-    c_ref = 0.4
-    interp_coeffs_path = (
-        Path(project_dir) / "processed_data" / "normal_csv" / "interp_coeff.csv"
-    )
-    # parameters necessary to translate moments (aka determine position of cg)
-    x_hinge = (
-        441.5  # x distance between force balance coord. sys. and hinge point in mm
-    )
-    z_hinge = 1359  # z distance between force balance coord. sys. and hinge point in mm
-    l_cg = 625.4  # distance between hinge point and kite CG
-    alpha_cg_delta = 23.82
-    delta_celsius_kelvin = 273.15
-    mu_0 = 1.716e-5
-    T_0 = 273.15
-    C_suth = 110.4
-
-    folder_dir = Path(project_dir) / "processed_data" / "normal_csv" / "aoa_00"
-    processing_raw_lvm_data_into_csv(
-        folder_dir,
-        S_ref,
-        c_ref,
-        interp_coeffs_path,
-        x_hinge,
-        z_hinge,
-        l_cg,
-        alpha_cg_delta,
-        delta_celsius_kelvin,
-        mu_0,
-        T_0,
-        C_suth,
-    )
+    main()

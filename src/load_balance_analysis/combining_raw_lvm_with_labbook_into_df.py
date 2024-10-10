@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import pandas as pd
+import numpy as np
 from utils import project_dir
 
 
@@ -209,24 +210,32 @@ def read_labbook_into_df(labbook_path: Path) -> pd.DataFrame:
 
 
 def reading_all_folders(
-    labbook_path: Path, parent_folder_dir: Path, save_parent_dir: Path
+    labbook_path: Path, parent_folder_dir: Path, save_parent_dir: Path, delta_aoa: float
 ):
 
     # loading labbook
     labbook_df = read_labbook_into_df(labbook_path)
 
-    for folder in os.listdir(parent_folder_dir):
-        print(f"\nfolder: {folder}")
-        folder_dir = Path(parent_folder_dir) / folder
+    for folder_name in os.listdir(parent_folder_dir):
+        print(f"\n READING folder_name: {folder_name}")
+        folder_dir = Path(parent_folder_dir) / folder_name
         df_folder = read_all_lvm_into_df(labbook_df, folder_dir)
 
-        # Making a directory for this folder
-        output_folder_dir = Path(save_parent_dir) / folder
+        ## Making a directory for this folder
+        # Stripping the angle
+        aoa_value = float(df_folder["aoa"].unique()[0].replace(",", "."))
+        # df_folder["aoa"] = df_folder["aoa"].str.replace("deg", "")
+        # aoa_value = folder_name.split("_")[-1]
+        ## Changing alpha by 7.25 deg
+        aoa_value_corrected = float(aoa_value) - delta_aoa
+        folder_name_corrected = f"alpha_{aoa_value_corrected:.1f}"
+        print(f"\nSAVING folder_name_corrected: {folder_name_corrected}")
+        output_folder_dir = Path(save_parent_dir) / folder_name_corrected
         os.makedirs(output_folder_dir, exist_ok=True)
 
         # Finding all the unique runs within the folder
         unique_filenames = df_folder["Filename"].unique()
-        print(f"unique_filenames: {unique_filenames}")
+        # print(f"unique_filenames: {unique_filenames}")
 
         # Saving each filename as a separate CSV file
         for filename in unique_filenames:
@@ -236,10 +245,11 @@ def reading_all_folders(
 
 
 def main():
+    delta_aoa = 7.25
     labbook_path = Path(project_dir) / "data" / "labbook.csv"
     parent_folder_dir = Path(project_dir) / "data" / "normal"
     save_parent_dir = Path(project_dir) / "processed_data" / "normal_csv"
-    reading_all_folders(labbook_path, parent_folder_dir, save_parent_dir)
+    reading_all_folders(labbook_path, parent_folder_dir, save_parent_dir, delta_aoa)
 
 
 if __name__ == "__main__":
