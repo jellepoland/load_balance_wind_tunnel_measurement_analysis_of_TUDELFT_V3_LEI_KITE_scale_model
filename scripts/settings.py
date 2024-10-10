@@ -2,6 +2,7 @@ import matplotlib as mpl
 import os
 import matplotlib.pyplot as plt
 from pathlib import Path
+import pandas as pd
 import matplotlib.font_manager as fm
 
 
@@ -15,6 +16,66 @@ def defining_root_dir() -> str:
                 "Could not find the root directory of the repository."
             )
     return root_dir
+
+
+def reduce_df_by_parameter_mean_and_std(
+    df: pd.DataFrame, parameter: str
+) -> pd.DataFrame:
+    """
+    Reduces a dataframe to unique values of a parameter, averaging specified columns
+    and adding standard deviations for coefficients.
+
+    Parameters:
+    df (pandas.DataFrame): The input dataframe
+    parameter (str): Either 'aoa_kite' or 'sideslip'
+
+    Returns:
+    pandas.DataFrame: Reduced dataframe with averages and coefficient standard deviations
+    """
+    # All columns to average
+    columns_to_average = [
+        "C_L",
+        "C_S",
+        "C_D",
+        "C_roll",
+        "C_pitch",
+        "C_yaw",
+        "F_X_raw",
+        "F_Y_raw",
+        "F_Z_raw",
+        "M_X_raw",
+        "M_Y_raw",
+        "M_Z_raw",
+        "Rey",
+        "vw",
+    ]
+
+    if parameter == "aoa_kite":
+        columns_to_average += ["sideslip"]
+    elif parameter == "sideslip":
+        columns_to_average += ["aoa_kite"]
+    else:
+        raise ValueError("Invalid parameter")
+
+    # Calculate means
+    mean_df = df.groupby(parameter)[columns_to_average].mean()
+
+    # Coefficient columns that also need standard deviation
+    coef_columns = ["C_L", "C_S", "C_D", "C_roll", "C_pitch", "C_yaw"]
+
+    # Calculate standard deviations for coefficients
+    std_df = df.groupby(parameter)[coef_columns].std()
+
+    # Rename standard deviation columns
+    std_df.columns = [f"{col}_std" for col in std_df.columns]
+
+    # Combine mean and standard deviation dataframes
+    result_df = pd.concat([mean_df, std_df], axis=1).reset_index()
+
+    # Round the velocities to 0 decimal places
+    result_df["vw"] = result_df["vw"].round(0)
+
+    return result_df
 
 
 root_dir = defining_root_dir()

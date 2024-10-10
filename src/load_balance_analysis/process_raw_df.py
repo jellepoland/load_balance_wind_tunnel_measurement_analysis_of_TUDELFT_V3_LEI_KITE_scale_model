@@ -5,64 +5,22 @@ import os
 from utils import project_dir
 
 
-# def substracting_runs_with_zero_wind(
-#     merged_df: pd.DataFrame, processed_data_zigzag_dir: Path
-# ) -> pd.DataFrame:
-#     # Renaming columns
-#     merged_df.rename(columns={"vw": "vw_actual"}, inplace=True)
-
-#     # Defining the filename
-#     filename = merged_df["Filename"].unique()[0]
-#     print(f"filename working with: {filename}")
-
-#     if merged_df["Filename"].str.startswith("normal").any():
-#         filename_vw_0 = "normal_aoa_16_vw_00"
-#     elif merged_df["Filename"].str.startswith("ZZ").any():
-#         filename_vw_0 = "ZZnormal_aoa_16_vw_00"
-#     print(f"filename_vw_0: {filename_vw_0}")
-
-#     # Extracting the zero-run data, from txt
-#     zero_run_path = Path(processed_data_zigzag_dir) / f"{filename_vw_0}.txt"
-#     # with open(zero_run_path, "r") as file:
-#     #     zero_run_data = file.read()
-#     #     print(zero_run_data[2:-1])
-#     data = []
-#     with open(zero_run_path, "r") as file:
-#         for line in file:
-#             # Split each line into a list of values (assumes tab-separated values)
-#             values = line.strip().split("\t")
-#             # Convert strings to floats (or other data types if needed)
-#             values = [float(value) for value in values]
-#             # Append the list of values to the data list
-#             data.append(values)
-
-#     zero_run_data = data[0][1:-1]
-#     cols = ["F_X", "F_Y", "F_Z", "M_X", "M_Y", "M_Z"]
-#     print(f" col of merged_df: {merged_df.head()}")
-#     # Convert zero_run_data to a pandas Series to match the column names
-#     zero_run_series = pd.Series(zero_run_data, index=cols)
-
-#     # Subtract zero_run_series from the corresponding columns in merged_df
-#     merged_df[cols] = merged_df[cols] - zero_run_series
-#     return merged_df
-
-
 def nondimensionalize(df: pd.DataFrame, S_ref: float, c_ref: float) -> pd.DataFrame:
+    """
+    Nondimensionalize the force and moment columns in the dataframe
+
+    Input:
+        df (pandas.DataFrame): The input dataframe
+        S_ref (float): Reference area
+        c_ref (float): Reference chord length
+
+    Output:
+        pandas.DataFrame: The dataframe with the force and moment columns nondimensionalized
+    """
     rho = df["Density"]
     V = df["vw"]
 
-    # Check the types of rho, V, and S_ref
-    print(f"rho: type: {type(rho.iloc[0])}")
-    print(f"V type: {type(V.iloc[0])}")
-    print(f"S_ref: {S_ref}, type: {type(S_ref)}")
-
     # Nondimensionalize the force columns
-    # Check for non-numeric values in the "F_X" column
-    df["F_X"] = pd.to_numeric(df["F_X"], errors="coerce")
-    df = df.dropna(subset=["F_X"])
-    # Check the data types of the 'F_X' column
-    print("counting", df["F_X"].apply(type).value_counts())
-
     df["F_X"] /= 0.5 * rho * V**2 * S_ref
     df["F_Y"] /= 0.5 * rho * V**2 * S_ref
     df["F_Z"] /= 0.5 * rho * V**2 * S_ref
@@ -76,21 +34,21 @@ def nondimensionalize(df: pd.DataFrame, S_ref: float, c_ref: float) -> pd.DataFr
 
 
 def substract_support_structure_aero_coefficients(
-    merged_df: pd.DataFrame, interp_coeffs_path: Path
+    df: pd.DataFrame, interp_coeffs_path: Path
 ) -> pd.DataFrame:
 
     # reading the interpolated coefficients
     interp_coeffs = pd.read_csv(interp_coeffs_path)
     # print(f"columns: {merged_df.columns}")
     # Select the support structure aerodynamic coefficients where the wind speed is the corresponding wind speed to this .lvm file
-    cur_vw = merged_df["vw"].unique()[0]
+    cur_vw = df["vw"].unique()[0]
     # print(f"cur_vw: {np.around(cur_vw)}")
     # print(f'interp_coeffs["vw"]: {interp_coeffs["vw"].unique()}')
     supp_coeffs = interp_coeffs[interp_coeffs["vw"] == int(np.around(cur_vw))]
     # print(f"supp_coeffs: {supp_coeffs}")
-    aoa = merged_df["aoa"].unique()[0] - 7.25
+    aoa_kite = df["aoa_kite"].unique()[0]
 
-    for k in merged_df["sideslip"].unique():
+    for k in df["sideslip"].unique():
         # print(f"k: {k}")
         # select support structure aero coefficients for this sideslip
         c_s = supp_coeffs[supp_coeffs["sideslip"] == k]
@@ -102,54 +60,50 @@ def substract_support_structure_aero_coefficients(
         M_z = c_s.loc[c_s["channel"] == "Cmz", ["a", "b", "c"]]
 
         # compute support structure aero coefficients for this wind speed, sideslip and angle of attack combination
-        C_Fx_s = np.array(F_x["a"] * (aoa**2) + F_x["b"] * aoa + F_x["c"])[0]
-        C_Fy_s = np.array(F_y["a"] * (aoa**2) + F_y["b"] * aoa + F_y["c"])[0]
-        C_Fz_s = np.array(F_z["a"] * (aoa**2) + F_z["b"] * aoa + F_z["c"])[0]
-        C_Mx_s = np.array(M_x["a"] * (aoa**2) + M_x["b"] * aoa + M_x["c"])[0]
-        C_My_s = np.array(M_y["a"] * (aoa**2) + M_y["b"] * aoa + M_y["c"])[0]
-        C_Mz_s = np.array(M_z["a"] * (aoa**2) + M_z["b"] * aoa + M_z["c"])[0]
+        C_Fx_s = np.array(F_x["a"] * (aoa_kite**2) + F_x["b"] * aoa_kite + F_x["c"])[0]
+        C_Fy_s = np.array(F_y["a"] * (aoa_kite**2) + F_y["b"] * aoa_kite + F_y["c"])[0]
+        C_Fz_s = np.array(F_z["a"] * (aoa_kite**2) + F_z["b"] * aoa_kite + F_z["c"])[0]
+        C_Mx_s = np.array(M_x["a"] * (aoa_kite**2) + M_x["b"] * aoa_kite + M_x["c"])[0]
+        C_My_s = np.array(M_y["a"] * (aoa_kite**2) + M_y["b"] * aoa_kite + M_y["c"])[0]
+        C_Mz_s = np.array(M_z["a"] * (aoa_kite**2) + M_z["b"] * aoa_kite + M_z["c"])[0]
 
         # subtract support structure aero coefficients for this wind speed, sideslip and aoa combination from merged_df
-        merged_df.loc[merged_df["sideslip"] == k, "F_X"] -= C_Fx_s
-        merged_df.loc[merged_df["sideslip"] == k, "F_Y"] -= C_Fy_s
-        merged_df.loc[merged_df["sideslip"] == k, "F_Z"] -= C_Fz_s
-        merged_df.loc[merged_df["sideslip"] == k, "M_X"] -= C_Mx_s
-        merged_df.loc[merged_df["sideslip"] == k, "M_Y"] -= C_My_s
-        merged_df.loc[merged_df["sideslip"] == k, "M_Z"] -= C_Mz_s
+        df.loc[df["sideslip"] == k, "F_X"] -= C_Fx_s
+        df.loc[df["sideslip"] == k, "F_Y"] -= C_Fy_s
+        df.loc[df["sideslip"] == k, "F_Z"] -= C_Fz_s
+        df.loc[df["sideslip"] == k, "M_X"] -= C_Mx_s
+        df.loc[df["sideslip"] == k, "M_Y"] -= C_My_s
+        df.loc[df["sideslip"] == k, "M_Z"] -= C_Mz_s
 
-    return merged_df
+    return df
 
 
 # function that translates coordinate system
 def translate_coordinate_system(
-    dataframe: pd.DataFrame,
+    df: pd.DataFrame,
     x_hinge: float,
     z_hinge: float,
     l_cg: float,
-    alpha_cg_delta: float,
+    alpha_cg_delta_with_rod: float,
     c_ref: float,
 ) -> pd.DataFrame:
 
-    alpha_cg = np.deg2rad(dataframe["aoa"] - alpha_cg_delta)
+    alpha_cg = np.deg2rad(df["aoa"] - alpha_cg_delta_with_rod)
     x_cg = l_cg * np.cos(alpha_cg)
     z_cg = l_cg * np.sin(alpha_cg)
     x_hcg = (x_hinge + x_cg) / (1000 * c_ref)
     z_hcg = (z_hinge + z_cg) / (1000 * c_ref)
 
     # rotation of coordinate system: force coefficients change
-    dataframe["C_L"] = dataframe["F_Z"] * -1
-    dataframe["C_S"] = dataframe["F_Y"] * -1
-    dataframe["C_D"] = dataframe["F_X"]
+    df["C_L"] = df["F_Z"] * -1
+    df["C_S"] = df["F_Y"] * -1
+    df["C_D"] = df["F_X"]
 
-    dataframe["C_roll"] = dataframe["M_X"] - dataframe["F_Y"] * z_hcg
-    dataframe["C_pitch"] = (
-        -dataframe["M_Y"] + dataframe["F_Z"] * x_hcg - dataframe["F_X"] * z_hcg
-    )
-    dataframe["C_yaw"] = -dataframe["M_Z"] - dataframe["F_Y"] * x_hcg
+    df["C_roll"] = df["M_X"] - df["F_Y"] * z_hcg
+    df["C_pitch"] = -df["M_Y"] + df["F_Z"] * x_hcg - df["F_X"] * z_hcg
+    df["C_yaw"] = -df["M_Z"] - df["F_Y"] * x_hcg
 
-    # save resulting dataframe
-    df_result = dataframe
-    return df_result
+    return df
 
 
 def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
@@ -158,22 +112,24 @@ def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
     [F_Y_new] = [sin(β)   cos(β)  0] [F_Y_old]
     [F_Z_new]   [  0       0      1] [F_Z_old]
     """
+
     ## Grabbing sideslip array and converting to radians
     beta = np.deg2rad(df["sideslip"])
+    # beta = np.deg2rad(10) * np.ones_like(df["sideslip"])
 
     ## Defining rotation matrix for each row
     def create_rotation_matrix(beta_angle):
         return np.array(
             [
-                [np.cos(beta_angle), -np.sin(beta_angle), 0],
-                [np.sin(beta_angle), np.cos(beta_angle), 0],
+                [np.cos(beta_angle), np.sin(beta_angle), 0],
+                [-np.sin(beta_angle), np.cos(beta_angle), 0],
                 [0, 0, 1],
             ]
         )
 
     # Create arrays for forces and moments
-    forces = np.array([df["F_X"], df["F_Y"], df["F_Z"]]).T
-    moments = np.array([df["M_X"], df["M_Y"], df["M_Z"]]).T
+    forces = np.array([df["C_D"], df["C_S"], df["C_L"]]).T
+    moments = np.array([df["C_pitch"], df["C_yaw"], df["C_roll"]]).T
 
     # Initialize arrays for corrected forces and moments
     corrected_forces = np.zeros_like(forces)
@@ -186,8 +142,8 @@ def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
         corrected_moments[i] = R @ moments[i]
 
     # Update dataframe with corrected values
-    df["F_X"], df["F_Y"], df["F_Z"] = corrected_forces.T
-    df["M_X"], df["M_Y"], df["M_Z"] = corrected_moments.T
+    df["C_D"], df["C_S"], df["C_L"] = corrected_forces.T
+    df["C_pitch"], df["C_yaw"], df["C_roll"] = corrected_moments.T
 
     return df
 
@@ -206,9 +162,74 @@ def add_dyn_visc_and_reynolds(
     dynamic_viscosity = (
         mu_0 * (T / T_0) ** 0.5 * (T_0 + C_suth) / (T + C_suth)
     )  # sutherland's law
-    df["dyn_vis"] = dynamic_viscosity
-    df["Rey"] = df["Density"] * df["vw"] * c_ref / df["dyn_vis"]
+    df["Rey"] = df["Density"] * df["vw"] * c_ref / dynamic_viscosity
+
     return df
+
+
+def read_csv_with_locale(file_path: Path) -> pd.DataFrame:
+    """
+    Reads a CSV file handling different locale decimal separators.
+
+    Parameters:
+    file_path (str): Path to the CSV file
+    dtypes (dict): Dictionary of column data types
+
+    Returns:
+    pandas.DataFrame: The loaded and corrected dataframe
+    """
+    # Specifying the datatypes of each column
+    dtypes = {
+        "Filename": "str",
+        "vw": "float64",
+        "aoa": "float64",
+        "sideslip": "float64",
+        "Date": "str",
+        "F_X": "float64",
+        "F_Y": "float64",
+        "F_Z": "float64",
+        "M_X": "float64",
+        "M_Y": "float64",
+        "M_Z": "float64",
+        "Dpa": "float64",
+        "Pressure": "float64",
+        "Temp": "float64",
+        "Density": "float64",
+    }
+
+    # First, try to read the CSV with a decimal handler
+    try:
+        df = pd.read_csv(
+            file_path,
+            dtype={
+                col: "str" for col in dtypes.keys()
+            },  # Read everything as string first
+            thousands=None,  # Disable thousands separator handling
+        )
+
+        # Function to safely convert string to float
+        def safe_float_convert(x):
+            if pd.isna(x):
+                return np.nan
+            try:
+                return float(x)
+            except ValueError:
+                # Try replacing comma with period
+                try:
+                    return float(x.replace(",", "."))
+                except:
+                    return np.nan
+
+        # Convert numeric columns
+        for col, dtype in dtypes.items():
+            if dtype == "float64" and col in df.columns:
+                df[col] = df[col].apply(safe_float_convert)
+
+        return df
+
+    except Exception as e:
+        print(f"Error reading file {file_path}: {str(e)}")
+        raise
 
 
 def processing_raw_lvm_data_into_csv(
@@ -219,7 +240,7 @@ def processing_raw_lvm_data_into_csv(
     x_hinge: float,
     z_hinge: float,
     l_cg: float,
-    alpha_cg_delta: float,
+    alpha_cg_delta_with_rod: float,
     delta_celsius_kelvin: float,
     mu_0: float,
     T_0: float,
@@ -227,180 +248,140 @@ def processing_raw_lvm_data_into_csv(
     delta_aoa: float,
 ):
 
-    # loop through all files in the folder
-    all_df_processed = []
-
     for i, file in enumerate(folder_dir.iterdir()):
-        df = pd.read_csv(file)
         file_name = file.name
-        print(f"\n File: {file_name}")
+        aoa_kite = file_name.split("_")
+        # print(f"aoa_kite: {aoa_kite}")
+        if "raw" in file.name:
+            df = read_csv_with_locale(file)
+            print(f"\n File: {file_name}")
+            # print(f"BEGIN columns: {df.columns}")
 
-        # Storing the raw values
-        df["F_X_raw"] = df["F_X"]
-        df["F_Y_raw"] = df["F_Y"]
-        df["F_Z_raw"] = df["F_Z"]
-        df["M_X_raw"] = df["M_X"]
-        df["M_Y_raw"] = df["M_Y"]
-        df["M_Z_raw"] = df["M_Z"]
+            # Storing the raw values
+            df["F_X_raw"] = df["F_X"]
+            df["F_Y_raw"] = df["F_Y"]
+            df["F_Z_raw"] = df["F_Z"]
+            df["M_X_raw"] = df["M_X"]
+            df["M_Y_raw"] = df["M_Y"]
+            df["M_Z_raw"] = df["M_Z"]
 
-        # Processing string values into floats
-        columns_to_process = ["aoa", "vw", "Dpa", "Pressure", "Temp", "Density"]
-        for column in columns_to_process:
-            df[column] = df[column].astype(str).str.replace(",", ".").astype(float)
+            # Compute Average Zero-Run values
+            if i == 0:  # and df["vw"].unique()[0] < 1.5:
+                # print(f'i: {i}, vw: {df["vw"].unique()}')
+                # Computing the average measured zero-run values
+                zero_F_X = df["F_X"].mean()
+                zero_F_Y = df["F_Y"].mean()
+                zero_F_Z = df["F_Z"].mean()
+                zero_M_X = df["M_X"].mean()
+                zero_M_Y = df["M_Y"].mean()
+                zero_M_Z = df["M_Z"].mean()
 
-        # Compute Average Zero-Run values
-        if i == 0 and df["vw"].unique()[0] < 1.1:
-            print(f'i: {i}, vw: {df["vw"].unique()}')
-            # Computing the average measured zero-run values
-            zero_F_X = df["F_X"].mean()
-            zero_F_Y = df["F_Y"].mean()
-            zero_F_Z = df["F_Z"].mean()
-            zero_M_X = df["M_X"].mean()
-            zero_M_Y = df["M_Y"].mean()
-            zero_M_Z = df["M_Z"].mean()
+            else:
 
-        else:
+                # TODO: This can be simplfied and taken from the filename
+                # 1. Correcting the angle of attack, rounding to 1 decimal (like the folder name)
+                df["aoa_kite"] = round(df["aoa"] - delta_aoa, 1)
 
-            # 1. Substracting the zero-run values
-            df["F_X"] -= zero_F_X
-            df["F_Y"] -= zero_F_Y
-            df["F_Z"] -= zero_F_Z
-            df["M_X"] -= zero_M_X
-            df["M_Y"] -= zero_M_Y
-            df["M_Z"] -= zero_M_Z
+                # 2. Substracting the zero-run values
+                df["F_X"] -= zero_F_X
+                df["F_Y"] -= zero_F_Y
+                df["F_Z"] -= zero_F_Z
+                df["M_X"] -= zero_M_X
+                df["M_Y"] -= zero_M_Y
+                df["M_Z"] -= zero_M_Z
 
-            # 2. Nondimensionalizing
-            df = nondimensionalize(df, S_ref, c_ref)
+                # 3. Nondimensionalizing
+                df = nondimensionalize(df, S_ref, c_ref)
 
-            # 3. Substracting support structure aerodynamic coefficients
-            df = substract_support_structure_aero_coefficients(df, interp_coeffs_path)
+                # 4. Substracting support structure aerodynamic coefficients
+                df = substract_support_structure_aero_coefficients(
+                    df, interp_coeffs_path
+                )
 
-            # 4. Translate coordinate system
-            df = translate_coordinate_system(
-                df,
-                x_hinge,
-                z_hinge,
-                l_cg,
-                alpha_cg_delta,
-                c_ref,
-            )
+                # 4. Translate coordinate system
+                df = translate_coordinate_system(
+                    df,
+                    x_hinge,
+                    z_hinge,
+                    l_cg,
+                    alpha_cg_delta_with_rod,
+                    c_ref,
+                )
 
-            # 5. Correct for sideslip
-            # df = correcting_for_sideslip(df)
+                # 5. Correct for sideslip
+                df = correcting_for_sideslip(df)
 
-            # TODO: would be better to keep the aoa value out of the csv as its already specified in the folder_name
-            # 6. Correcting the angle of attack, rounding to 1 decimal (like the folder name)
-            df["aoa_kite"] = round(df["aoa"] - delta_aoa, 1)
+                # TODO: would be better to keep the aoa value out of the csv as its already specified in the folder_name
 
-            # Add dynamic viscosity and Reynolds number
-            df = add_dyn_visc_and_reynolds(
-                df, delta_celsius_kelvin, mu_0, T_0, C_suth, c_ref
-            )
+                # Add dynamic viscosity and Reynolds number
+                df = add_dyn_visc_and_reynolds(
+                    df, delta_celsius_kelvin, mu_0, T_0, C_suth, c_ref
+                )
+                # Dropping columns that are no longer needed
+                columns_to_drop = [
+                    "aoa",
+                    "F_X",
+                    "F_Y",
+                    "F_Z",
+                    "M_X",
+                    "M_Y",
+                    "M_Z",
+                    "Filename",
+                    "Date",
+                    "Dpa",
+                    "Pressure",
+                    "Temp",
+                    "Density",
+                ]
+                df.drop(columns=columns_to_drop, inplace=True)
 
-            # Save the processed data to a csv file
-            # file_name_without_raw = df["Filename"].unique()[0]
-            vw_unique_round = np.round(df["vw"].unique()[0], 0)
-            new_file_name = f"vw_{vw_unique_round:.0f}"
-            df.to_csv(folder_dir / f"{new_file_name}.csv", index=False)
+                # Save the processed data to a csv file
+                # file_name_without_raw = df["Filename"].unique()[0]
+                vw_unique_round = round(df["vw"].unique()[0], 0)
+                new_file_name = f"vw_{vw_unique_round:.0f}"
+                df.to_csv(folder_dir / f"{new_file_name}.csv", index=False)
+                # print(f"END columns: {df.columns}")
 
 
 def main():
-    # S_ref = 0.46
-    # c_ref = 0.4
-    # interp_coeffs_path = (
-    #     Path(project_dir) / "processed_data" / "normal_csv" / "interp_coeff.csv"
-    # )
-    # # parameters necessary to translate moments (aka determine position of cg)
-    # x_hinge = (
-    #     441.5  # x distance between force balance coord. sys. and hinge point in mm
-    # )
-    # z_hinge = 1359  # z distance between force balance coord. sys. and hinge point in mm
-    # l_cg = 625.4  # distance between hinge point and kite CG
-    # alpha_cg_delta = 23.82
-    # delta_celsius_kelvin = 273.15
-    # mu_0 = 1.716e-5
-    # T_0 = 273.15
-    # C_suth = 110.4
-    # delta_aoa = 7.25
+    S_ref = 0.46
+    c_ref = 0.4
+    interp_coeffs_path = (
+        Path(project_dir) / "processed_data" / "normal_csv" / "interp_coeff.csv"
+    )
+    # parameters necessary to translate moments (aka determine position of cg)
+    x_hinge = (
+        441.5  # x distance between force balance coord. sys. and hinge point in mm
+    )
+    z_hinge = 1359  # z distance between force balance coord. sys. and hinge point in mm
+    l_cg = 625.4  # distance between hinge point and kite CG
+    alpha_cg_delta_with_rod = 23.82
+    delta_celsius_kelvin = 273.15
+    mu_0 = 1.716e-5
+    T_0 = 273.15
+    C_suth = 110.4
+    delta_aoa = 7.25
 
-    # # processing all the folders
-    # for folder in os.listdir(Path(project_dir) / "processed_data" / "normal_csv"):
-    #     if "alpha" in folder:
-    #         folder_dir = Path(project_dir) / "processed_data" / "normal_csv" / folder
-    #         processing_raw_lvm_data_into_csv(
-    #             folder_dir,
-    #             S_ref,
-    #             c_ref,
-    #             interp_coeffs_path,
-    #             x_hinge,
-    #             z_hinge,
-    #             l_cg,
-    #             alpha_cg_delta,
-    #             delta_celsius_kelvin,
-    #             mu_0,
-    #             T_0,
-    #             C_suth,
-    #             delta_aoa,
-    #         )
-
-    # Looping through all the folders again, to bundle the sideslip data
-    vw_5, vw_10, vw_15, vw_20, vw_25 = [], [], [], [], []
+    # processing all the folders
+    print(f"\n Processing all the folders")
     for folder in os.listdir(Path(project_dir) / "processed_data" / "normal_csv"):
-        folder_dir = Path(project_dir) / "processed_data" / "normal_csv" / folder
-        # make sure interp_coeff.csv is not processed
         if "alpha" in folder:
-            # looping through each file in the folder
-            for file in os.listdir(folder_dir):
-                print(f"file:{file}")
-                file_path = Path(folder_dir) / file
-                df = pd.read_csv(file_path)
-                if file == "vw_5.csv":
-                    vw_5.append(df)
-                elif file == "vw_10.csv":
-                    vw_10.append(df)
-                elif file == "vw_15.csv":
-                    vw_15.append(df)
-                elif file == "vw_20.csv":
-                    vw_20.append(df)
-                elif file == "vw_25.csv":
-                    vw_25.append(df)
-
-    # Concatenating the dataframes
-    vw_5 = pd.concat(vw_5)
-    vw_10 = pd.concat(vw_10)
-    vw_15 = pd.concat(vw_15)
-    vw_20 = pd.concat(vw_20)
-    vw_25 = pd.concat(vw_25)
-
-    # Filtering the dataframes on sideslip == 0
-    vw_5 = vw_5[vw_5["sideslip"] == 0]
-    vw_10 = vw_10[vw_10["sideslip"] == 0]
-    vw_15 = vw_15[vw_15["sideslip"] == 0]
-    vw_20 = vw_20[vw_20["sideslip"] == 0]
-    vw_25 = vw_25[vw_25["sideslip"] == 0]
-
-    # Saving the concatenated dataframes
-    folder_name = "beta_0"
-    vw_5.to_csv(
-        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / "vw_5.csv",
-        index=False,
-    )
-    vw_10.to_csv(
-        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / "vw_10.csv",
-        index=False,
-    )
-    vw_15.to_csv(
-        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / "vw_15.csv",
-        index=False,
-    )
-    vw_20.to_csv(
-        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / "vw_20.csv",
-        index=False,
-    )
-    vw_25.to_csv(
-        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / "vw_25.csv",
-        index=False,
-    )
+            folder_dir = Path(project_dir) / "processed_data" / "normal_csv" / folder
+            processing_raw_lvm_data_into_csv(
+                folder_dir,
+                S_ref,
+                c_ref,
+                interp_coeffs_path,
+                x_hinge,
+                z_hinge,
+                l_cg,
+                alpha_cg_delta_with_rod,
+                delta_celsius_kelvin,
+                mu_0,
+                T_0,
+                C_suth,
+                delta_aoa,
+            )
 
 
 if __name__ == "__main__":

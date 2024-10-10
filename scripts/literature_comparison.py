@@ -3,7 +3,13 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from pathlib import Path
-from settings import root_dir, saving_pdf_and_pdf_tex, x_axis_labels, y_axis_labels
+from settings import (
+    root_dir,
+    saving_pdf_and_pdf_tex,
+    x_axis_labels,
+    y_axis_labels,
+    reduce_df_by_parameter_mean_and_std,
+)
 
 
 # def loading_data_vsm_old_alpha() -> tuple:
@@ -278,36 +284,68 @@ from settings import root_dir, saving_pdf_and_pdf_tex, x_axis_labels, y_axis_lab
 #     ]
 
 
+# def reduce_df_by_parameter_mean_and_std(
+#     df: pd.DataFrame, parameter: str
+# ) -> pd.DataFrame:
+#     """
+#     Reduces a dataframe to unique values of a parameter, averaging specified columns
+#     and adding standard deviations for coefficients.
+
+#     Parameters:
+#     df (pandas.DataFrame): The input dataframe
+#     parameter (str): Either 'aoa_kite' or 'sideslip'
+
+#     Returns:
+#     pandas.DataFrame: Reduced dataframe with averages and coefficient standard deviations
+#     """
+#     # All columns to average
+#     columns_to_average = [
+#         "C_L",
+#         "C_S",
+#         "C_D",
+#         "C_roll",
+#         "C_pitch",
+#         "C_yaw",
+#         "F_X_raw",
+#         "F_Y_raw",
+#         "F_Z_raw",
+#         "M_X_raw",
+#         "M_Y_raw",
+#         "M_Z_raw",
+#         "Rey",
+#     ]
+
+#     if parameter == "aoa_kite":
+#         columns_to_average += ["sideslip"]
+#     elif parameter == "sideslip":
+#         columns_to_average += ["aoa_kite"]
+#     else:
+#         raise ValueError("Invalid parameter")
+
+#     # Calculate means
+#     mean_df = df.groupby(parameter)[columns_to_average].mean()
+
+#     # Coefficient columns that also need standard deviation
+#     coef_columns = ["C_L", "C_S", "C_D", "C_roll", "C_pitch", "C_yaw"]
+
+#     # Calculate standard deviations for coefficients
+#     std_df = df.groupby(parameter)[coef_columns].std()
+
+#     # Rename standard deviation columns
+#     std_df.columns = [f"{col}_std" for col in std_df.columns]
+
+#     # Combine mean and standard deviation dataframes
+#     result_df = pd.concat([mean_df, std_df], axis=1).reset_index()
+
+#     return result_df
+
+
 def plotting_polars_alpha(
     root_dir: str,
     results_dir: str,
     figsize: tuple,
     fontsize: int,
 ):
-
-    # # OLD FROM MARK
-    # # Wind tunnel
-    # path_to_csv = Path(root_dir) / "processed_data" / "stats_all.csv"
-    # df_windtunnel = pd.read_csv(path_to_csv)
-    # filtered_df = df_windtunnel.loc[df_windtunnel["sideslip"] == 0]
-    # filtered_df_grouped = filtered_df.groupby("vw")
-    # # data_windtunnel_alpha_re_42e4 = filtered_df_grouped.get_group(15)
-    # data_windtunnel_alpha_re_56e4 = filtered_df_grouped.get_group(20)
-
-    # NEW
-    # for folder in os.listdir(Path(root_dir) / "processed_data" / "normal_csv"):
-    #     alpha_value = float(folder.split("_")[1])
-    #     folder_name = folder
-    #     file_name = "vw_20.csv"
-    #     path_to_csv = (
-    #         Path(root_dir)
-    #         / "processed_data"
-    #         / "normal_csv"
-    #         / folder_name
-    #         / file_name
-    #     )
-    #     df = pd.read_csv(path_to_csv)
-    #     beta
 
     vw = 20
     beta_value = 0
@@ -316,12 +354,15 @@ def plotting_polars_alpha(
     path_to_csv = (
         Path(root_dir) / "processed_data" / "normal_csv" / folder_name / file_name
     )
-    df_windtunnel = pd.read_csv(path_to_csv)
+    df_all_values = pd.read_csv(path_to_csv)
+    data_windtunnel_alpha_re_56e4 = reduce_df_by_parameter_mean_and_std(
+        df_all_values, "aoa_kite"
+    )
 
-    data_windtunnel_alpha_re_56e4 = df_windtunnel.loc[df_windtunnel["sideslip"] == 0]
-    # filtered_df_grouped = filtered_df.groupby("vw")
-    # # data_windtunnel_alpha_re_42e4 = filtered_df_grouped.get_group(15)
-    # data_windtunnel_alpha_re_56e4 = filtered_df_grouped.get_group(20)
+    # for i, _ in enumerate(data_windtunnel_alpha_re_56e4.iterrows()):
+    #     row = data_windtunnel_alpha_re_56e4.iloc[i]
+    #     print(f"aoa: {row['aoa_kite']}, C_L: {row['C_L']}")
+
     # VSM
     path_to_csv_VSM_alpha_re_56e4 = (
         Path(root_dir)
@@ -534,42 +575,31 @@ def plotting_polars_beta(
     ratio_projected_area_to_side_area: float = 3.7,
 ):
 
-    # ## OLD
-    # # Load Wind tunnel data
-    # path_to_csv = Path(root_dir) / "processed_data" / "stats_all.csv"
-    # df_windtunnel = pd.read_csv(path_to_csv)
-    # filtered_df = df_windtunnel.loc[df_windtunnel["aoa_kite"] == 11.95]
-    # filtered_df_grouped = filtered_df.groupby("vw")
-    # # data_windtunnel_beta_re_42e4 = filtered_df_grouped.get_group(15)
-    # data_windtunnel_beta_re_56e4_alpha_1195 = filtered_df_grouped.get_group(20)
-
-    # # grabbing data for alphas = 6.75
-    # filtered_df = df_windtunnel.loc[df_windtunnel["aoa_kite"] == 6.75]
-    # filtered_df_grouped = filtered_df.groupby("vw")
-    # data_windtunnel_beta_re_56e4_alpha_675 = filtered_df_grouped.get_group(20)
-
-    # # # grabbing data for alpha = 4.75
-    # # filtered_df = df_windtunnel.loc[df_windtunnel["aoa_kite"] == 4.75]
-    # # filtered_df_grouped = filtered_df.groupby("vw")
-    # # data_windtunnel_beta_re_56e4_alpha_475 = filtered_df_grouped.get_group(20)
-
     ## NEW
     vw = 20
-    folder_name = f"alpha_{11.75}"
+    alpha_high = 11.9
+    alpha_low = 6.8
+    folder_name = f"alpha_{alpha_high}"
     file_name = f"vw_{vw}.csv"
     path_to_csv = (
         Path(root_dir) / "processed_data" / "normal_csv" / folder_name / file_name
     )
-    data_windtunnel_beta_re_56e4_alpha_1195 = pd.read_csv(path_to_csv)
+    df_all_values = pd.read_csv(path_to_csv)
+    data_WT_beta_re_56e4_alpha_high = reduce_df_by_parameter_mean_and_std(
+        df_all_values, "sideslip"
+    )
 
-    folder_name = f"alpha_{6.75}"
+    folder_name = f"alpha_{alpha_low}"
     file_name = f"vw_{vw}.csv"
     path_to_csv = (
         Path(root_dir) / "processed_data" / "normal_csv" / folder_name / file_name
     )
-    data_windtunnel_beta_re_56e4_alpha_675 = pd.read_csv(path_to_csv)
+    df_all_values = pd.read_csv(path_to_csv)
+    data_WT_beta_re_56e4_alpha_low = reduce_df_by_parameter_mean_and_std(
+        df_all_values, "sideslip"
+    )
 
-    # Load VSM data, alpha = 11.95
+    # Load VSM data
     path_to_csv_VSM_beta_re_56e4_alpha_1195 = (
         Path(root_dir)
         / "processed_data"
@@ -580,7 +610,7 @@ def plotting_polars_beta(
         path_to_csv_VSM_beta_re_56e4_alpha_1195
     )
 
-    # Load VSM data, alpha = 6.75
+    # Load VSM data
     path_to_csv_VSM_beta_re_56e4_alpha_675 = (
         Path(root_dir)
         / "processed_data"
@@ -614,22 +644,79 @@ def plotting_polars_beta(
         data_VSM_beta_re_56e4_alpha_1195,
         data_VSM_beta_re_56e4_alpha_675,
         # data_windtunnel_beta_re_42e4,
-        data_windtunnel_beta_re_56e4_alpha_1195,
-        data_windtunnel_beta_re_56e4_alpha_675,
+        data_WT_beta_re_56e4_alpha_high,
+        data_WT_beta_re_56e4_alpha_low,
         # data_windtunnel_beta_re_56e4_alpha_475,
     ]
     labels = [
         # rf"Re = $30e\times10^5$ CFD (Lebesque, 2022)",
-        rf"CFD $\alpha$ = 11.95$^\circ$ Re = $10\times10^5$",
-        rf"VSM $\alpha$ = 11.95$^\circ$ Re = $5.6\times10^5$",
-        rf"VSM $\alpha$ = 6.75$^\circ$ Re = $5.6\times10^5$",
+        rf"CFD $\alpha$ = 12.0$^\circ$ Re = $10\times10^5$",
+        rf"VSM $\alpha$ = 11.9$^\circ$ Re = $5.6\times10^5$",
+        rf"VSM $\alpha$ = 6.8$^\circ$ Re = $5.6\times10^5$",
         # rf"Re = $4.2\times10^5$ Wind Tunnel",
-        rf"WT $\alpha$ = 11.95$^\circ$ Re = $5.6\times10^5$",
-        rf"WT $\alpha$ = 6.75$^\circ$ Re = $5.6\times10^5$",
+        rf"WT $\alpha$ = {alpha_high}$^\circ$ Re = $5.6\times10^5$",
+        rf"WT $\alpha$ = {alpha_low}$^\circ$ Re = $5.6\times10^5$",
         # rf"Wind Tunnel $\alpha$ = 4.75$^\circ$, Re = $5.6\times10^5$",
     ]
     colors = ["black", "blue", "blue", "red", "red"]
     linestyles = ["s-", "s-", "s--", "o-", "o--"]
+
+    # ## Adding two more lines for corrected for side slip data
+    # def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
+    #     """
+    #     [F_X_new]   [cos(β)  -sin(β)  0] [F_X_old]
+    #     [F_Y_new] = [sin(β)   cos(β)  0] [F_Y_old]
+    #     [F_Z_new]   [  0       0      1] [F_Z_old]
+    #     """
+
+    #     ## Grabbing sideslip array and converting to radians
+    #     beta = np.deg2rad(df["sideslip"])
+    #     # beta = np.deg2rad(10) * np.ones_like(df["sideslip"])
+
+    #     ## Defining rotation matrix for each row
+    #     def create_rotation_matrix(beta_angle):
+    #         return np.array(
+    #             [
+    #                 [np.cos(beta_angle), np.sin(beta_angle), 0],
+    #                 [-np.sin(beta_angle), np.cos(beta_angle), 0],
+    #                 [0, 0, 1],
+    #             ]
+    #         )
+
+    #     # Create arrays for forces and moments
+    #     forces = np.array([df["C_D"], df["C_S"], df["C_L"]]).T
+    #     moments = np.array([df["C_pitch"], df["C_yaw"], df["C_roll"]]).T
+
+    #     # Initialize arrays for corrected forces and moments
+    #     corrected_forces = np.zeros_like(forces)
+    #     corrected_moments = np.zeros_like(moments)
+
+    #     # Apply rotation to each row
+    #     for i in range(len(df)):
+    #         R = create_rotation_matrix(beta[i])
+    #         corrected_forces[i] = R @ forces[i]
+    #         corrected_moments[i] = R @ moments[i]
+
+    #     # Update dataframe with corrected values
+    #     df["C_D"], df["C_S"], df["C_L"] = corrected_forces.T
+    #     df["C_pitch"], df["C_yaw"], df["C_roll"] = corrected_moments.T
+
+    #     return df
+
+    # data_WT_beta_re_56e4_alpha_high_corrected = correcting_for_sideslip(
+    #     data_WT_beta_re_56e4_alpha_high.copy()
+    # )
+    # data_WT_beta_re_56e4_alpha_low_corrected = correcting_for_sideslip(
+    #     data_WT_beta_re_56e4_alpha_low.copy()
+    # )
+    # data_frame_list.append(data_WT_beta_re_56e4_alpha_high_corrected)
+    # data_frame_list.append(data_WT_beta_re_56e4_alpha_low_corrected)
+    # labels.append(rf"WT CORRECTED $\alpha$ = {alpha_high}$^\circ$ Re = $5.6\times10^5$")
+    # labels.append(rf"WT CORRECTED $\alpha$ = {alpha_low}$^\circ$ Re = $5.6\times10^5$")
+    # colors.append("green")
+    # colors.append("green")
+    # linestyles.append("o-")
+    # linestyles.append("o--")
 
     # Plot CL, CD, and CS curves in subplots
     fig, axs = plt.subplots(1, 3, figsize=figsize)

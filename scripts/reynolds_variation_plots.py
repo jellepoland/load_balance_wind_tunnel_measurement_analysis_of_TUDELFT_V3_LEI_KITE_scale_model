@@ -2,8 +2,176 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+import pandas as pd
 from pathlib import Path
-from settings import saving_pdf_and_pdf_tex, x_axis_labels, y_axis_labels
+from settings import (
+    saving_pdf_and_pdf_tex,
+    x_axis_labels,
+    y_axis_labels,
+    reduce_df_by_parameter_mean_and_std,
+)
+
+
+def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
+    results_path: str,
+    stats_all: pd.DataFrame,
+    betas_to_be_plotted: str,
+    plot_speeds: list,
+    figsize: tuple,
+    fontsize: int,
+    columns: list,
+    y_labels: list,
+    subplot_titles: list,
+    sideslip: float = 0,
+):
+
+    folder_dir = "/home/jellepoland/ownCloud/phd/code/load_balance_wind_tunnel_measurement_analysis_of_TUDELFT_V3_LEI_KITE_scale_model/processed_data/normal_csv"
+
+    df_all = []
+    for file in os.listdir(Path(folder_dir) / f"beta_{sideslip}"):
+        # print(f"file: {file}")
+        df = pd.read_csv(Path(folder_dir) / f"beta_{sideslip}" / file)
+        # print(f"df: {df.columns}")
+        df = reduce_df_by_parameter_mean_and_std(df, "aoa_kite")
+        df_all.append(df)
+
+    stats_all = pd.concat(df_all)
+
+    # # initializa plot
+    # fig, axs = plt.subplots(2, 3, figsize=figsize)
+
+    # # Flatten the subplot array for easier indexing
+    # axs = axs.flatten()
+
+    # # loop through normal folder
+    # for folder in os.listdir(folder_dir):
+    #     if "alpha" not in folder:
+    #         continue
+    #     # print(f"\n READING folder: {folder}")
+    #     # loop through angle of attack files
+    #     for file in os.listdir(Path(folder_dir) / folder):
+    #         if "raw" in file:
+    #             continue
+    #         # print(f" READING file: {file}")
+    #         # read out file for file
+    #         df = pd.read_csv(Path(folder_dir) / folder / file)
+    #         Re = round(df["Rey"].mean() / 1e5, 0)
+    #         # filter on sideslip == 0
+    #         df = df[df["sideslip"] == sideslip]
+    #         # reduce the dataframe by parameter
+    #         df = reduce_df_by_parameter_mean_and_std(df, "sideslip")
+    #         # print(f"df: {df}")
+
+    #         ## plot the data
+    #         columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
+    #         for i, column in enumerate(columns):
+    #             axs[i].plot(
+    #                 df["aoa_kite"],
+    #                 df[column],
+    #                 "o-.",
+    #                 label=rf"Re = {Re:.0f} $\times$ $10^5$",
+    #             )
+    #             axs[i].set_xlabel(x_axis_labels["alpha"])  # , fontsize=fontsize)
+    #             axs[i].set_ylabel(y_axis_labels[y_labels[i]])  # , fontsize=fontsize)
+    #             if i == 0:
+    #                 axs[i].legend()
+    #             # axs[i].set_xlim([-5,24])
+    #             axs[i].grid()
+
+    # plt.tight_layout()
+    # filename = f"re_variation_alpha_sweep_at_fixed_beta_{sideslip:.2f}"
+    # saving_pdf_and_pdf_tex(results_path, filename)
+
+    # # Print a message when the plot is saved
+    # print(f"Plot for sideslip {sideslip} saved as {filename}")
+    # breakpoint()
+
+    # # set which wind speeds to plot
+    # plot_speeds = [5, 10, 15, 20, 25]
+
+    df_all = []
+    for file in os.listdir(Path(folder_dir) / f"beta_{sideslip}"):
+        # print(f"file: {file}")
+        df = pd.read_csv(Path(folder_dir) / f"beta_{sideslip}" / file)
+        # print(f"df: {df.columns}")
+        df = reduce_df_by_parameter_mean_and_std(df, "aoa_kite")
+        df_all.append(df)
+
+    stats_all = pd.concat(df_all)
+
+    # if len(plot_speeds) < 5:
+    #     subfolder = "vw="
+    #     for i, v in enumerate(plot_speeds):
+    #         if i == 0:
+    #             subfolder = subfolder + f"{v}"
+    #         else:
+    #             subfolder = subfolder + f"+{v}"
+    # else:
+    #     subfolder = "all_vw"
+
+    # # Create a new folder to save the plots
+    # os.makedirs(foldername + "/alpha", exist_ok=True)
+
+    # sort everything for plotting correctly
+    stats_plotvsalpha = stats_all.sort_values(by="aoa_kite")
+
+    # Group the data by sideslip
+    grouped = stats_plotvsalpha.groupby("sideslip")
+
+    # Loop through each sideslip value
+    for sideslip, group in grouped:
+
+        if sideslip in betas_to_be_plotted:
+            # Create a subplot with 4 rows and 3 columns
+            fig, axs = plt.subplots(2, 3, figsize=figsize)
+
+            # Flatten the subplot array for easier indexing
+            axs = axs.flatten()
+
+            # # Loop through each column (F_X, F_Y, ..., M_Z)
+            # columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
+            # y_labels = ["C_L", "C_D", "C_S", "C_{pitch}", "C_{roll}", "C_{yaw}"]
+            # subplot_titles = [
+            #     "Lift coefficient",
+            #     "Drag Coefficient",
+            #     "Side Force coefficient",
+            #     "Pitch moment coefficient",
+            #     "Roll moment coefficient",
+            #     "Yaw moment coefficient",
+            # ]
+            for i, column in enumerate(columns):
+                # Plot each distinct value in the vw column (excluding vw=0 and vw=5)
+                for vw, vw_group in group.groupby("vw"):
+                    if vw in plot_speeds:
+                        Re = np.around((vw_group["Rey"].mean()) / 1e5, 1)
+                        axs[i].plot(
+                            vw_group["aoa_kite"],
+                            vw_group[column],
+                            "o-.",
+                            label=rf"Re = {Re} $\times$ $10^5$",
+                        )
+
+                # axs[i].set_title(subplot_titles[i])
+                axs[i].set_xlabel(x_axis_labels["alpha"])  # , fontsize=fontsize)
+                axs[i].set_ylabel(y_axis_labels[y_labels[i]])  # , fontsize=fontsize)
+                if i == 0:
+                    axs[i].legend()
+                # axs[i].set_xlim([-5,24])
+                axs[i].grid()
+
+            # Set the title of the subplot
+            # fig.suptitle(rf"Force and moment coefficient plots for sideslip angle: $\beta=${sideslip} deg")#, fontsize=14, fontweight='bold')
+
+            # Save the plot in the plots folder
+            # plot_filename = f"plots/sideslip_{sideslip}_plot.png"
+            # plot_filename = foldername + '/alpha' + f"/sideslip_{sideslip}_plot.pdf"
+            plt.tight_layout()
+
+            filename = f"re_variation_alpha_sweep_at_fixed_beta_{sideslip:.2f}"
+            saving_pdf_and_pdf_tex(results_path, filename)
+
+            # Print a message when the plot is saved
+            print(f"Plot for sideslip {sideslip} saved as {filename}")
 
 
 def loading_data(root_dir: str) -> pd.DataFrame:
@@ -293,6 +461,18 @@ def main(results_path, root_dir):
         "Yaw moment coefficient",
     ]
 
+    folder_dir = "/home/jellepoland/ownCloud/phd/code/load_balance_wind_tunnel_measurement_analysis_of_TUDELFT_V3_LEI_KITE_scale_model/processed_data/normal_csv"
+
+    df_all = []
+    sideslip = 0
+    for file in os.listdir(Path(folder_dir) / f"beta_{sideslip}"):
+        # print(f"file: {file}")
+        df = pd.read_csv(Path(folder_dir) / f"beta_{sideslip}" / file)
+        # print(f"df: {df.columns}")
+        df = reduce_df_by_parameter_mean_and_std(df, "aoa_kite")
+        df_all.append(df)
+
+    stats_all = pd.concat(df_all)
     plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
         results_path,
         stats_all,
@@ -304,6 +484,21 @@ def main(results_path, root_dir):
         y_labels,
         subplot_titles,
     )
+
+    # TODO: left off here
+    df_all = []
+    alpha = 6.8
+    for file in os.listdir(Path(folder_dir) / f"alpha_{alpha}"):
+        if "raw" in file:
+            continue
+        # print(f"file: {file}")
+        df = pd.read_csv(Path(folder_dir) / f"alpha_{alpha}" / file)
+        # print(f"df: {df.columns}")
+        df = reduce_df_by_parameter_mean_and_std(df, "sideslip")
+        df_all.append(df)
+
+    stats_all = pd.concat(df_all)
+
     plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
         results_path,
         stats_all,
