@@ -21,14 +21,22 @@ def nondimensionalize(df: pd.DataFrame, S_ref: float, c_ref: float) -> pd.DataFr
     V = df["vw"]
 
     # Nondimensionalize the force columns
-    df["F_X"] /= 0.5 * rho * V**2 * S_ref
-    df["F_Y"] /= 0.5 * rho * V**2 * S_ref
-    df["F_Z"] /= 0.5 * rho * V**2 * S_ref
+    df["CF_X"] = df["F_X"] / (0.5 * rho * V**2 * S_ref)
+    df["CF_Y"] = df["F_Y"] / (0.5 * rho * V**2 * S_ref)
+    df["CF_Z"] = df["F_Z"] / (0.5 * rho * V**2 * S_ref)
 
     # Nondimensionalize the moment columns
-    df["M_X"] /= 0.5 * rho * V**2 * S_ref * c_ref
-    df["M_Y"] /= 0.5 * rho * V**2 * S_ref * c_ref
-    df["M_Z"] /= 0.5 * rho * V**2 * S_ref * c_ref
+    df["CM_X"] = df["M_X"] / (0.5 * rho * V**2 * S_ref * c_ref)
+    df["CM_Y"] = df["M_Y"] / (0.5 * rho * V**2 * S_ref * c_ref)
+    df["CM_Z"] = df["M_Z"] / (0.5 * rho * V**2 * S_ref * c_ref)
+
+    ## Also do this for the raw columns, to later calculate SNR
+    df["CF_X_raw"] = df["F_X_raw"] / (0.5 * rho * V**2 * S_ref)
+    df["CF_Y_raw"] = df["F_Y_raw"] / (0.5 * rho * V**2 * S_ref)
+    df["CF_Z_raw"] = df["F_Z_raw"] / (0.5 * rho * V**2 * S_ref)
+    df["CM_X_raw"] = df["M_X_raw"] / (0.5 * rho * V**2 * S_ref * c_ref)
+    df["CM_Y_raw"] = df["M_Y_raw"] / (0.5 * rho * V**2 * S_ref * c_ref)
+    df["CM_Z_raw"] = df["M_Z_raw"] / (0.5 * rho * V**2 * S_ref * c_ref)
 
     return df
 
@@ -68,12 +76,12 @@ def substract_support_structure_aero_coefficients(
         C_Mz_s = np.array(M_z["a"] * (aoa_kite**2) + M_z["b"] * aoa_kite + M_z["c"])[0]
 
         # subtract support structure aero coefficients for this wind speed, sideslip and aoa combination from merged_df
-        df.loc[df["sideslip"] == k, "F_X"] -= C_Fx_s
-        df.loc[df["sideslip"] == k, "F_Y"] -= C_Fy_s
-        df.loc[df["sideslip"] == k, "F_Z"] -= C_Fz_s
-        df.loc[df["sideslip"] == k, "M_X"] -= C_Mx_s
-        df.loc[df["sideslip"] == k, "M_Y"] -= C_My_s
-        df.loc[df["sideslip"] == k, "M_Z"] -= C_Mz_s
+        df.loc[df["sideslip"] == k, "CF_X"] -= C_Fx_s
+        df.loc[df["sideslip"] == k, "CF_Y"] -= C_Fy_s
+        df.loc[df["sideslip"] == k, "CF_Z"] -= C_Fz_s
+        df.loc[df["sideslip"] == k, "CM_X"] -= C_Mx_s
+        df.loc[df["sideslip"] == k, "CM_Y"] -= C_My_s
+        df.loc[df["sideslip"] == k, "CM_Z"] -= C_Mz_s
 
     return df
 
@@ -95,13 +103,13 @@ def translate_coordinate_system(
     z_hcg = (z_hinge + z_cg) / (1000 * c_ref)
 
     # rotation of coordinate system: force coefficients change
-    df["C_L"] = df["F_Z"] * -1
-    df["C_S"] = df["F_Y"] * -1
-    df["C_D"] = df["F_X"]
+    df["C_L"] = df["CF_Z"] * -1
+    df["C_S"] = df["CF_Y"] * -1
+    df["C_D"] = df["CF_X"]
 
-    df["C_roll"] = df["M_X"] - df["F_Y"] * z_hcg
-    df["C_pitch"] = -df["M_Y"] + df["F_Z"] * x_hcg - df["F_X"] * z_hcg
-    df["C_yaw"] = -df["M_Z"] - df["F_Y"] * x_hcg
+    df["C_roll"] = df["CM_Y"] - df["CF_Y"] * z_hcg
+    df["C_pitch"] = -df["CM_X"] + df["CF_Z"] * x_hcg - df["CF_Y"] * z_hcg
+    df["C_yaw"] = -df["CM_Z"] - df["CF_X"] * x_hcg
 
     return df
 
@@ -298,6 +306,25 @@ def processing_raw_lvm_data_into_csv(
                     df, interp_coeffs_path
                 )
 
+                # 5. Calculate signal-to-noise ratio
+                # ## comparing no support--to--raw 
+                # df["SNR_CF_X"] = df["CF_X"] / df["CF_X_raw"]
+                # df["SNR_CF_Y"] = df["CF_Y"] / df["CF_Y_raw"]
+                # df["SNR_CF_Z"] = df["CF_Z"] / df["CF_Z_raw"]
+                # df["SNR_CM_X"] = df["CM_X"] / df["CM_X_raw"]
+                # df["SNR_CM_Y"] = df["CM_Y"] / df["CM_Y_raw"]
+                # df["SNR_CM_Z"] = df["CM_Z"] / df["CM_Z_raw"]
+                
+                ## comparing with support measured --to-- raw, only difference is zero-run
+                df["SNR_CF_X"] = df["F_X"] / df["F_X_raw"]
+                df["SNR_CF_Y"] = df["F_Y"] / df["F_Y_raw"]
+                df["SNR_CF_Z"] = df["F_Z"] / df["F_Z_raw"]
+                df["SNR_CM_X"] = df["M_X"] / df["M_X_raw"]
+                df["SNR_CM_Y"] = df["M_Y"] / df["M_Y_raw"]
+                df["SNR_CM_Z"] = df["M_Z"] / df["M_Z_raw"]
+
+
+
                 # 4. Translate coordinate system
                 df = translate_coordinate_system(
                     df,
@@ -310,8 +337,6 @@ def processing_raw_lvm_data_into_csv(
 
                 # 5. Correct for sideslip
                 df = correcting_for_sideslip(df)
-
-                # TODO: would be better to keep the aoa value out of the csv as its already specified in the folder_name
 
                 # Add dynamic viscosity and Reynolds number
                 df = add_dyn_visc_and_reynolds(
@@ -326,6 +351,24 @@ def processing_raw_lvm_data_into_csv(
                     "M_X",
                     "M_Y",
                     "M_Z",
+                    "F_X_raw",
+                    "F_Y_raw",
+                    "F_Z_raw",
+                    "M_X_raw",
+                    "M_Y_raw",
+                    "M_Z_raw",
+                    "CF_X",
+                    "CF_Y",
+                    "CF_Z",
+                    "CM_X",
+                    "CM_Y",
+                    "CM_Z",
+                    "CF_X_raw",
+                    "CF_Y_raw",
+                    "CF_Z_raw",
+                    "CM_X_raw",
+                    "CM_Y_raw",
+                    "CM_Z_raw",
                     "Filename",
                     "Date",
                     "Dpa",
