@@ -178,7 +178,7 @@ def print_repeatability_uncertainty(project_dir: str) -> pd.DataFrame:
     print("\n--> Repeatability uncertainty:")
     # Read the interpolation coefficients
     path_support_struc_aero_interp_coeffs = (
-        Path(project_dir) / "processed_data" / "without_kite_interp_coeff.csv"
+        Path(project_dir) / "processed_data" / "support_struc_aero_interp_coeffs.csv"
     )
     support_struc_aero_interp_coeffs = pd.read_csv(
         path_support_struc_aero_interp_coeffs
@@ -367,7 +367,7 @@ def print_repeatability_uncertainty(project_dir: str) -> pd.DataFrame:
             )
 
 
-def main(project_dir):
+def main(project_dir: Path):
     print_std_SNR_uncertainty(project_dir)
     print_repeatability_uncertainty(project_dir)
 

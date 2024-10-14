@@ -216,6 +216,10 @@ def reading_all_folders(
     # loading labbook
     labbook_df = read_labbook_into_df(labbook_path)
 
+    # Ensuring the existence of parent_folder
+    if not os.path.exists(parent_folder_dir):
+        os.mkdir(parent_folder_dir)
+
     for folder_name in os.listdir(parent_folder_dir):
         print(f"\n READING folder_name: {folder_name}")
         folder_dir = Path(parent_folder_dir) / folder_name

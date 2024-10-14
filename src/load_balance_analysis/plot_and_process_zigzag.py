@@ -552,14 +552,12 @@ def create_grouped_plot(
     saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_675_beta_0")
 
 
-def main(results_dir: str, project_dir: str) -> None:
-
-    # Increase font size for readability
-    fontsize = 18
-    figsize = (20, 6)
-
+def main_process():
     ## Process zigzag data
     processed_data_zigzag_dir = Path(project_dir) / "processed_data" / "zigzag"
+    if not os.path.exists(processed_data_zigzag_dir):
+        os.makedirs(processed_data_zigzag_dir)
+
     zigzag_data_dir = Path(project_dir) / "data" / "zigzag"
     labbook_zz_path = Path(processed_data_zigzag_dir) / "labbook_zz.csv"
     support_struc_aero_interp_coeffs_path = (
@@ -575,7 +573,17 @@ def main(results_dir: str, project_dir: str) -> None:
         save_path_lvm_data_processed,
     )
 
+
+def main(results_dir: str, project_dir: str) -> None:
+
+    # Increase font size for readability
+    fontsize = 18
+    figsize = (20, 6)
+
     # Plot zigzag
+    save_path_lvm_data_processed = (
+        Path(project_dir) / "processed_data" / "zigzag" / "lvm_data_processed.csv"
+    )
     plot_zigzag(save_path_lvm_data_processed, results_dir, figsize, fontsize)
 
 
