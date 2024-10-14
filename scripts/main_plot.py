@@ -12,10 +12,10 @@ from utils import *
 
 def main():
 
-    results_path = Path(project_dir) / "results"
-    # results_path = Path(
-    #     "/home/jellepoland/ownCloud/phd/latex_documents/WES24_KITE_WindTunnel/Images"
-    # )
+    # results_path = Path(project_dir) / "results"
+    results_path = Path(
+        "/home/jellepoland/ownCloud/phd/latex_documents/WES24_KITE_WindTunnel/Images"
+    )
 
     ## plotting
     plot_and_process_zigzag.main(results_path, project_dir)

@@ -5,6 +5,7 @@ processed_data/normal_csv/
 processed_data/zigzag/lvm_data_processed.csv
 processed_data/zigzag/zigzag_processed_data.csv
 results/
+media/
 
 
 # Byte-compiled / optimized / DLL files
