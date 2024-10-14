@@ -2,8 +2,8 @@
 Mark_van_Spronsen/
 data/
 processed_data/normal_csv/
-# processed_data/uncertainty_table/
-# processed_data/zigzag/
+processed_data/uncertainty_table/
+processed_data/zigzag/
 
 
 # Byte-compiled / optimized / DLL files
