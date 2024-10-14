@@ -42,17 +42,21 @@ def nondimensionalize(df: pd.DataFrame, S_ref: float, c_ref: float) -> pd.DataFr
 
 
 def substract_support_structure_aero_coefficients(
-    df: pd.DataFrame, interp_coeffs_path: Path
+    df: pd.DataFrame, support_struc_aero_interp_coeffs_path: Path
 ) -> pd.DataFrame:
 
     # reading the interpolated coefficients
-    interp_coeffs = pd.read_csv(interp_coeffs_path)
+    support_struc_aero_interp_coeffs = pd.read_csv(
+        support_struc_aero_interp_coeffs_path
+    )
     # print(f"columns: {merged_df.columns}")
     # Select the support structure aerodynamic coefficients where the wind speed is the corresponding wind speed to this .lvm file
     cur_vw = df["vw"].unique()[0]
     # print(f"cur_vw: {np.around(cur_vw)}")
-    # print(f'interp_coeffs["vw"]: {interp_coeffs["vw"].unique()}')
-    supp_coeffs = interp_coeffs[interp_coeffs["vw"] == int(np.around(cur_vw))]
+    # print(f'support_struc_aero_interp_coeffs["vw"]: {support_struc_aero_interp_coeffs["vw"].unique()}')
+    supp_coeffs = support_struc_aero_interp_coeffs[
+        support_struc_aero_interp_coeffs["vw"] == int(np.around(cur_vw))
+    ]
     # print(f"supp_coeffs: {supp_coeffs}")
     aoa_kite = df["aoa_kite"].unique()[0]
 
@@ -244,7 +248,7 @@ def processing_raw_lvm_data_into_csv(
     folder_dir: Path,
     S_ref: float,
     c_ref: float,
-    interp_coeffs_path: Path,
+    support_struc_aero_interp_coeffs_path: Path,
     x_hinge: float,
     z_hinge: float,
     l_cg: float,
@@ -303,18 +307,18 @@ def processing_raw_lvm_data_into_csv(
 
                 # 4. Substracting support structure aerodynamic coefficients
                 df = substract_support_structure_aero_coefficients(
-                    df, interp_coeffs_path
+                    df, support_struc_aero_interp_coeffs_path
                 )
 
                 # 5. Calculate signal-to-noise ratio
-                # ## comparing no support--to--raw 
+                # ## comparing no support--to--raw
                 # df["SNR_CF_X"] = df["CF_X"] / df["CF_X_raw"]
                 # df["SNR_CF_Y"] = df["CF_Y"] / df["CF_Y_raw"]
                 # df["SNR_CF_Z"] = df["CF_Z"] / df["CF_Z_raw"]
                 # df["SNR_CM_X"] = df["CM_X"] / df["CM_X_raw"]
                 # df["SNR_CM_Y"] = df["CM_Y"] / df["CM_Y_raw"]
                 # df["SNR_CM_Z"] = df["CM_Z"] / df["CM_Z_raw"]
-                
+
                 ## comparing with support measured --to-- raw, only difference is zero-run
                 df["SNR_CF_X"] = df["F_X"] / df["F_X_raw"]
                 df["SNR_CF_Y"] = df["F_Y"] / df["F_Y_raw"]
@@ -322,8 +326,6 @@ def processing_raw_lvm_data_into_csv(
                 df["SNR_CM_X"] = df["M_X"] / df["M_X_raw"]
                 df["SNR_CM_Y"] = df["M_Y"] / df["M_Y_raw"]
                 df["SNR_CM_Z"] = df["M_Z"] / df["M_Z_raw"]
-
-
 
                 # 4. Translate coordinate system
                 df = translate_coordinate_system(
@@ -389,8 +391,8 @@ def processing_raw_lvm_data_into_csv(
 def main():
     S_ref = 0.46
     c_ref = 0.4
-    interp_coeffs_path = (
-        Path(project_dir) / "processed_data" / "normal_csv" / "interp_coeff.csv"
+    support_struc_aero_interp_coeffs_path = (
+        Path(project_dir) / "processed_data" / "without_kite_interp_coeff.csv"
     )
     # parameters necessary to translate moments (aka determine position of cg)
     x_hinge = (
@@ -414,7 +416,7 @@ def main():
                 folder_dir,
                 S_ref,
                 c_ref,
-                interp_coeffs_path,
+                support_struc_aero_interp_coeffs_path,
                 x_hinge,
                 z_hinge,
                 l_cg,

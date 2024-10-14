@@ -62,7 +62,7 @@ def print_std_SNR_uncertainty(project_dir: str) -> pd.DataFrame:
     df_list = [df_vw_5, df_vw_10, df_vw_15, df_vw_20]
     vw_list = ["5", "10", "15", "20"]
     Reynolds_list = ["1.4", "2.8", "4.2", "5.6"]
-    df_std_list = [std_list_vw_5,std_list_vw_10,std_list_vw_15,std_list_vw_20]
+    df_std_list = [std_list_vw_5, std_list_vw_10, std_list_vw_15, std_list_vw_20]
 
     for df, vw, Re, std_list in zip(df_list, vw_list, Reynolds_list, df_std_list):
         print(f"\n--> Re: {Re}x10^5")
@@ -177,10 +177,12 @@ def print_repeatability_uncertainty(project_dir: str) -> pd.DataFrame:
 
     print("\n--> Repeatability uncertainty:")
     # Read the interpolation coefficients
-    path_interp_coeffs = (
-        Path(project_dir) / "processed_data" / "normal_csv" / "interp_coeff.csv"
+    path_support_struc_aero_interp_coeffs = (
+        Path(project_dir) / "processed_data" / "without_kite_interp_coeff.csv"
     )
-    interp_coeffs = pd.read_csv(path_interp_coeffs)
+    support_struc_aero_interp_coeffs = pd.read_csv(
+        path_support_struc_aero_interp_coeffs
+    )
 
     # Read the labbook data
     path_labbook_double = (
@@ -264,7 +266,9 @@ def print_repeatability_uncertainty(project_dir: str) -> pd.DataFrame:
     aoa = merged_df["aoa"].unique()[0] - 7.25
     v = 20
 
-    supp_coeffs = interp_coeffs[interp_coeffs["vw"] == 20]
+    supp_coeffs = support_struc_aero_interp_coeffs[
+        support_struc_aero_interp_coeffs["vw"] == 20
+    ]
     for k in merged_df["sideslip"].unique():
         # select support structure aero coefficients for this sideslip
         c_s = supp_coeffs[supp_coeffs["sideslip"] == k]

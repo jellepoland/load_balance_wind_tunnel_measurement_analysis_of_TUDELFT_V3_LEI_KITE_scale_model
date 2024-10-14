@@ -10,26 +10,27 @@ def main():
     vw_5, vw_10, vw_15, vw_20, vw_25 = [], [], [], [], []
     for folder in os.listdir(Path(project_dir) / "processed_data" / "normal_csv"):
         folder_dir = Path(project_dir) / "processed_data" / "normal_csv" / folder
-        # make sure interp_coeff.csv is not processed
-        if "alpha" in folder:
-            # looping through each file in the folder
-            for file in os.listdir(folder_dir):
-                if "raw" not in file:
-                    print(f"\nfile:{file}")
-                    file_path = Path(folder_dir) / file
-                    df = pd.read_csv(file_path)
-                    # print(f"df columns: {df.columns}")
+        # skipping the folders that don't have "alpha" in their name
+        if "alpha" not in folder:
+            continue
+        # looping through each file in the folder
+        for file in os.listdir(folder_dir):
+            if "raw" not in file:
+                print(f"\nfile:{file}")
+                file_path = Path(folder_dir) / file
+                df = pd.read_csv(file_path)
+                # print(f"df columns: {df.columns}")
 
-                    if file == "vw_5.csv":
-                        vw_5.append(df)
-                    elif file == "vw_10.csv":
-                        vw_10.append(df)
-                    elif file == "vw_15.csv":
-                        vw_15.append(df)
-                    elif file == "vw_20.csv":
-                        vw_20.append(df)
-                    elif file == "vw_25.csv":
-                        vw_25.append(df)
+                if file == "vw_5.csv":
+                    vw_5.append(df)
+                elif file == "vw_10.csv":
+                    vw_10.append(df)
+                elif file == "vw_15.csv":
+                    vw_15.append(df)
+                elif file == "vw_20.csv":
+                    vw_20.append(df)
+                elif file == "vw_25.csv":
+                    vw_25.append(df)
 
     # Concatenating the dataframes
     vw_5 = pd.concat(vw_5)
