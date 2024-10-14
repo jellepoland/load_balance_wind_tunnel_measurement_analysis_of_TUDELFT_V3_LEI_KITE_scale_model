@@ -4,6 +4,7 @@ data/
 processed_data/normal_csv/
 processed_data/uncertainty_table/
 processed_data/zigzag/
+results/
 
 
 # Byte-compiled / optimized / DLL files
