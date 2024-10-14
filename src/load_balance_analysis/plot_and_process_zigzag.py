@@ -347,7 +347,7 @@ def plot_zigzag(
 
     # Defining coefficients
     coefficients = ["C_L", "C_D", "C_pitch"]
-    yaxis_names = ["CL", "CD", "CMx"]
+    yaxis_names = ["CL", "CD", "CS"]
 
     data_to_print = []
     labels_to_print = []
@@ -362,7 +362,7 @@ def plot_zigzag(
         print(f"\nvw: {vw}, rey: {rey}")
         # seperating into zz and no zz
         data_zz = df_vw[df_vw["Filename"].str.startswith("ZZ")]
-        data_no_zz = df_vw[df_vw["Filename"].str.startswith("ZZ")]
+        data_no_zz = df_vw[df_vw["Filename"].str.startswith("normal")]
 
         # if vw == 15, extracting data for each sideslip
         if vw == 15:
@@ -403,7 +403,7 @@ def plot_zigzag(
             ]
 
         for data, label in zip(data_list, label_list):
-            coefficients = ["C_L", "C_D", "C_pitch"]
+            coefficients = ["C_L", "C_D", "C_S"]
             data_calculated = [
                 [data[coeff].mean(), data[coeff].std()] for coeff in coefficients
             ]
@@ -421,14 +421,154 @@ def plot_zigzag(
     )
 
 
+# def create_grouped_plot(
+#     rey_list, data_to_print, labels_to_print, y_axis_labels, yaxis_names, results_dir
+# ):
+#     fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(15, 5))
+#     axs = axes.flatten()
+
+#     # Group data by Reynolds number
+#     reynolds_groups = {1.4: [], 2.8: [], 4.2: [], 5.6: []}
+#     reynolds_groups = {2.8: [], 4.2: [], 5.6: []}
+
+#     # Add shaded regions first so they appear behind the data points
+#     shaded_regions = [0, 2]  # Indices
+#     for ax in axs:
+#         for region_idx in shaded_regions:
+#             ax.axvspan(region_idx - 0.5, region_idx + 0.5, color="gray", alpha=0.15)
+
+#     for rey, data, label in zip(rey_list, data_to_print, labels_to_print):
+#         # Determine which Reynolds number group this belongs to
+#         for key in reynolds_groups.keys():
+#             if abs(rey - key) < 0.1:  # Use approximate matching
+#                 reynolds_groups[key].append((data, label))
+#                 break
+
+#     # Set up x-axis
+#     group_names = list(reynolds_groups.keys())
+#     n_groups = len(group_names)
+
+#     for ax_idx, ax in enumerate(axs):
+#         for group_idx, (rey_num, group_data) in enumerate(reynolds_groups.items()):
+#             if len(group_data) == 2:
+#                 x_positions = np.linspace(
+#                     group_idx - 0.05, group_idx + 0.05, len(group_data)
+#                 )
+#                 color_list = ["red", "blue"]
+#                 marker_list = ["o", "o"]
+#             elif len(group_data) == 6:
+#                 x_positions = np.linspace(
+#                     group_idx - 0.25, group_idx + 0.25, len(group_data)
+#                 )
+#                 color_list = [
+#                     "red",
+#                     "blue",
+#                     "red",
+#                     "blue",
+#                     "red",
+#                     "blue",
+#                 ]
+#                 marker_list = ["o", "o", "x", "x", "*", "*"]
+
+#             for x_pos, (data, label), color, marker in zip(
+#                 x_positions, group_data, color_list, marker_list
+#             ):
+#                 print(f"data[ax_idx][0]: {data[ax_idx][0]}")
+#                 ax.errorbar(
+#                     x_pos,
+#                     data[ax_idx][0],
+#                     yerr=data[ax_idx][1],
+#                     fmt=marker,
+#                     color=color,
+#                     capsize=5,
+#                 )
+
+#         # Set x-axis
+#         # ax.set_xlim(0, 6)
+#         ax.set_xticks(range(n_groups))
+#         ax.set_xticklabels(group_names)
+#         ax.set_xlabel(r"Re $\times 10^5$ [-]")
+#         ax.set_ylabel(y_axis_labels[yaxis_names[ax_idx]])
+#         # Set only horizontal gridlines
+#         ax.grid(True, axis="y")
+#         ax.grid(False, axis="x")
+
+#     # Add simplified legend to the first plot only
+#     legend_elements = [
+#         plt.Line2D(
+#             [0],
+#             [0],
+#             marker="o",
+#             color="red",
+#             label="With zigzag",
+#             markersize=8,
+#             linestyle="None",
+#         ),
+#         plt.Line2D(
+#             [0],
+#             [0],
+#             marker="o",
+#             color="blue",
+#             label="Without zigzag",
+#             markersize=8,
+#             linestyle="None",
+#         ),
+#         plt.Line2D(
+#             [0],
+#             [0],
+#             marker="x",
+#             color="red",
+#             label=r"With zigzag $\beta = -10^\circ$",
+#             markersize=8,
+#             linestyle="None",
+#         ),
+#         plt.Line2D(
+#             [0],
+#             [0],
+#             marker="x",
+#             color="blue",
+#             label=r"Without zigzag $\beta = -10^\circ$",
+#             markersize=8,
+#             linestyle="None",
+#         ),
+#         plt.Line2D(
+#             [0],
+#             [0],
+#             marker="*",
+#             color="red",
+#             label=r"With zigzag $\beta = 10^\circ$",
+#             markersize=8,
+#             linestyle="None",
+#         ),
+#         plt.Line2D(
+#             [0],
+#             [0],
+#             marker="*",
+#             color="blue",
+#             label=r"Without zigzag $\beta = 10^\circ$",
+#             markersize=8,
+#             linestyle="None",
+#         ),
+#     ]
+#     axs[2].legend(handles=legend_elements, loc="lower right")
+#     axs[2].set_ylim(-5, 3)
+
+#     plt.tight_layout()
+
+#     # Save the figure
+#     saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_675_beta_0")
+
+
 def create_grouped_plot(
     rey_list, data_to_print, labels_to_print, y_axis_labels, yaxis_names, results_dir
 ):
-    fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(15, 5))
+    fig, axes = plt.subplots(
+        nrows=1, ncols=3, figsize=(15, 5)
+    )  # Increased figure height
     axs = axes.flatten()
 
     # Group data by Reynolds number
-    reynolds_groups = {1.4: [], 2.8: [], 4.2: [], 5.6: []}
+    reynolds_groups = {2.8: [], 4.2: [], 5.6: []}
 
     # Add shaded regions first so they appear behind the data points
     shaded_regions = [0, 2]  # Indices
@@ -467,7 +607,7 @@ def create_grouped_plot(
                     "red",
                     "blue",
                 ]
-                marker_list = ["o", "o", "x", "x", "*", "*"]
+                marker_list = ["x", "x", "o", "o", "*", "*"]
 
             for x_pos, (data, label), color, marker in zip(
                 x_positions, group_data, color_list, marker_list
@@ -482,7 +622,6 @@ def create_grouped_plot(
                 )
 
         # Set x-axis
-        # ax.set_xlim(0, 6)
         ax.set_xticks(range(n_groups))
         ax.set_xticklabels(group_names)
         ax.set_xlabel(r"Re $\times 10^5$ [-]")
@@ -491,7 +630,7 @@ def create_grouped_plot(
         ax.grid(True, axis="y")
         ax.grid(False, axis="x")
 
-    # Add simplified legend to the first plot only
+    # Create legend elements
     legend_elements = [
         plt.Line2D(
             [0],
@@ -548,10 +687,21 @@ def create_grouped_plot(
             linestyle="None",
         ),
     ]
-    axs[2].legend(handles=legend_elements, loc="lower right")
-    axs[2].set_ylim(-5, 3)
+
+    # Add centered legend below the plots
+    fig.legend(
+        handles=legend_elements,
+        loc="center",
+        bbox_to_anchor=(0.5, 0.05),
+        ncol=3,
+        fontsize="small",
+        frameon=True,
+    )
 
     plt.tight_layout()
+
+    # Adjust the layout to make room for the legend
+    plt.subplots_adjust(bottom=0.25)
 
     # Save the figure
     saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_675_beta_0")

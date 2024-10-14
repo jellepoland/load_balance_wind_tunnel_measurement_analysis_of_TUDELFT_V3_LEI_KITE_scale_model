@@ -230,6 +230,7 @@ def print_repeatability_uncertainty(project_dir: Path) -> None:
     )  # Measurement labels: 1, 2, 3
 
     for sideslip in sideslip_angles:
+        print(f"\nSideslip angle: {sideslip}°")
         df_local = merged_df[merged_df["sideslip"] == sideslip]
         df_local_m1 = df_local[df_local["measurement"] == 1]
         df_local_m2 = df_local[df_local["measurement"] == 2]

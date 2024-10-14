@@ -111,9 +111,9 @@ def translate_coordinate_system(
     df["C_S"] = df["CF_Y"] * -1
     df["C_D"] = df["CF_X"]
 
-    df["C_roll"] = df["CM_Y"] - df["CF_Y"] * z_hcg
-    df["C_pitch"] = -df["CM_X"] + df["CF_Z"] * x_hcg - df["CF_Y"] * z_hcg
-    df["C_yaw"] = -df["CM_Z"] - df["CF_X"] * x_hcg
+    df["C_roll"] = df["CM_X"] - df["CF_Y"] * z_hcg
+    df["C_pitch"] = -df["CM_Y"] + df["CF_Z"] * x_hcg - df["CF_X"] * z_hcg
+    df["C_yaw"] = -df["CM_Z"] - df["CF_Y"] * x_hcg
 
     return df
 
