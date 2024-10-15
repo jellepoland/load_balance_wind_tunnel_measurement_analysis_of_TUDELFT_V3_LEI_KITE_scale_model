@@ -556,7 +556,7 @@ def plot_zigzag(
 #     plt.tight_layout()
 
 #     # Save the figure
-#     saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_675_beta_0")
+#     saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_875_beta_0")
 
 
 def create_grouped_plot(
@@ -704,7 +704,7 @@ def create_grouped_plot(
     plt.subplots_adjust(bottom=0.25)
 
     # Save the figure
-    saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_675_beta_0")
+    saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_875_beta_0")
 
 
 def main_process():

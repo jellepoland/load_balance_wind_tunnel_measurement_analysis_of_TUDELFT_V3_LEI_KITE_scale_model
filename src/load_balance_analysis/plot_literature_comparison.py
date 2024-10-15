@@ -18,7 +18,20 @@ def plotting_polars_alpha(
     figsize: tuple,
     fontsize: int,
 ):
+    ## 1.4e5
+    vw = 5
+    beta_value = 0
+    folder_name = f"beta_{beta_value}"
+    file_name = f"vw_{vw}.csv"
+    path_to_csv = (
+        Path(project_dir) / "processed_data" / "normal_csv" / folder_name / file_name
+    )
+    df_all_values = pd.read_csv(path_to_csv)
+    data_windtunnel_alpha_re_14e4 = reduce_df_by_parameter_mean_and_std(
+        df_all_values, "aoa_kite"
+    )
 
+    ## 5.6e5
     vw = 20
     beta_value = 0
     folder_name = f"beta_{beta_value}"
@@ -44,6 +57,14 @@ def plotting_polars_alpha(
     )
     data_VSM_alpha_re_56e4 = pd.read_csv(path_to_csv_VSM_alpha_re_56e4)
     # Lebesque
+    path_to_csv_lebesque_Rey_10e4 = (
+        Path(project_dir)
+        / "processed_data"
+        / "literature_comparison"
+        / "V3_CL_CD_RANS_Lebesque_2024_Rey_10e4.csv"
+    )
+    data_lebesque_alpha_re_10e4 = pd.read_csv(path_to_csv_lebesque_Rey_10e4)
+
     path_to_csv_lebesque_Rey_100e4 = (
         Path(project_dir)
         / "processed_data"
@@ -51,6 +72,7 @@ def plotting_polars_alpha(
         / "V3_CL_CD_RANS_Lebesque_2024_Rey_100e4.csv"
     )
     data_lebesque_alpha_re_100e4 = pd.read_csv(path_to_csv_lebesque_Rey_100e4)
+
     path_to_csv_lebesque_Rey_300e4 = (
         Path(project_dir)
         / "processed_data"
@@ -59,38 +81,56 @@ def plotting_polars_alpha(
     )
     data_lebesque_alpha_re_300e4 = pd.read_csv(path_to_csv_lebesque_Rey_300e4)
 
+    # data_frame_list = [
+    #     data_lebesque_alpha_re_100e4,
+    #     data_VSM_alpha_re_56e4,
+    #     data_windtunnel_alpha_re_56e4,
+    # ]
+    # labels = [
+    #     rf"CFD Re = $10\times10^5$",
+    #     rf"VSM Re = $5.6\times10^5$",
+    #     rf"WT Re = $5.6\times10^5$",
+    # ]
+    # colors = ["black", "blue", "red"]
+    # linestyles = ["s-", "s-", "o-"]
     data_frame_list = [
         # data_windtunnel_alpha_re_42e4,
         # data_lebesque_alpha_re_300e4,
+        data_lebesque_alpha_re_10e4,
         data_lebesque_alpha_re_100e4,
         data_VSM_alpha_re_56e4,
         data_windtunnel_alpha_re_56e4,
+        # data_windtunnel_alpha_re_14e4,
     ]
     labels = [
         # rf"Re = $4.2\times10^5$ Wind Tunnel",
         # rf"Re = $30\times10^5$ CFD (Lebesque, 2022)",
+        rf"CFD Re = $1\times10^5$",
         rf"CFD Re = $10\times10^5$",
         rf"VSM Re = $5.6\times10^5$",
         rf"WT Re = $5.6\times10^5$",
+        # rf"WT Re = $1.4\times10^5$",
     ]
 
-    colors = ["black", "blue", "red"]
-    linestyles = ["s-", "s-", "o-"]
+    colors = ["black", "black", "blue", "red", "red"]
+    linestyles = ["o--", "o-", "o-", "s-"]
+    markersizes = [4, 4, 4, 6]
 
     # Plot CL, CD, and CS curves in subplots
     fig, axs = plt.subplots(1, 3, figsize=figsize)
 
-    for i, (data_frame, label, color, linestyle) in enumerate(
-        zip(data_frame_list, labels, colors, linestyles)
+    for i, (data_frame, label, color, linestyle, markersize) in enumerate(
+        zip(data_frame_list, labels, colors, linestyles, markersizes)
     ):
-        if i == 0:  # if Lebesque
-            linestyle = "s--"
+        # if CFD
+        if i == 0 or i == 1:
             axs[0].plot(
                 data_frame["aoa"],
                 data_frame["CL"],
                 linestyle,
                 label=label,
                 color=color,
+                markersize=markersize,
             )
             axs[1].plot(
                 data_frame["aoa"],
@@ -98,6 +138,7 @@ def plotting_polars_alpha(
                 linestyle,
                 label=label,
                 color=color,
+                markersize=markersize,
             )
             axs[2].plot(
                 data_frame["aoa"],
@@ -105,9 +146,10 @@ def plotting_polars_alpha(
                 linestyle,
                 label=label,
                 color=color,
+                markersize=markersize,
             )
-
-        elif i == 1:
+        # if VSM
+        elif i == 2:
 
             # # No stall model
             # linestyle = "s--"
@@ -137,6 +179,7 @@ def plotting_polars_alpha(
                 linestyle,
                 label=label,
                 color=color,
+                markersize=markersize,
             )
             axs[1].plot(
                 data_frame["aoa"],
@@ -144,6 +187,7 @@ def plotting_polars_alpha(
                 linestyle,
                 label=label,
                 color=color,
+                markersize=markersize,
             )
             axs[2].plot(
                 data_frame["aoa"],
@@ -151,15 +195,18 @@ def plotting_polars_alpha(
                 linestyle,
                 label=label,
                 color=color,
+                markersize=markersize,
             )
 
-        if i == 2:
+        # if wind tunnel
+        else:
             axs[0].plot(
                 data_frame["aoa_kite"],
                 data_frame["C_L"],
                 linestyle,
                 label=label,
                 color=color,
+                markersize=markersize,
             )
             axs[1].plot(
                 data_frame["aoa_kite"],
@@ -167,6 +214,7 @@ def plotting_polars_alpha(
                 linestyle,
                 label=label,
                 color=color,
+                markersize=markersize,
             )
             axs[2].plot(
                 data_frame["aoa_kite"],
@@ -174,6 +222,7 @@ def plotting_polars_alpha(
                 linestyle,
                 label=label,
                 color=color,
+                markersize=markersize,
             )
 
     # # adding the older data
@@ -269,6 +318,37 @@ def plotting_polars_beta(
     df_all_values = pd.read_csv(path_to_csv)
     data_WT_beta_re_56e4_alpha_low = reduce_df_by_parameter_mean_and_std(
         df_all_values, "sideslip"
+    )
+
+    def averaging_pos_and_neg_sideslip(df: pd.DataFrame) -> pd.DataFrame:
+
+        # Define the columns of interest
+        columns_to_average = ["C_L", "C_D", "C_S"]
+
+        # Loop through the relevant sideslip angles
+        for slip in [2, 4, 6, 8, 10, 12, 14, 20]:
+            # Get the rows for positive and negative sideslip values
+            df_positive = df[df["sideslip"] == slip].copy()
+            df_negative = df[df["sideslip"] == -slip].copy()
+
+            # Loop through the specified columns
+            for col in columns_to_average:
+                if col == "C_S":
+                    # Take the absolute value of C_S before averaging
+                    avg_values = (df_positive[col].values - df_negative[col].values) / 2
+                else:
+                    # Average C_L and C_D normally
+                    avg_values = (df_positive[col].values + df_negative[col].values) / 2
+
+                # Replace the values for the positive sideslip row with the averaged values
+                df.loc[df["sideslip"] == slip, col] = avg_values
+        return df
+
+    data_WT_beta_re_56e4_alpha_high = averaging_pos_and_neg_sideslip(
+        data_WT_beta_re_56e4_alpha_high
+    )
+    data_WT_beta_re_56e4_alpha_low = averaging_pos_and_neg_sideslip(
+        data_WT_beta_re_56e4_alpha_low
     )
 
     # Load VSM data
@@ -446,6 +526,7 @@ def plotting_polars_beta(
                 color=color,
             )
         else:  # if windtunnel
+
             axs[0].plot(
                 data_frame["sideslip"],
                 data_frame["C_L"],
