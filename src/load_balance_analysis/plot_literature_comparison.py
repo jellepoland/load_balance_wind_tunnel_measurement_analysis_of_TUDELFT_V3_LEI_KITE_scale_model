@@ -200,22 +200,49 @@ def plotting_polars_alpha(
 
         # if wind tunnel
         else:
-            axs[0].plot(
+
+            cl_errors = 0.05 * np.ones_like(data_frame["aoa_kite"])
+            cd_errors = 0.02 * np.ones_like(data_frame["aoa_kite"])
+
+            # Plotting with error bars
+            axs[0].errorbar(
                 data_frame["aoa_kite"],
                 data_frame["C_L"],
-                linestyle,
+                yerr=cl_errors,  # Add the error data for CL
+                linestyle="--",
                 label=label,
                 color=color,
                 markersize=markersize,
+                fmt="o",  # Use 'o' to specify marker type; change as needed
             )
-            axs[1].plot(
+
+            axs[1].errorbar(
                 data_frame["aoa_kite"],
                 data_frame["C_D"],
-                linestyle,
+                yerr=cd_errors,  # Add the error data for CD
+                linestyle="--",
                 label=label,
                 color=color,
                 markersize=markersize,
+                fmt="o",  # Use 'o' to specify marker type; change as needed
             )
+
+            # axs[0].plot(
+            #     data_frame["aoa_kite"],
+            #     data_frame["C_L"],
+            #     linestyle,
+            #     label=label,
+            #     color=color,
+            #     markersize=markersize,
+            # )
+            # axs[1].plot(
+            #     data_frame["aoa_kite"],
+            #     data_frame["C_D"],
+            #     linestyle,
+            #     label=label,
+            #     color=color,
+            #     markersize=markersize,
+            # )
             axs[2].plot(
                 data_frame["aoa_kite"],
                 data_frame["C_L"] / data_frame["C_D"],

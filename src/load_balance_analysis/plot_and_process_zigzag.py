@@ -8,6 +8,9 @@ from utils import (
     x_axis_labels,
     y_axis_labels,
     project_dir,
+    calculate_confidence_interval,
+    block_bootstrap_confidence_interval,
+    hac_newey_west_confidence_interval,
 )
 import re
 from collections import defaultdict
@@ -403,10 +406,32 @@ def plot_zigzag(
             ]
 
         for data, label in zip(data_list, label_list):
+            print(f"\nlabel: {label}")
+            # skipping the data that has rey = 1.4
+            if "1.4" in label:
+                continue
             coefficients = ["C_L", "C_D", "C_S"]
+
+            ## Standard Deviation
             data_calculated = [
                 [data[coeff].mean(), data[coeff].std()] for coeff in coefficients
             ]
+            # ## Confidence Interval
+            # data_calculated = [
+            #     [data[coeff].mean(), calculate_confidence_interval(data[coeff])] for coeff in coefficients
+            # ]
+            ## Block Bootstrap Confidence Interval
+            # data_calculated = [
+            #     [data[coeff].mean(), block_bootstrap_confidence_interval(data[coeff])]
+            #     for coeff in coefficients
+            # ]
+            ## HAC Newey-West Confidence Interval
+            data_calculated = [
+                [data[coeff].mean(), hac_newey_west_confidence_interval(data[coeff])]
+                for coeff in coefficients
+            ]
+
+            ## Appending
             rey_list.append(rey)
             data_to_print.append(data_calculated)
             labels_to_print.append(label)

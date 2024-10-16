@@ -3,7 +3,15 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from pathlib import Path
-from utils import saving_pdf_and_pdf_tex, x_axis_labels, y_axis_labels, project_dir
+from utils import (
+    saving_pdf_and_pdf_tex,
+    x_axis_labels,
+    y_axis_labels,
+    project_dir,
+    calculate_confidence_interval,
+    block_bootstrap_confidence_interval,
+    hac_newey_west_confidence_interval,
+)
 
 
 # def read_and_process_files(
@@ -43,6 +51,7 @@ from utils import saving_pdf_and_pdf_tex, x_axis_labels, y_axis_labels, project_
 #     return pd.concat(all_data)  # Concatenate all DataFrames
 
 
+## PLOTS STANDARD DEVIATION
 def generate_boxplots_vs_aoa(
     combined_df: pd.DataFrame,
     vw: str,
@@ -118,10 +127,31 @@ def generate_boxplots_vs_aoa(
 
         # means = [data.mean() for data in box_data]
 
-        # standard deviation
         means = [data.mean() for data in box_data]
+
+        ### ERROR BARS
+        CI_value = 0.99
+        alpha_CI = 1 - CI_value
+        # standard deviation
         std = [data.std() for data in box_data]
-        axs[i].errorbar(positions, means, yerr=std, fmt="o", color="black", capsize=5)
+        # confidence interval
+        # std = [
+        #     calculate_confidence_interval(data, alpha=alpha_CI) for data in box_data
+        # ]
+        # confidence interval BLOCK BOOTSTRAP
+        # std = [
+        #     block_bootstrap_confidence_interval(data, alpha=alpha_CI)
+        #     for data in box_data
+        # ]
+        # hac/Newey-West
+        # std = [
+        #     hac_newey_west_confidence_interval(data, alpha=alpha_CI)
+        #     for data in box_data
+        # ]
+
+        axs[i].errorbar(
+            positions, means, yerr=std, fmt="o", color="black", capsize=5, markersize=1
+        )
         axs[i].plot(positions, means, marker="o", linestyle="--", color="black")
 
         # axs[i].set_title(f"{subplot_titles[i]}")
@@ -138,7 +168,7 @@ def generate_boxplots_vs_aoa(
     # output_dir = f"plots_unsteady_final/vw_{vw}/alpha"
     # os.makedirs(output_dir, exist_ok=True)
 
-    filename = f"boxplot_alpha_sweep_at_fixed_beta_{sideslip:.2f}_vw_{vw}"
+    filename = f"boxplot_alpha_sweep_at_fixed_beta_{sideslip:.2f}_vw_{vw}_STD"  # CI_NEWEYWEST_{CI_value}"
     saving_pdf_and_pdf_tex(results_path, filename)
 
 
