@@ -347,36 +347,36 @@ def plotting_polars_beta(
         df_all_values, "sideslip"
     )
 
-    def averaging_pos_and_neg_sideslip(df: pd.DataFrame) -> pd.DataFrame:
+    # def averaging_pos_and_neg_sideslip(df: pd.DataFrame) -> pd.DataFrame:
 
-        # Define the columns of interest
-        columns_to_average = ["C_L", "C_D", "C_S"]
+    #     # Define the columns of interest
+    #     columns_to_average = ["C_L", "C_D", "C_S"]
 
-        # Loop through the relevant sideslip angles
-        for slip in [2, 4, 6, 8, 10, 12, 14, 20]:
-            # Get the rows for positive and negative sideslip values
-            df_positive = df[df["sideslip"] == slip].copy()
-            df_negative = df[df["sideslip"] == -slip].copy()
+    #     # Loop through the relevant sideslip angles
+    #     for slip in [2, 4, 6, 8, 10, 12, 14, 20]:
+    #         # Get the rows for positive and negative sideslip values
+    #         df_positive = df[df["sideslip"] == slip].copy()
+    #         df_negative = df[df["sideslip"] == -slip].copy()
 
-            # Loop through the specified columns
-            for col in columns_to_average:
-                if col == "C_S":
-                    # Take the absolute value of C_S before averaging
-                    avg_values = (df_positive[col].values - df_negative[col].values) / 2
-                else:
-                    # Average C_L and C_D normally
-                    avg_values = (df_positive[col].values + df_negative[col].values) / 2
+    #         # Loop through the specified columns
+    #         for col in columns_to_average:
+    #             if col == "C_S":
+    #                 # Take the absolute value of C_S before averaging
+    #                 avg_values = (df_positive[col].values - df_negative[col].values) / 2
+    #             else:
+    #                 # Average C_L and C_D normally
+    #                 avg_values = (df_positive[col].values + df_negative[col].values) / 2
 
-                # Replace the values for the positive sideslip row with the averaged values
-                df.loc[df["sideslip"] == slip, col] = avg_values
-        return df
+    #             # Replace the values for the positive sideslip row with the averaged values
+    #             df.loc[df["sideslip"] == slip, col] = avg_values
+    #     return df
 
-    data_WT_beta_re_56e4_alpha_high = averaging_pos_and_neg_sideslip(
-        data_WT_beta_re_56e4_alpha_high
-    )
-    data_WT_beta_re_56e4_alpha_low = averaging_pos_and_neg_sideslip(
-        data_WT_beta_re_56e4_alpha_low
-    )
+    # data_WT_beta_re_56e4_alpha_high = averaging_pos_and_neg_sideslip(
+    #     data_WT_beta_re_56e4_alpha_high
+    # )
+    # data_WT_beta_re_56e4_alpha_low = averaging_pos_and_neg_sideslip(
+    #     data_WT_beta_re_56e4_alpha_low
+    # )
 
     # Load VSM data
     path_to_csv_VSM_beta_re_56e4_alpha_1195 = (
@@ -503,6 +503,7 @@ def plotting_polars_beta(
     for i, (data_frame, label, color, linestyle) in enumerate(
         zip(data_frame_list, labels, colors, linestyles)
     ):
+
         if i == 0:  # if Lebesque
             axs[0].plot(
                 data_frame["beta"],
@@ -574,6 +575,28 @@ def plotting_polars_beta(
                 linestyle,
                 label=label,
                 color=color,
+            )
+
+            axs[0].plot(
+                -data_frame["sideslip"],
+                data_frame["C_L"],
+                linestyle,
+                label=label + rf"(-$\beta$)",
+                color="green",
+            )
+            axs[1].plot(
+                -data_frame["sideslip"],
+                data_frame["C_D"],
+                linestyle,
+                label=label + rf"(-$\beta$)",
+                color="green",
+            )
+            axs[2].plot(
+                -data_frame["sideslip"],
+                -data_frame["C_S"],
+                linestyle,
+                label=label + rf"(-$\beta$)",
+                color="green",
             )
 
     # Formatting the axis
