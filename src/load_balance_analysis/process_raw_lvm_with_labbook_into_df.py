@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from utils import project_dir
+from load_balance_analysis.functions_utils import project_dir
 
 
 def read_lvm(filename: str) -> pd.DataFrame:
@@ -210,7 +210,10 @@ def read_labbook_into_df(labbook_path: Path) -> pd.DataFrame:
 
 
 def reading_all_folders(
-    labbook_path: Path, parent_folder_dir: Path, save_parent_dir: Path, delta_aoa: float
+    labbook_path: Path,
+    parent_folder_dir: Path,
+    save_parent_dir: Path,
+    delta_aoa_rod_to_alpha: float,
 ):
 
     # loading labbook
@@ -231,7 +234,7 @@ def reading_all_folders(
         # df_folder["aoa"] = df_folder["aoa"].str.replace("deg", "")
         # aoa_value = folder_name.split("_")[-1]
         ## Changing alpha by 7.25 deg
-        aoa_value_corrected = float(aoa_value) - delta_aoa
+        aoa_value_corrected = float(aoa_value) - delta_aoa_rod_to_alpha
         folder_name_corrected = f"alpha_{aoa_value_corrected:.1f}"
         print(f"\nSAVING folder_name_corrected: {folder_name_corrected}")
         output_folder_dir = Path(save_parent_dir) / folder_name_corrected
@@ -249,11 +252,22 @@ def reading_all_folders(
 
 
 def main():
-    delta_aoa = 7.25
+    delta_aoa_rod_to_alpha = 7.25
     labbook_path = Path(project_dir) / "data" / "labbook.csv"
+
+    ## Doing this for the normal data
     parent_folder_dir = Path(project_dir) / "data" / "normal"
     save_parent_dir = Path(project_dir) / "processed_data" / "normal_csv"
-    reading_all_folders(labbook_path, parent_folder_dir, save_parent_dir, delta_aoa)
+    reading_all_folders(
+        labbook_path, parent_folder_dir, save_parent_dir, delta_aoa_rod_to_alpha
+    )
+
+    ## Doing this for the without data
+    parent_folder_dir = Path(project_dir) / "data" / "without"
+    save_parent_dir = Path(project_dir) / "processed_data" / "without_csv"
+    reading_all_folders(
+        labbook_path, parent_folder_dir, save_parent_dir, delta_aoa_rod_to_alpha
+    )
 
 
 if __name__ == "__main__":

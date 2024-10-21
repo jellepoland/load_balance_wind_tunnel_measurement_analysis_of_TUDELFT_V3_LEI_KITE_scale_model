@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import pandas as pd
-from utils import project_dir
+from load_balance_analysis.functions_utils import project_dir
 
 
 def main():

@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
-from utils import project_dir
+from load_balance_analysis.functions_utils import project_dir
 from pathlib import Path
 
 

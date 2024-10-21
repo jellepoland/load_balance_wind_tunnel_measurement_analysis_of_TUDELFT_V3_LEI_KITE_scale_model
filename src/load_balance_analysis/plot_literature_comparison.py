@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from pathlib import Path
-from utils import (
+from load_balance_analysis.functions_utils import (
     project_dir,
     saving_pdf_and_pdf_tex,
     x_axis_labels,

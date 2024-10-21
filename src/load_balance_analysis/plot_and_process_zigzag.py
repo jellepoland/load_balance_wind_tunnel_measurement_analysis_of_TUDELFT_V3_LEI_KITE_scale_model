@@ -3,15 +3,24 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from pathlib import Path
-from utils import (
+from load_balance_analysis.functions_utils import (
     saving_pdf_and_pdf_tex,
     x_axis_labels,
     y_axis_labels,
     project_dir,
+)
+from load_balance_analysis.functions_statistics import (
     calculate_confidence_interval,
     block_bootstrap_confidence_interval,
     hac_newey_west_confidence_interval,
 )
+from load_balance_analysis.functions_processing import (
+    nondimensionalize,
+    substract_support_structure_aero_coefficients,
+    translate_coordinate_system,
+    add_dyn_visc_and_reynolds,
+)
+
 import re
 from collections import defaultdict
 
@@ -167,119 +176,119 @@ def substracting_runs_with_zero_wind(
     return merged_df
 
 
-def nondimensionalize(merged_df: pd.DataFrame) -> pd.DataFrame:
-    rho = merged_df["Density"]
-    V = merged_df["vw_actual"]
-    S_ref = 0.46
-    c_ref = 0.4
+# def nondimensionalize(merged_df: pd.DataFrame) -> pd.DataFrame:
+#     rho = merged_df["Density"]
+#     V = merged_df["vw_actual"]
+#     S_ref = 0.46
+#     c_ref = 0.4
 
-    # Nondimensionalize the force columns
-    merged_df["F_X"] /= 0.5 * rho * V**2 * S_ref
-    merged_df["F_Y"] /= 0.5 * rho * V**2 * S_ref
-    merged_df["F_Z"] /= 0.5 * rho * V**2 * S_ref
+#     # Nondimensionalize the force columns
+#     merged_df["F_X"] /= 0.5 * rho * V**2 * S_ref
+#     merged_df["F_Y"] /= 0.5 * rho * V**2 * S_ref
+#     merged_df["F_Z"] /= 0.5 * rho * V**2 * S_ref
 
-    # Nondimensionalize the moment columns
-    merged_df["M_X"] /= 0.5 * rho * V**2 * S_ref * c_ref
-    merged_df["M_Y"] /= 0.5 * rho * V**2 * S_ref * c_ref
-    merged_df["M_Z"] /= 0.5 * rho * V**2 * S_ref * c_ref
+#     # Nondimensionalize the moment columns
+#     merged_df["M_X"] /= 0.5 * rho * V**2 * S_ref * c_ref
+#     merged_df["M_Y"] /= 0.5 * rho * V**2 * S_ref * c_ref
+#     merged_df["M_Z"] /= 0.5 * rho * V**2 * S_ref * c_ref
 
-    return merged_df
-
-
-def substract_support_structure_aero_coefficients(
-    merged_df: pd.DataFrame, support_struc_aero_interp_coeffs: pd.DataFrame
-) -> pd.DataFrame:
-
-    # print(f"columns: {merged_df.columns}")
-    # Select the support structure aerodynamic coefficients where the wind speed is the corresponding wind speed to this .lvm file
-    cur_vw = merged_df["vw_actual"].unique()[0]
-    # print(f"cur_vw: {np.around(cur_vw)}")
-    # print(f'support_struc_aero_interp_coeffs["vw"]: {support_struc_aero_interp_coeffs["vw"].unique()}')
-    supp_coeffs = support_struc_aero_interp_coeffs[
-        support_struc_aero_interp_coeffs["vw"] == int(np.around(cur_vw))
-    ]
-    # print(f"supp_coeffs: {supp_coeffs}")
-    aoa = merged_df["aoa"].unique()[0] - 7.25
-
-    for k in merged_df["sideslip"].unique():
-        # print(f"k: {k}")
-        # select support structure aero coefficients for this sideslip
-        c_s = supp_coeffs[supp_coeffs["sideslip"] == k]
-        F_x = c_s.loc[c_s["channel"] == "Cx", ["a", "b", "c"]]
-        F_y = c_s.loc[c_s["channel"] == "Cy", ["a", "b", "c"]]
-        F_z = c_s.loc[c_s["channel"] == "Cz", ["a", "b", "c"]]
-        M_x = c_s.loc[c_s["channel"] == "Cmx", ["a", "b", "c"]]
-        M_y = c_s.loc[c_s["channel"] == "Cmy", ["a", "b", "c"]]
-        M_z = c_s.loc[c_s["channel"] == "Cmz", ["a", "b", "c"]]
-
-        # compute support structure aero coefficients for this wind speed, sideslip and angle of attack combination
-        C_Fx_s = np.array(F_x["a"] * (aoa**2) + F_x["b"] * aoa + F_x["c"])[0]
-        C_Fy_s = np.array(F_y["a"] * (aoa**2) + F_y["b"] * aoa + F_y["c"])[0]
-        C_Fz_s = np.array(F_z["a"] * (aoa**2) + F_z["b"] * aoa + F_z["c"])[0]
-        C_Mx_s = np.array(M_x["a"] * (aoa**2) + M_x["b"] * aoa + M_x["c"])[0]
-        C_My_s = np.array(M_y["a"] * (aoa**2) + M_y["b"] * aoa + M_y["c"])[0]
-        C_Mz_s = np.array(M_z["a"] * (aoa**2) + M_z["b"] * aoa + M_z["c"])[0]
-
-        # subtract support structure aero coefficients for this wind speed, sideslip and aoa combination from merged_df
-        merged_df.loc[merged_df["sideslip"] == k, "F_X"] -= C_Fx_s
-        merged_df.loc[merged_df["sideslip"] == k, "F_Y"] -= C_Fy_s
-        merged_df.loc[merged_df["sideslip"] == k, "F_Z"] -= C_Fz_s
-        merged_df.loc[merged_df["sideslip"] == k, "M_X"] -= C_Mx_s
-        merged_df.loc[merged_df["sideslip"] == k, "M_Y"] -= C_My_s
-        merged_df.loc[merged_df["sideslip"] == k, "M_Z"] -= C_Mz_s
-
-    return merged_df
+#     return merged_df
 
 
-# function that translates coordinate system
-def translateCoordsys(dataframe: pd.DataFrame) -> pd.DataFrame:
-    # parameters necessary to translate moments (aka determine position of cg)
-    x_hinge = (
-        441.5  # x distance between force balance coord. sys. and hinge point in mm
-    )
-    z_hinge = 1359  # z distance between force balance coord. sys. and hinge point in mm
-    l_cg = 625.4  # distance between hinge point and kite CG
-    alpha_cg = np.deg2rad(
-        dataframe["aoa"] - 23.82
-    )  # 23.82 deg is the angle between the line that goes from the hinge to
-    #                                                   # the kites CG and the rods protruding from the kite
+# def substract_support_structure_aero_coefficients(
+#     merged_df: pd.DataFrame, support_struc_aero_interp_coeffs: pd.DataFrame
+# ) -> pd.DataFrame:
 
-    x_cg = l_cg * np.cos(alpha_cg)
-    z_cg = l_cg * np.sin(alpha_cg)
-    c_ref = 0.4
+#     # print(f"columns: {merged_df.columns}")
+#     # Select the support structure aerodynamic coefficients where the wind speed is the corresponding wind speed to this .lvm file
+#     cur_vw = merged_df["vw_actual"].unique()[0]
+#     # print(f"cur_vw: {np.around(cur_vw)}")
+#     # print(f'support_struc_aero_interp_coeffs["vw"]: {support_struc_aero_interp_coeffs["vw"].unique()}')
+#     supp_coeffs = support_struc_aero_interp_coeffs[
+#         support_struc_aero_interp_coeffs["vw"] == int(np.around(cur_vw))
+#     ]
+#     # print(f"supp_coeffs: {supp_coeffs}")
+#     aoa = merged_df["aoa"].unique()[0] - 7.25
 
-    x_hcg = (x_hinge + x_cg) / (1000 * c_ref)
-    z_hcg = (z_hinge + z_cg) / (1000 * c_ref)
+#     for k in merged_df["sideslip"].unique():
+#         # print(f"k: {k}")
+#         # select support structure aero coefficients for this sideslip
+#         c_s = supp_coeffs[supp_coeffs["sideslip"] == k]
+#         F_x = c_s.loc[c_s["channel"] == "Cx", ["a", "b", "c"]]
+#         F_y = c_s.loc[c_s["channel"] == "Cy", ["a", "b", "c"]]
+#         F_z = c_s.loc[c_s["channel"] == "Cz", ["a", "b", "c"]]
+#         M_x = c_s.loc[c_s["channel"] == "Cmx", ["a", "b", "c"]]
+#         M_y = c_s.loc[c_s["channel"] == "Cmy", ["a", "b", "c"]]
+#         M_z = c_s.loc[c_s["channel"] == "Cmz", ["a", "b", "c"]]
 
-    # rotation of coordinate system: force coefficients change
-    dataframe["C_L"] = dataframe["F_Z"] * -1
-    dataframe["C_S"] = dataframe["F_Y"] * -1
-    dataframe["C_D"] = dataframe["F_X"]
+#         # compute support structure aero coefficients for this wind speed, sideslip and angle of attack combination
+#         C_Fx_s = np.array(F_x["a"] * (aoa**2) + F_x["b"] * aoa + F_x["c"])[0]
+#         C_Fy_s = np.array(F_y["a"] * (aoa**2) + F_y["b"] * aoa + F_y["c"])[0]
+#         C_Fz_s = np.array(F_z["a"] * (aoa**2) + F_z["b"] * aoa + F_z["c"])[0]
+#         C_Mx_s = np.array(M_x["a"] * (aoa**2) + M_x["b"] * aoa + M_x["c"])[0]
+#         C_My_s = np.array(M_y["a"] * (aoa**2) + M_y["b"] * aoa + M_y["c"])[0]
+#         C_Mz_s = np.array(M_z["a"] * (aoa**2) + M_z["b"] * aoa + M_z["c"])[0]
 
-    dataframe["C_roll"] = dataframe["M_X"] - dataframe["F_Y"] * z_hcg
-    dataframe["C_pitch"] = (
-        -dataframe["M_Y"] + dataframe["F_Z"] * x_hcg - dataframe["F_X"] * z_hcg
-    )
-    dataframe["C_yaw"] = -dataframe["M_Z"] - dataframe["F_Y"] * x_hcg
+#         # subtract support structure aero coefficients for this wind speed, sideslip and aoa combination from merged_df
+#         merged_df.loc[merged_df["sideslip"] == k, "F_X"] -= C_Fx_s
+#         merged_df.loc[merged_df["sideslip"] == k, "F_Y"] -= C_Fy_s
+#         merged_df.loc[merged_df["sideslip"] == k, "F_Z"] -= C_Fz_s
+#         merged_df.loc[merged_df["sideslip"] == k, "M_X"] -= C_Mx_s
+#         merged_df.loc[merged_df["sideslip"] == k, "M_Y"] -= C_My_s
+#         merged_df.loc[merged_df["sideslip"] == k, "M_Z"] -= C_Mz_s
 
-    # save resulting dataframe
-    df_result = dataframe
-    return df_result
+#     return merged_df
 
 
-def add_dyn_visc_and_reynolds(df: pd.DataFrame) -> pd.DataFrame:
-    # add dynamic viscosity and reynolds number column
-    T = df["Temp"] + 273.15
-    mu_0 = 1.716e-5
-    T_0 = 273.15
-    C_suth = 110.4
-    c_ref = 0.4  # reference chord
-    dynamic_viscosity = (
-        mu_0 * (T / T_0) ** 0.5 * (T_0 + C_suth) / (T + C_suth)
-    )  # sutherland's law
-    df["dyn_vis"] = dynamic_viscosity
-    df["Rey"] = df["Density"] * df["vw_actual"] * c_ref / df["dyn_vis"]
-    return df
+# # function that translates coordinate system
+# def translate_coordinate_system(dataframe: pd.DataFrame) -> pd.DataFrame:
+#     # parameters necessary to translate moments (aka determine position of cg)
+#     x_hinge = (
+#         441.5  # x distance between force balance coord. sys. and hinge point in mm
+#     )
+#     z_hinge = 1359  # z distance between force balance coord. sys. and hinge point in mm
+#     l_cg = 625.4  # distance between hinge point and kite CG
+#     alpha_cg = np.deg2rad(
+#         dataframe["aoa"] - 23.82
+#     )  # 23.82 deg is the angle between the line that goes from the hinge to
+#     #                                                   # the kites CG and the rods protruding from the kite
+
+#     x_cg = l_cg * np.cos(alpha_cg)
+#     z_cg = l_cg * np.sin(alpha_cg)
+#     c_ref = 0.4
+
+#     x_hcg = (x_hinge + x_cg) / (1000 * c_ref)
+#     z_hcg = (z_hinge + z_cg) / (1000 * c_ref)
+
+#     # rotation of coordinate system: force coefficients change
+#     dataframe["C_L"] = dataframe["F_Z"] * -1
+#     dataframe["C_S"] = dataframe["F_Y"] * -1
+#     dataframe["C_D"] = dataframe["F_X"]
+
+#     dataframe["C_roll"] = dataframe["M_X"] - dataframe["F_Y"] * z_hcg
+#     dataframe["C_pitch"] = (
+#         -dataframe["M_Y"] + dataframe["F_Z"] * x_hcg - dataframe["F_X"] * z_hcg
+#     )
+#     dataframe["C_yaw"] = -dataframe["M_Z"] - dataframe["F_Y"] * x_hcg
+
+#     # save resulting dataframe
+#     df_result = dataframe
+#     return df_result
+
+
+# def add_dyn_visc_and_reynolds(df: pd.DataFrame) -> pd.DataFrame:
+#     # add dynamic viscosity and reynolds number column
+#     T = df["Temp"] + 273.15
+#     mu_0 = 1.716e-5
+#     T_0 = 273.15
+#     C_suth = 110.4
+#     c_ref = 0.4  # reference chord
+#     dynamic_viscosity = (
+#         mu_0 * (T / T_0) ** 0.5 * (T_0 + C_suth) / (T + C_suth)
+#     )  # sutherland's law
+#     df["dyn_vis"] = dynamic_viscosity
+#     df["Rey"] = df["Density"] * df["vw_actual"] * c_ref / df["dyn_vis"]
+#     return df
 
 
 def processing_zigzag_lvm_data_into_csv(
@@ -321,7 +330,7 @@ def processing_zigzag_lvm_data_into_csv(
             )
 
             # 4. Translate coordinate system
-            df_translated = translateCoordsys(merged_df_zero_substracted_nondim_kite)
+            df_translated = translate_coordinate_system(merged_df_zero_substracted_nondim_kite)
 
             # 5. Add dynamic viscosity and Reynolds number
             df_final = add_dyn_visc_and_reynolds(df_translated)

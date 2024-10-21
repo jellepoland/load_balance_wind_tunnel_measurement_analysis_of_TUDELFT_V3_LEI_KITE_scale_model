@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from pathlib import Path
-from utils import project_dir
+from load_balance_analysis.functions_utils import project_dir
 
 from VSM.WingGeometry import Wing
 from VSM.WingAerodynamics import WingAerodynamics

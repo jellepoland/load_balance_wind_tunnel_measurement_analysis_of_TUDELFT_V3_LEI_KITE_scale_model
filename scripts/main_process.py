@@ -7,12 +7,12 @@ from load_balance_analysis import process_vsm
 
 
 def main():
-    process_raw_lvm_with_labbook_into_df.main()
+    # process_raw_lvm_with_labbook_into_df.main()
+    # process_support_struc_aero_interp_coeffs.main()
     process_raw_csv.main()
     # process_vsm.main()
-    process_bundling_beta_0.main()
-    process_support_struc_aero_interp_coeffs.main()
-    plot_and_process_zigzag.main_process()
+    # process_bundling_beta_0.main()
+    # plot_and_process_zigzag.main_process()
 
 
 if __name__ == "__main__":

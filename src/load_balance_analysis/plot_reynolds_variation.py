@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from utils import (
+from load_balance_analysis.functions_utils import (
     saving_pdf_and_pdf_tex,
     x_axis_labels,
     y_axis_labels,
