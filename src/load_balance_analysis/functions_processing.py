@@ -232,7 +232,7 @@ def substract_support_structure_aero_coefficients(
         support_struc_aero_interp_coeffs_path
     )
 
-    print(f"columns: {support_struc_aero_interp_coeffs.columns}")
+    # print(f"columns: {support_struc_aero_interp_coeffs.columns}")
 
     # Select the support structure aerodynamic coefficients where the wind speed is the corresponding wind speed to this .lvm file
     cur_vw = df["vw"].unique()[0]
@@ -248,12 +248,12 @@ def substract_support_structure_aero_coefficients(
         c_s = supp_coeffs[supp_coeffs["sideslip"] == k]
 
         # For each aerodynamic channel (forces and moments), get the interpolation coefficients (m1, c1, m2, c2)
-        F_x = c_s.loc[c_s["channel"] == "Cx", ["m1", "c1", "m2", "c2"]]
-        F_y = c_s.loc[c_s["channel"] == "Cy", ["m1", "c1", "m2", "c2"]]
-        F_z = c_s.loc[c_s["channel"] == "Cz", ["m1", "c1", "m2", "c2"]]
-        M_x = c_s.loc[c_s["channel"] == "Cmx", ["m1", "c1", "m2", "c2"]]
-        M_y = c_s.loc[c_s["channel"] == "Cmy", ["m1", "c1", "m2", "c2"]]
-        M_z = c_s.loc[c_s["channel"] == "Cmz", ["m1", "c1", "m2", "c2"]]
+        F_x = c_s.loc[c_s["channel"] == "C_D", ["m1", "c1", "m2", "c2"]]
+        F_y = c_s.loc[c_s["channel"] == "C_S", ["m1", "c1", "m2", "c2"]]
+        F_z = c_s.loc[c_s["channel"] == "C_L", ["m1", "c1", "m2", "c2"]]
+        M_x = c_s.loc[c_s["channel"] == "C_roll", ["m1", "c1", "m2", "c2"]]
+        M_y = c_s.loc[c_s["channel"] == "C_pitch", ["m1", "c1", "m2", "c2"]]
+        M_z = c_s.loc[c_s["channel"] == "C_yaw", ["m1", "c1", "m2", "c2"]]
 
         # Define a function to compute the interpolated value based on the angle of attack
         def interpolate_value(aoa, m1, c1, m2, c2, middle_alpha):
