@@ -239,7 +239,6 @@ def substract_support_structure_aero_coefficients(
     supp_coeffs = support_struc_aero_interp_coeffs[
         support_struc_aero_interp_coeffs["vw"] == int(np.around(cur_vw))
     ]
-
     # Retrieve the angle of attack for the kite
     aoa_kite = df["aoa_kite"].unique()[0]
 
@@ -343,3 +342,174 @@ def add_dyn_visc_and_reynolds(
     df["Rey"] = df["Density"] * df["vw"] * c_ref / dynamic_viscosity
 
     return df
+
+
+def processing_raw_lvm_data_into_csv(
+    folder_dir: Path,
+    S_ref: float,
+    c_ref: float,
+    is_kite: bool,
+    is_zigzag: bool,
+    support_struc_aero_interp_coeffs_path: Path,
+    x_hinge: float,
+    z_hinge: float,
+    l_cg: float,
+    alpha_cg_delta_with_rod: float,
+    delta_celsius_kelvin: float,
+    mu_0: float,
+    T_0: float,
+    C_suth: float,
+    delta_aoa_rod_to_alpha: float,
+):
+    if is_kite:
+        print(f"PROCESSING KITE, substracting support-structure")
+    else:
+        print(f"PROCESSING SUPPORT-STRUCTURE")
+
+    if is_zigzag:
+        print(f"Processing ZIGZAG")
+
+    for i, file in enumerate(folder_dir.iterdir()):
+        # only read the raw files
+        if "raw" not in file.name:
+            continue
+
+        # Read csv file
+        df = read_csv_with_locale(file)
+        # compute rounded vw
+        vw_unique_round = int(round(df["vw"].unique()[0], 0))
+        print(f"\n---------------------")
+        print(f"File: {file.name}, \nvw: {vw_unique_round}")
+
+        # If zz correcting for the sideslip
+        if is_zigzag:
+            df["sideslip"] -= 1.8
+
+        # Storing the raw values
+        df["F_X_raw"] = df["F_X"]
+        df["F_Y_raw"] = df["F_Y"]
+        df["F_Z_raw"] = df["F_Z"]
+        df["M_X_raw"] = df["M_X"]
+        df["M_Y_raw"] = df["M_Y"]
+        df["M_Z_raw"] = df["M_Z"]
+
+        # 2. compute Average Zero-Run values
+        if df["vw"].unique()[0] < 1.5:
+            print(f'i: {i}, vw: {df["vw"].unique()}')
+            # print(f'i: {i}, vw: {df["vw"].unique()}')
+            # Computing the average measured zero-run values
+            zero_F_X = df["F_X"].mean()
+            zero_F_Y = df["F_Y"].mean()
+            zero_F_Z = df["F_Z"].mean()
+            zero_M_X = df["M_X"].mean()
+            zero_M_Y = df["M_Y"].mean()
+            zero_M_Z = df["M_Z"].mean()
+
+        ## Skipping vw = 5 for zigzag
+        elif vw_unique_round == 5 and is_zigzag:
+            print(f"Not processing because zigzag and vw: {vw_unique_round}")
+            continue
+        else:
+
+            # TODO: This can be simplfied and taken from the filename
+            # Correcting the angle of attack, rounding to 1 decimal (like the folder name)
+            df["aoa_kite"] = round(df["aoa"] - delta_aoa_rod_to_alpha, 1)
+
+            # And add dynamic viscosity and Reynolds number
+            df = add_dyn_visc_and_reynolds(
+                df, delta_celsius_kelvin, mu_0, T_0, C_suth, c_ref
+            )
+
+            # 1. Substracting the zero-run values
+            df["F_X"] -= zero_F_X
+            df["F_Y"] -= zero_F_Y
+            df["F_Z"] -= zero_F_Z
+            df["M_X"] -= zero_M_X
+            df["M_Y"] -= zero_M_Y
+            df["M_Z"] -= zero_M_Z
+
+            # 2. Non-dimensionalize
+            df = nondimensionalize(df, S_ref, c_ref)
+
+            # 7. Calculate signal-to-noise ratio
+            ## comparing RAW --to-- (RAW - zero-run)
+            df["SNR_CF_X"] = df["CF_X"] / df["CF_X_raw"]
+            df["SNR_CF_Y"] = df["CF_Y"] / df["CF_Y_raw"]
+            df["SNR_CF_Z"] = df["CF_Z"] / df["CF_Z_raw"]
+            df["SNR_CM_X"] = df["CM_X"] / df["CM_X_raw"]
+            df["SNR_CM_Y"] = df["CM_Y"] / df["CM_Y_raw"]
+            df["SNR_CM_Z"] = df["CM_Z"] / df["CM_Z_raw"]
+
+            # ## comparing with support measured --to-- raw, only difference is zero-run
+            # df["SNR_CF_X"] = df["F_X"] / df["F_X_raw"]
+            # df["SNR_CF_Y"] = df["F_Y"] / df["F_Y_raw"]
+            # df["SNR_CF_Z"] = df["F_Z"] / df["F_Z_raw"]
+            # df["SNR_CM_X"] = df["M_X"] / df["M_X_raw"]
+            # df["SNR_CM_Y"] = df["M_Y"] / df["M_Y_raw"]
+            # df["SNR_CM_Z"] = df["M_Z"] / df["M_Z_raw"]
+
+            # 3. Translate coordinate system ("CF_X" in "C_D" out)
+            df = translate_coordinate_system(
+                df,
+                x_hinge,
+                z_hinge,
+                l_cg,
+                alpha_cg_delta_with_rod,
+                c_ref,
+            )
+            # 4. Correct for sideslip ("C_D" in "C_D" out)
+            df = correcting_for_sideslip(df)
+
+            if is_kite:
+                # 5. Substracting support structure aerodynamic coefficients ("C_D" in "C_D" out)
+                df = substract_support_structure_aero_coefficients(
+                    df, support_struc_aero_interp_coeffs_path
+                )
+
+            # Dropping columns that are no longer needed
+            columns_to_drop = [
+                "aoa",
+                "F_X",
+                "F_Y",
+                "F_Z",
+                "M_X",
+                "M_Y",
+                "M_Z",
+                "F_X_raw",
+                "F_Y_raw",
+                "F_Z_raw",
+                "M_X_raw",
+                "M_Y_raw",
+                "M_Z_raw",
+                "CF_X",
+                "CF_Y",
+                "CF_Z",
+                "CM_X",
+                "CM_Y",
+                "CM_Z",
+                "CF_X_raw",
+                "CF_Y_raw",
+                "CF_Z_raw",
+                "CM_X_raw",
+                "CM_Y_raw",
+                "CM_Z_raw",
+                # "Filename",
+                "Date",
+                "Dpa",
+                "Pressure",
+                "Temp",
+                "Density",
+            ]
+            for col in columns_to_drop:
+                if col not in df.columns:
+                    continue
+                df.drop(columns=[col], inplace=True)
+
+            # Save the processed data to a csv file
+            # file_name_without_raw = df["Filename"].unique()[0]
+            new_file_name = f"vw_{vw_unique_round:.0f}"
+            if "ZZ" in file.name:
+                new_file_name = f"ZZ_{new_file_name}"
+            print(f"saving file: {new_file_name}")
+            df.to_csv(folder_dir / f"{new_file_name}.csv", index=False)
+            # print(f"END columns: {df.columns}")

@@ -3,6 +3,7 @@ Mark_van_Spronsen/
 data/
 processed_data/normal_csv/
 processed_data/without_csv/
+processed_data/zigzag_csv/
 processed_data/zigzag/lvm_data_processed.csv
 processed_data/zigzag/zigzag_processed_data.csv
 results/

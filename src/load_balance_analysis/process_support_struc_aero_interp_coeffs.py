@@ -7,7 +7,7 @@ from load_balance_analysis.functions_utils import (
     project_dir,
     reduce_df_by_parameter_mean_and_std,
 )
-from load_balance_analysis.process_raw_csv import processing_raw_lvm_data_into_csv
+from load_balance_analysis.functions_processing import processing_raw_lvm_data_into_csv
 
 
 def process_and_merge_without_csv(folder_dir: Path, save_path: Path) -> None:
@@ -515,6 +515,7 @@ def main():
     # processing all the folders for the without case
     support_struc_aero_interp_coeffs_path = None
     is_kite = False
+    is_zigzag = False
     without_csv_dir = Path(project_dir) / "processed_data" / "without_csv"
     print(f"\n Processing all the folders")
     for folder in os.listdir(without_csv_dir):
@@ -525,6 +526,7 @@ def main():
                 S_ref,
                 c_ref,
                 is_kite,
+                is_zigzag,
                 support_struc_aero_interp_coeffs_path,
                 x_hinge,
                 z_hinge,

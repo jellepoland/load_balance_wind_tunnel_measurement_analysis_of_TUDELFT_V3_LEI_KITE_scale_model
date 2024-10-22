@@ -1,3 +1,7 @@
+import numpy as np
+from scipy import stats
+
+
 ## Confidence Interval
 def calculate_confidence_interval(data, alpha=0.01):
 

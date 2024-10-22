@@ -417,212 +417,331 @@ def plotting_polars_beta(
     # )
     # data_lebesque_re_300e4 = pd.read_csv(path_to_csv_lebesque_re_300e4)
 
-    data_frame_list = [
-        # data_lebesque_re_300e4,
-        data_lebesque_re_100e4_alpha_1195,
-        data_VSM_beta_re_56e4_alpha_1195,
-        data_VSM_beta_re_56e4_alpha_675,
-        # data_windtunnel_beta_re_42e4,
-        data_WT_beta_re_56e4_alpha_high,
-        data_WT_beta_re_56e4_alpha_low,
-        # data_windtunnel_beta_re_56e4_alpha_475,
-    ]
-    labels = [
-        # rf"Re = $30e\times10^5$ CFD (Lebesque, 2022)",
-        rf"CFD $\alpha$ = 12.0$^\circ$ Re = $10\times10^5$",
-        rf"VSM $\alpha$ = 11.9$^\circ$ Re = $5.6\times10^5$",
-        rf"VSM $\alpha$ = 6.8$^\circ$ Re = $5.6\times10^5$",
-        # rf"Re = $4.2\times10^5$ Wind Tunnel",
-        rf"WT $\alpha$ = {alpha_high}$^\circ$ Re = $5.6\times10^5$",
-        rf"WT $\alpha$ = {alpha_low}$^\circ$ Re = $5.6\times10^5$",
-        # rf"Wind Tunnel $\alpha$ = 4.75$^\circ$, Re = $5.6\times10^5$",
-    ]
-    colors = ["black", "blue", "blue", "red", "red"]
-    linestyles = ["s-", "s-", "s--", "o-", "o--"]
+    # data_frame_list = [
+    #     # data_lebesque_re_300e4,
+    #     data_lebesque_re_100e4_alpha_1195,
+    #     data_VSM_beta_re_56e4_alpha_1195,
+    #     data_VSM_beta_re_56e4_alpha_675,
+    #     # data_windtunnel_beta_re_42e4,
+    #     data_WT_beta_re_56e4_alpha_high,
+    #     data_WT_beta_re_56e4_alpha_low,
+    #     # data_windtunnel_beta_re_56e4_alpha_475,
+    # ]
+    # labels = [
+    #     # rf"Re = $30e\times10^5$ CFD (Lebesque, 2022)",
+    #     rf"CFD $\alpha$ = 12.0$^\circ$ Re = $10\times10^5$",
+    #     rf"VSM $\alpha$ = 11.9$^\circ$ Re = $5.6\times10^5$",
+    #     rf"VSM $\alpha$ = 6.8$^\circ$ Re = $5.6\times10^5$",
+    #     # rf"Re = $4.2\times10^5$ Wind Tunnel",
+    #     rf"WT $\alpha$ = {alpha_high}$^\circ$ Re = $5.6\times10^5$",
+    #     rf"WT $\alpha$ = {alpha_low}$^\circ$ Re = $5.6\times10^5$",
+    #     # rf"Wind Tunnel $\alpha$ = 4.75$^\circ$, Re = $5.6\times10^5$",
+    # ]
+    # colors = ["black", "blue", "blue", "red", "red"]
+    # linestyles = ["s-", "s-", "s--", "o-", "o--"]
 
-    # ## Adding two more lines for corrected for side slip data
-    # def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
-    #     """
-    #     [F_X_new]   [cos(β)  -sin(β)  0] [F_X_old]
-    #     [F_Y_new] = [sin(β)   cos(β)  0] [F_Y_old]
-    #     [F_Z_new]   [  0       0      1] [F_Z_old]
-    #     """
+    # # Plot CL, CD, and CS curves in subplots
+    # fig, axs = plt.subplots(1, 3, figsize=figsize)
 
-    #     ## Grabbing sideslip array and converting to radians
-    #     beta = np.deg2rad(df["sideslip"])
-    #     # beta = np.deg2rad(10) * np.ones_like(df["sideslip"])
+    # for i, (data_frame, label, color, linestyle) in enumerate(
+    #     zip(data_frame_list, labels, colors, linestyles)
+    # ):
 
-    #     ## Defining rotation matrix for each row
-    #     def create_rotation_matrix(beta_angle):
-    #         return np.array(
-    #             [
-    #                 [np.cos(beta_angle), np.sin(beta_angle), 0],
-    #                 [-np.sin(beta_angle), np.cos(beta_angle), 0],
-    #                 [0, 0, 1],
-    #             ]
+    #     if i == 0:  # if Lebesque
+    #         axs[0].plot(
+    #             data_frame["beta"],
+    #             data_frame["CL"],
+    #             linestyle,
+    #             label=label,
+    #             color=color,
+    #         )
+    #         axs[1].plot(
+    #             data_frame["beta"],
+    #             data_frame["CD"],
+    #             linestyle,
+    #             label=label,
+    #             color=color,
+    #         )
+    #         axs[2].plot(
+    #             data_frame["beta"],
+    #             data_frame["CS"] / ratio_projected_area_to_side_area,
+    #             linestyle,
+    #             label=label,
+    #             color=color,
+    #         )
+    #     elif i == 1 or i == 2:  # if VSM
+    #         # axs[0].plot(data_frame["beta"], data_frame["CL"], linestyle, label=label)
+    #         # axs[1].plot(data_frame["beta"], data_frame["CD"], linestyle, label=label)
+    #         # axs[2].plot(data_frame["beta"], data_frame["CS"], linestyle, label=label)
+
+    #         # Adding stall-corrected values
+    #         axs[0].plot(
+    #             data_frame["beta"],
+    #             data_frame["CL_stall"],
+    #             linestyle,
+    #             label=label,
+    #             color=color,
+    #         )
+    #         axs[1].plot(
+    #             data_frame["beta"],
+    #             data_frame["CD_stall"],
+    #             linestyle,
+    #             label=label,
+    #             color=color,
+    #         )
+    #         axs[2].plot(
+    #             data_frame["beta"],
+    #             data_frame["CS_stall"],
+    #             linestyle,
+    #             label=label,
+    #             color=color,
+    #         )
+    #     else:  # if windtunnel
+
+    #         axs[0].plot(
+    #             data_frame["sideslip"],
+    #             data_frame["C_L"],
+    #             linestyle,
+    #             label=label,
+    #             color=color,
+    #         )
+    #         axs[1].plot(
+    #             data_frame["sideslip"],
+    #             data_frame["C_D"],
+    #             linestyle,
+    #             label=label,
+    #             color=color,
+    #         )
+    #         axs[2].plot(
+    #             data_frame["sideslip"],
+    #             data_frame["C_S"],
+    #             linestyle,
+    #             label=label,
+    #             color=color,
     #         )
 
-    #     # Create arrays for forces and moments
-    #     forces = np.array([df["C_D"], df["C_S"], df["C_L"]]).T
-    #     moments = np.array([df["C_pitch"], df["C_yaw"], df["C_roll"]]).T
+    #         axs[0].plot(
+    #             -data_frame["sideslip"],
+    #             data_frame["C_L"],
+    #             linestyle,
+    #             label=label + rf"(-$\beta$)",
+    #             color="green",
+    #         )
+    #         axs[1].plot(
+    #             -data_frame["sideslip"],
+    #             data_frame["C_D"],
+    #             linestyle,
+    #             label=label + rf"(-$\beta$)",
+    #             color="green",
+    #         )
+    #         axs[2].plot(
+    #             -data_frame["sideslip"],
+    #             -data_frame["C_S"],
+    #             linestyle,
+    #             label=label + rf"(-$\beta$)",
+    #             color="green",
+    #         )
 
-    #     # Initialize arrays for corrected forces and moments
-    #     corrected_forces = np.zeros_like(forces)
-    #     corrected_moments = np.zeros_like(moments)
+    # # Formatting the axis
+    # axs[0].set_xlabel(x_axis_labels["beta"])
+    # axs[0].set_ylabel(y_axis_labels["CL"])
+    # axs[0].grid()
+    # axs[0].set_xlim(0, 20)
+    # axs[0].set_ylim(0.35, 1.1)
+    # axs[0].legend(loc="lower left")
 
-    #     # Apply rotation to each row
-    #     for i in range(len(df)):
-    #         R = create_rotation_matrix(beta[i])
-    #         corrected_forces[i] = R @ forces[i]
-    #         corrected_moments[i] = R @ moments[i]
+    # axs[1].set_xlabel(x_axis_labels["beta"])
+    # axs[1].set_ylabel(y_axis_labels["CD"])
+    # axs[1].grid()
+    # axs[1].set_xlim(0, 20)
+    # axs[1].set_ylim(0.0, 0.25)
 
-    #     # Update dataframe with corrected values
-    #     df["C_D"], df["C_S"], df["C_L"] = corrected_forces.T
-    #     df["C_pitch"], df["C_yaw"], df["C_roll"] = corrected_moments.T
+    # axs[2].set_xlabel(x_axis_labels["beta"])
+    # axs[2].set_ylabel(y_axis_labels["CS"])
+    # axs[2].grid()
+    # axs[2].set_xlim(0, 20)
+    # axs[2].set_ylim(-0.05, 0.6)
 
-    #     return df
+    # # Plotting and saving
+    # plt.tight_layout()
+    # file_name = "literature_polars_beta"
+    # saving_pdf_and_pdf_tex(results_dir, file_name)
 
-    # data_WT_beta_re_56e4_alpha_high_corrected = correcting_for_sideslip(
-    #     data_WT_beta_re_56e4_alpha_high.copy()
-    # )
-    # data_WT_beta_re_56e4_alpha_low_corrected = correcting_for_sideslip(
-    #     data_WT_beta_re_56e4_alpha_low.copy()
-    # )
-    # data_frame_list.append(data_WT_beta_re_56e4_alpha_high_corrected)
-    # data_frame_list.append(data_WT_beta_re_56e4_alpha_low_corrected)
-    # labels.append(rf"WT CORRECTED $\alpha$ = {alpha_high}$^\circ$ Re = $5.6\times10^5$")
-    # labels.append(rf"WT CORRECTED $\alpha$ = {alpha_low}$^\circ$ Re = $5.6\times10^5$")
-    # colors.append("green")
-    # colors.append("green")
-    # linestyles.append("o-")
-    # linestyles.append("o--")
-
-    # Plot CL, CD, and CS curves in subplots
-    fig, axs = plt.subplots(1, 3, figsize=figsize)
-
-    for i, (data_frame, label, color, linestyle) in enumerate(
-        zip(data_frame_list, labels, colors, linestyles)
+    def plot_single_row(
+        data_frames,
+        labels,
+        file_name,
+        axs_titles,
+        legend_location_index=0,
+        legend_location="lower left",
     ):
+        fig, axs = plt.subplots(1, 3, figsize=(15, 5))  # Maintain original aspect ratio
+        colors = ["black", "blue", "red"]
+        linestyles = ["*-", "s-", "o-"]  # CFD marker set to star
 
-        if i == 0:  # if Lebesque
-            axs[0].plot(
-                data_frame["beta"],
-                data_frame["CL"],
-                linestyle,
-                label=label,
-                color=color,
-            )
-            axs[1].plot(
-                data_frame["beta"],
-                data_frame["CD"],
-                linestyle,
-                label=label,
-                color=color,
-            )
-            axs[2].plot(
-                data_frame["beta"],
-                data_frame["CS"] / ratio_projected_area_to_side_area,
-                linestyle,
-                label=label,
-                color=color,
-            )
-        elif i == 1 or i == 2:  # if VSM
-            # axs[0].plot(data_frame["beta"], data_frame["CL"], linestyle, label=label)
-            # axs[1].plot(data_frame["beta"], data_frame["CD"], linestyle, label=label)
-            # axs[2].plot(data_frame["beta"], data_frame["CS"], linestyle, label=label)
+        for i, (data_frame, label, color, linestyle) in enumerate(
+            zip(data_frames, labels, colors, linestyles)
+        ):
+            if data_frame is None:
+                continue
 
-            # Adding stall-corrected values
-            axs[0].plot(
-                data_frame["beta"],
-                data_frame["CL_stall"],
-                linestyle,
-                label=label,
-                color=color,
-            )
-            axs[1].plot(
-                data_frame["beta"],
-                data_frame["CD_stall"],
-                linestyle,
-                label=label,
-                color=color,
-            )
-            axs[2].plot(
-                data_frame["beta"],
-                data_frame["CS_stall"],
-                linestyle,
-                label=label,
-                color=color,
-            )
-        else:  # if windtunnel
+            if i == 0:  # CFD/Lebesque Data
+                axs[0].plot(
+                    data_frame["beta"],
+                    data_frame["CL"],
+                    linestyle,
+                    label=label,
+                    color=color,
+                    markersize=8,  # Make star marker more visible
+                )
+                axs[1].plot(
+                    data_frame["beta"],
+                    data_frame["CD"],
+                    linestyle,
+                    label=label,
+                    color=color,
+                    markersize=8,
+                )
+                axs[2].plot(
+                    data_frame["beta"],
+                    data_frame["CS"] / ratio_projected_area_to_side_area,
+                    linestyle,
+                    label=label,
+                    color=color,
+                    markersize=8,
+                )
+            elif i == 1:  # VSM Data
+                axs[0].plot(
+                    data_frame["beta"],
+                    data_frame["CL_stall"],
+                    linestyle,
+                    label=label,
+                    color=color,
+                )
+                axs[1].plot(
+                    data_frame["beta"],
+                    data_frame["CD_stall"],
+                    linestyle,
+                    label=label,
+                    color=color,
+                )
+                axs[2].plot(
+                    data_frame["beta"],
+                    data_frame["CS_stall"],
+                    linestyle,
+                    label=label,
+                    color=color,
+                )
+            else:  # Wind Tunnel Data
+                # Plot positive beta
+                axs[0].plot(
+                    data_frame["sideslip"],
+                    data_frame["C_L"],
+                    linestyle,
+                    label=label,
+                    color=color,
+                )
+                axs[1].plot(
+                    data_frame["sideslip"],
+                    data_frame["C_D"],
+                    linestyle,
+                    label=label,
+                    color=color,
+                )
+                axs[2].plot(
+                    data_frame["sideslip"],
+                    data_frame["C_S"],
+                    linestyle,
+                    label=label,
+                    color=color,
+                )
 
-            axs[0].plot(
-                data_frame["sideslip"],
-                data_frame["C_L"],
-                linestyle,
-                label=label,
-                color=color,
-            )
-            axs[1].plot(
-                data_frame["sideslip"],
-                data_frame["C_D"],
-                linestyle,
-                label=label,
-                color=color,
-            )
-            axs[2].plot(
-                data_frame["sideslip"],
-                data_frame["C_S"],
-                linestyle,
-                label=label,
-                color=color,
-            )
+                # Plot negative beta with dashed lines
+                axs[0].plot(
+                    -data_frame["sideslip"],
+                    data_frame["C_L"],
+                    linestyle.replace("-", "--"),  # Change to dashed line
+                    label=label + rf"(-$\beta$)",
+                    color=color,
+                )
+                axs[1].plot(
+                    -data_frame["sideslip"],
+                    data_frame["C_D"],
+                    linestyle.replace("-", "--"),
+                    label=label + rf"(-$\beta$)",
+                    color=color,
+                )
+                axs[2].plot(
+                    -data_frame["sideslip"],
+                    -data_frame["C_S"],
+                    linestyle.replace("-", "--"),
+                    label=label + rf"(-$\beta$)",
+                    color=color,
+                )
 
-            axs[0].plot(
-                -data_frame["sideslip"],
-                data_frame["C_L"],
-                linestyle,
-                label=label + rf"(-$\beta$)",
-                color="green",
-            )
-            axs[1].plot(
-                -data_frame["sideslip"],
-                data_frame["C_D"],
-                linestyle,
-                label=label + rf"(-$\beta$)",
-                color="green",
-            )
-            axs[2].plot(
-                -data_frame["sideslip"],
-                -data_frame["C_S"],
-                linestyle,
-                label=label + rf"(-$\beta$)",
-                color="green",
-            )
+        # Set common formatting
+        for col in range(3):
+            axs[col].set_xlim(0, 20)
+            axs[col].grid()
+            axs[col].set_xlabel(x_axis_labels["beta"])
+            # axs[col].set_title(axs_titles[col])
 
-    # Formatting the axis
-    axs[0].set_xlabel(x_axis_labels["beta"])
-    axs[0].set_ylabel(y_axis_labels["CL"])
-    axs[0].grid()
-    axs[0].set_xlim(0, 20)
-    axs[0].set_ylim(0.35, 1.1)
-    axs[0].legend(loc="lower left")
+        # Only add legend to the first plot (CL)
+        axs[0].set_ylabel(y_axis_labels["CL"])
+        axs[legend_location_index].legend(loc=legend_location)
 
-    axs[1].set_xlabel(x_axis_labels["beta"])
-    axs[1].set_ylabel(y_axis_labels["CD"])
-    axs[1].grid()
-    axs[1].set_xlim(0, 20)
-    axs[1].set_ylim(0.0, 0.25)
+        axs[1].set_ylabel(y_axis_labels["CD"])
+        axs[2].set_ylabel(y_axis_labels["CS"])
+        axs[2].set_ylim(-0.05, 0.6)
 
-    axs[2].set_xlabel(x_axis_labels["beta"])
-    axs[2].set_ylabel(y_axis_labels["CS"])
-    axs[2].grid()
-    axs[2].set_xlim(0, 20)
-    axs[2].set_ylim(-0.05, 0.6)
+        # Adjust layout and save
+        plt.tight_layout()
+        plt.subplots_adjust(bottom=0.15)  # Leave space for legend
+        saving_pdf_and_pdf_tex(results_dir, file_name)
 
-    # Plotting and saving
-    plt.tight_layout()
-    file_name = "literature_polars_beta"
-    saving_pdf_and_pdf_tex(results_dir, file_name)
+    # Split data into high and low alpha groups
+    high_alpha_data = [
+        data_lebesque_re_100e4_alpha_1195,
+        data_VSM_beta_re_56e4_alpha_1195,
+        data_WT_beta_re_56e4_alpha_high,
+    ]
+    low_alpha_data = [
+        None,  # No Lebesque data for low alpha
+        data_VSM_beta_re_56e4_alpha_675,
+        data_WT_beta_re_56e4_alpha_low,
+    ]
+
+    # Split labels, colors and linestyles accordingly
+    high_alpha_labels = [
+        rf"CFD $\alpha$ = 12.0$^\circ$ Re = $10\times10^5$",
+        rf"VSM $\alpha$ = 11.9$^\circ$ Re = $5.6\times10^5$",
+        rf"WT $\alpha$ = {alpha_high}$^\circ$ Re = $5.6\times10^5$",
+    ]
+    low_alpha_labels = [
+        "",  # Empty label for missing Lebesque data
+        rf"VSM $\alpha$ = 6.8$^\circ$ Re = $5.6\times10^5$",
+        rf"WT $\alpha$ = {alpha_low}$^\circ$ Re = $5.6\times10^5$",
+    ]
+
+    # First plot: High Alpha
+    plot_single_row(
+        high_alpha_data,
+        high_alpha_labels,
+        file_name="literature_polars_beta_high_alpha",
+        axs_titles=["CL (High Alpha)", "CD (High Alpha)", "CS (High Alpha)"],
+        legend_location_index=2,
+        legend_location="upper left",
+    )
+
+    # Second plot: Low Alpha
+    plot_single_row(
+        low_alpha_data,
+        low_alpha_labels,
+        file_name="literature_polars_beta_low_alpha",
+        axs_titles=["CL (Low Alpha)", "CD (Low Alpha)", "CS (Low Alpha)"],
+        legend_location_index=0,
+        legend_location="lower left",
+    )
 
 
 def main(results_dir, project_dir):
@@ -647,7 +766,6 @@ def main(results_dir, project_dir):
 
 
 if __name__ == "__main__":
-    from utils import project_dir
 
     results_dir = Path(project_dir) / "results"
     main(results_dir, project_dir)

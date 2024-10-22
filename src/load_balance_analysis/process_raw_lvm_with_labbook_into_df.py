@@ -178,7 +178,8 @@ def read_all_lvm_into_df(labbook_df: pd.DataFrame, data_dir: Path) -> list:
         "Unnamed: 21",
     ]
     for col in drop_column_list:
-        df_all.drop(columns=[col], inplace=True)
+        if col in df_all.columns:
+            df_all.drop(columns=[col], inplace=True)
 
     # Define the desired column order
     desired_order = [
@@ -230,7 +231,10 @@ def reading_all_folders(
 
         ## Making a directory for this folder
         # Stripping the angle
-        aoa_value = float(df_folder["aoa"].unique()[0].replace(",", "."))
+        if isinstance(df_folder["aoa"].unique()[0], np.float64):
+            aoa_value = float(df_folder["aoa"].unique()[0])
+        else:
+            aoa_value = float(df_folder["aoa"].unique()[0].replace(",", "."))
         # df_folder["aoa"] = df_folder["aoa"].str.replace("deg", "")
         # aoa_value = folder_name.split("_")[-1]
         ## Changing alpha by 7.25 deg
@@ -253,9 +257,9 @@ def reading_all_folders(
 
 def main():
     delta_aoa_rod_to_alpha = 7.25
-    labbook_path = Path(project_dir) / "data" / "labbook.csv"
 
     ## Doing this for the normal data
+    labbook_path = Path(project_dir) / "data" / "labbook.csv"
     parent_folder_dir = Path(project_dir) / "data" / "normal"
     save_parent_dir = Path(project_dir) / "processed_data" / "normal_csv"
     reading_all_folders(
@@ -263,10 +267,19 @@ def main():
     )
 
     ## Doing this for the without data
+    labbook_path = Path(project_dir) / "data" / "labbook.csv"
     parent_folder_dir = Path(project_dir) / "data" / "without"
     save_parent_dir = Path(project_dir) / "processed_data" / "without_csv"
     reading_all_folders(
         labbook_path, parent_folder_dir, save_parent_dir, delta_aoa_rod_to_alpha
+    )
+
+    ## Doing this for the zigzag data
+    parent_folder_dir = Path(project_dir) / "data" / "zigzag"
+    save_parent_dir = Path(project_dir) / "processed_data" / "zigzag_csv"
+    labbook_zz_path = Path(project_dir) / "data" / "labbook_zz.csv"
+    reading_all_folders(
+        labbook_zz_path, parent_folder_dir, save_parent_dir, delta_aoa_rod_to_alpha
     )
 
 

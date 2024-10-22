@@ -8,6 +8,7 @@ from load_balance_analysis.functions_utils import (
     x_axis_labels,
     y_axis_labels,
     project_dir,
+)
 from load_balance_analysis.functions_statistics import (
     calculate_confidence_interval,
     block_bootstrap_confidence_interval,

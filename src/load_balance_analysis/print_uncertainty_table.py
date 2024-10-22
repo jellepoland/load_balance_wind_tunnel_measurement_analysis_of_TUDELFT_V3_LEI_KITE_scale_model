@@ -27,8 +27,9 @@ def get_all_raw_data_for_vw_value(vw: int, normal_csv_dir: str) -> pd.DataFrame:
             print(f"Empty CSV file: {file_path}")
 
         for sideslip in df["sideslip"].unique():
-            df_local = df[df["sideslip"] == sideslip]
-            std_list.append(df_local.std())
+            if sideslip == 4:
+                df_local = df[df["sideslip"] == sideslip]
+                std_list.append(df_local.std())
 
     # If no DataFrames were loaded, return empty DataFrame
     if not dfs:
@@ -126,6 +127,17 @@ def print_std_SNR_uncertainty(project_dir: str) -> pd.DataFrame:
         print(
             f'CM_Z SNR mean: {abs(df["SNR_CM_Z"].mean()):.3f}, std: {df["SNR_CM_Z"].std():.3f}'
         )
+        ## Average SNR
+        SNR_mean = (
+            abs(df["SNR_CF_X"].mean())
+            + abs(df["SNR_CF_Y"].mean())
+            + abs(df["SNR_CF_Z"].mean())
+            + abs(df["SNR_CM_X"].mean())
+            + abs(df["SNR_CM_Y"].mean())
+            + abs(df["SNR_CM_Z"].mean())
+        ) / 6
+        print(f"Average SNR: {SNR_mean}")
+
         # print(f'M_Z min: {df["SNR_CM_Z"].min():.3f}, max: {df["SNR_CM_Z"].max():.3f}')
         # print(
         #     f'M_Z_load_ratio mean: {df["M_Z_load_ratio"].mean():.3f}, std: {df["M_Z_load_ratio"].std():.3f}'
@@ -171,6 +183,26 @@ def print_std_SNR_uncertainty(project_dir: str) -> pd.DataFrame:
         print(
             f'C_yaw_std mean: {std_list["C_yaw"].mean():.3f}, std: {std_list["C_yaw"].std():.3f}'
         )
+        ## average STD
+        std_mean = (
+            std_list["C_D"].mean()
+            + std_list["C_S"].mean()
+            + std_list["C_L"].mean()
+            + std_list["C_roll"].mean()
+            + std_list["C_pitch"].mean()
+            + std_list["C_yaw"].mean()
+        ) / 6
+        print(f"Average STD: {std_mean}")
+
+        ### calculating the standard deviation for a specific sideslip value
+        for sideslip in [-20, -8, 0, 8, 20]:
+            print(f"\nsideslip:{sideslip}")
+            df_sideslip = df.loc[df["sideslip"] == sideslip]
+            col_list = ["C_D", "C_S", "C_L", "C_roll", "C_pitch", "C_yaw"]
+            for col in col_list:
+                mean = df_sideslip[col].mean()
+                std = df_sideslip[col].std()
+                print(f"{col} std/mean: {std/mean:.2f}")
 
 
 def main(project_dir: Path):
