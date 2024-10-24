@@ -71,7 +71,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
             linestyles = {
                 "5": "s--",
                 "10": "X--",
-                "15": "H--",
+                "15": "d--",
                 "20": "o--",
                 "25": "*--",
             }
@@ -169,7 +169,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                 linestyles = {
                     "5": "s--",
                     "10": "X--",
-                    "15": "H--",
+                    "15": "d--",
                     "20": "o--",
                     "25": "*--",
                 }

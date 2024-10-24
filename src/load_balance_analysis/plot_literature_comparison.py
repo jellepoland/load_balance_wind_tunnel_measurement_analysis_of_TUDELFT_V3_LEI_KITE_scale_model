@@ -585,7 +585,7 @@ def plotting_polars_alpha(
                 data_frame["C_L_mean"] - data_frame["C_L_ci"],  # Lower bound
                 data_frame["C_L_mean"] + data_frame["C_L_ci"],  # Upper bound
                 color=color,
-                alpha=0.2,  # Adjust transparency
+                alpha=0.15,  # Adjust transparency
                 label=f"WT CI of {confidence_interval}%",
             )
 
@@ -594,7 +594,7 @@ def plotting_polars_alpha(
                 data_frame["C_D_mean"] - data_frame["C_D_ci"],  # Lower bound
                 data_frame["C_D_mean"] + data_frame["C_D_ci"],  # Upper bound
                 color=color,
-                alpha=0.2,  # Adjust transparency
+                alpha=0.15,  # Adjust transparency
                 label=f"WT CI of {confidence_interval}%",
             )
 
@@ -605,7 +605,7 @@ def plotting_polars_alpha(
                 (data_frame["C_L_mean"] + data_frame["C_L_ci"])
                 / (data_frame["C_D_mean"] - data_frame["C_D_ci"]),  # Upper bound
                 color=color,
-                alpha=0.2,
+                alpha=0.15,
                 label=f"WT CI of {confidence_interval}%",
             )
 
@@ -1018,7 +1018,7 @@ def plotting_polars_beta(
                     data_frame["C_L_mean"] - data_frame["C_L_ci"],  # Lower bound
                     data_frame["C_L_mean"] + data_frame["C_L_ci"],  # Upper bound
                     color=color,
-                    alpha=0.2,  # Adjust transparency
+                    alpha=0.15,  # Adjust transparency
                     label=f"WT CI of {confidence_interval}%",
                 )
                 axs[1].fill_between(
@@ -1026,7 +1026,7 @@ def plotting_polars_beta(
                     data_frame["C_D_mean"] - data_frame["C_D_ci"],  # Lower bound
                     data_frame["C_D_mean"] + data_frame["C_D_ci"],  # Upper bound
                     color=color,
-                    alpha=0.2,  # Adjust transparency
+                    alpha=0.15,  # Adjust transparency
                     label=f"WT CI of {confidence_interval}%",
                 )
                 axs[2].fill_between(
@@ -1034,7 +1034,7 @@ def plotting_polars_beta(
                     data_frame["C_S_mean"] - data_frame["C_S_ci"],  # Lower bound
                     data_frame["C_S_mean"] + data_frame["C_S_ci"],  # Upper bound
                     color=color,
-                    alpha=0.2,  # Adjust transparency
+                    alpha=0.15,  # Adjust transparency
                     label=f"WT CI of {confidence_interval}%",
                 )
 
