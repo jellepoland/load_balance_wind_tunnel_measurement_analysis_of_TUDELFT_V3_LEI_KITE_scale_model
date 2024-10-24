@@ -68,6 +68,13 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
             #     "Roll moment coefficient",
             #     "Yaw moment coefficient",
             # ]
+            linestyles = {
+                "5": "s--",
+                "10": "X--",
+                "15": "H--",
+                "20": "o--",
+                "25": "*--",
+            }
             for i, column in enumerate(columns):
                 # Plot each distinct value in the vw column (excluding vw=0 and vw=5)
                 for vw, vw_group in group.groupby("vw"):
@@ -76,7 +83,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
                         axs[i].plot(
                             vw_group["aoa_kite"],
                             vw_group[column],
-                            "o-.",
+                            linestyles[str(int(vw))],
                             label=rf"Re = {Re} $\times$ $10^5$",
                         )
 
@@ -159,6 +166,13 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                 #     "Pitching moment coefficient",
                 #     "Yawing moment coefficient",
                 # ]
+                linestyles = {
+                    "5": "s--",
+                    "10": "X--",
+                    "15": "H--",
+                    "20": "o--",
+                    "25": "*--",
+                }
                 for i, column in enumerate(columns):
                     # Plot each distinct value in the vw column (excluding vw=0 and vw=5)
                     for vw, vw_group in group.groupby("vw"):
@@ -167,7 +181,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                             axs[i].plot(
                                 vw_group["sideslip"],
                                 vw_group[column],
-                                "o-.",
+                                linestyles[str(int(vw))],
                                 label=rf"Re = {Re} $\times$ $10^5$",
                             )
 
@@ -195,9 +209,9 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                                 if idx > 3:
                                     diff.append(np.abs(1 - np.abs(pos / neg)))
 
-                            print(
-                                f" y_labels[i]: {y_labels[i]} alpha: {alpha}, Re: {Re}, --> diff average : {np.average(diff)*100:.02f}%"
-                            )
+                            # print(
+                            #     f" y_labels[i]: {y_labels[i]} alpha: {alpha}, Re: {Re}, --> diff average : {np.average(diff)*100:.02f}%"
+                            # )
                             # diff = [
                             #     np.abs(np.abs(pos - neg) / pos)
                             #     for pos, neg in zip(pos_values, neg_values[::-1])

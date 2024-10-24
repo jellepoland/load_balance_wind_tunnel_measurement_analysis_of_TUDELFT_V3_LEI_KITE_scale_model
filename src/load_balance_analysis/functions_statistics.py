@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import stats
+import statsmodels.api as sm
 
 
 ## Confidence Interval
@@ -60,8 +61,54 @@ def block_bootstrap_confidence_interval(
     return confidence_interval
 
 
-## Confidence Interval using HAC/Newey-West
-def hac_newey_west_confidence_interval(data, alpha=0.01, max_lag=None):
+# ## Confidence Interval using HAC/Newey-West
+# def hac_newey_west_confidence_interval(data, alpha=0.01, max_lag=None):
+#     """
+#     Calculate the confidence interval using the HAC/Newey-West method to handle autocorrelation and heteroskedasticity.
+
+#     Args:
+#         data (np.ndarray): Time series data from wind tunnel aerodynamic experiment.
+#         alpha (float): Significance level (default: 0.01 for a 99% confidence interval).
+#         max_lag (int): Maximum lag to consider for autocorrelation. If None, it's set to n^(1/4) where n is the sample size.
+
+#     Returns:
+#         mean (float): The mean of the original data.
+#         conf_interval (float): The confidence interval (half-width).
+#     """
+#     data = np.array(data)
+#     n = len(data)
+
+#     # Calculate the mean
+#     mean = np.mean(data)
+
+#     # Calculate the variance
+#     centered_data = data - mean
+#     variance = np.mean(centered_data**2)
+
+#     # Set max_lag if not provided
+#     if max_lag is None:
+#         max_lag = int(n ** (1 / 4))
+#         print(f"Max lag set to {max_lag}")
+#     # Calculate autocovariances up to max_lag
+#     auto_cov = np.array(
+#         [np.mean(centered_data[i:] * centered_data[:-i]) for i in range(1, max_lag + 1)]
+#     )
+
+#     # Calculate Newey-West weights
+#     weights = 1 - np.arange(1, max_lag + 1) / (max_lag + 1)
+
+#     # Calculate the HAC standard error
+#     hac_variance = variance + 2 * np.sum(weights * auto_cov)
+#     hac_se = np.sqrt(hac_variance / n)
+
+#     # Calculate the confidence interval
+#     t_value = stats.t.ppf(1 - alpha / 2, df=n - 1)
+#     conf_interval = t_value * hac_se
+
+#     return conf_interval
+
+
+def hac_newey_west_confidence_interval(data, confidence_interval=99.99, max_lag=None):
     """
     Calculate the confidence interval using the HAC/Newey-West method to handle autocorrelation and heteroskedasticity.
 
@@ -74,34 +121,32 @@ def hac_newey_west_confidence_interval(data, alpha=0.01, max_lag=None):
         mean (float): The mean of the original data.
         conf_interval (float): The confidence interval (half-width).
     """
+
+    alpha_ci = 1 - (confidence_interval / 100)
+
     data = np.array(data)
     n = len(data)
-
-    # Calculate the mean
-    mean = np.mean(data)
-
-    # Calculate the variance
-    centered_data = data - mean
-    variance = np.mean(centered_data**2)
 
     # Set max_lag if not provided
     if max_lag is None:
         max_lag = int(n ** (1 / 4))
+        # print(f"Max lag set to {max_lag}")
 
-    # Calculate autocovariances up to max_lag
-    auto_cov = np.array(
-        [np.mean(centered_data[i:] * centered_data[:-i]) for i in range(1, max_lag + 1)]
-    )
+    # Add a constant to the data (intercept)
+    X = sm.add_constant(np.arange(n))
 
-    # Calculate Newey-West weights
-    weights = 1 - np.arange(1, max_lag + 1) / (max_lag + 1)
+    # Fit OLS model
+    model = sm.OLS(data, X)
+    results = model.fit()
 
-    # Calculate the HAC standard error
-    hac_variance = variance + 2 * np.sum(weights * auto_cov)
-    hac_se = np.sqrt(hac_variance / n)
+    # Get Newey-West standard errors with specified max_lag
+    nw_cov = results.get_robustcov_results(cov_type="HAC", maxlags=max_lag)
+    nw_se = nw_cov.bse[0]  # Standard error for the intercept (constant term)
 
-    # Calculate the confidence interval
-    t_value = stats.t.ppf(1 - alpha / 2, df=n - 1)
-    conf_interval = t_value * hac_se
+    # Calculate the t-value for the given alpha and degrees of freedom (n-1)
+    t_value = stats.t.ppf(1 - alpha_ci / 2, df=n - 1)
+
+    # Confidence interval (half-width)
+    conf_interval = t_value * nw_se
 
     return conf_interval

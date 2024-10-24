@@ -18,10 +18,7 @@ def print_repeatability_uncertainty(project_dir: Path) -> None:
 
     # Read the labbook data
     path_labbook_double = (
-        Path(project_dir)
-        / "processed_data"
-        / "uncertainty_table"
-        / "labbook_double.csv"
+        Path(project_dir) / "processed_data" / "repeatibility" / "labbook_double.csv"
     )
     data = pd.read_csv(path_labbook_double, delimiter=";")
     data["measurement"] = data.groupby("Filename").cumcount()
@@ -36,7 +33,7 @@ def print_repeatability_uncertainty(project_dir: Path) -> None:
     path_double_aoa_12_vw_20_unsteady = (
         Path(project_dir)
         / "data"
-        / "uncertainty_table"
+        / "repeatibility"
         / "double_aoa_12_vw_20_unsteady.txt"
     )
     df = pd.read_csv(

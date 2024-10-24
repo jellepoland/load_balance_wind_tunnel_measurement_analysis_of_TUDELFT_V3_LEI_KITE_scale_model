@@ -17,7 +17,12 @@ from load_balance_analysis.functions_statistics import (
 
 
 def plot_zigzag(
-    csv_path: str, results_dir: str, figsize: tuple, fontsize: float
+    csv_path: str,
+    results_dir: str,
+    figsize: tuple,
+    fontsize: float,
+    confidence_interval: float = 99,
+    max_lag: int = 11,
 ) -> None:
 
     # Read the processed data
@@ -108,7 +113,14 @@ def plot_zigzag(
             # ]
             ## HAC Newey-West Confidence Interval
             data_calculated = [
-                [data[coeff].mean(), hac_newey_west_confidence_interval(data[coeff])]
+                [
+                    data[coeff].mean(),
+                    hac_newey_west_confidence_interval(
+                        data[coeff],
+                        confidence_interval=confidence_interval,
+                        max_lag=max_lag,
+                    ),
+                ]
                 for coeff in coefficients
             ]
 
@@ -175,7 +187,7 @@ def create_grouped_plot(
                     "red",
                     "blue",
                 ]
-                marker_list = ["x", "x", "o", "o", "*", "*"]
+                marker_list = ["v", "v", "o", "o", "^", "^"]
 
             for x_pos, (data, label), color, marker in zip(
                 x_positions, group_data, color_list, marker_list
@@ -221,7 +233,7 @@ def create_grouped_plot(
         plt.Line2D(
             [0],
             [0],
-            marker="x",
+            marker="v",
             color="red",
             label=r"With zigzag $\beta = -10^\circ$",
             markersize=8,
@@ -230,7 +242,7 @@ def create_grouped_plot(
         plt.Line2D(
             [0],
             [0],
-            marker="x",
+            marker="v",
             color="blue",
             label=r"Without zigzag $\beta = -10^\circ$",
             markersize=8,
@@ -239,7 +251,7 @@ def create_grouped_plot(
         plt.Line2D(
             [0],
             [0],
-            marker="*",
+            marker="^",
             color="red",
             label=r"With zigzag $\beta = 10^\circ$",
             markersize=8,
@@ -248,7 +260,7 @@ def create_grouped_plot(
         plt.Line2D(
             [0],
             [0],
-            marker="*",
+            marker="^",
             color="blue",
             label=r"Without zigzag $\beta = 10^\circ$",
             markersize=8,
@@ -288,7 +300,14 @@ def main(results_dir: Path, project_dir: Path) -> None:
         / "alpha_8.9"
         / "lvm_data_processed.csv"
     )
-    plot_zigzag(save_path_lvm_data_processed, results_dir, figsize, fontsize)
+    plot_zigzag(
+        save_path_lvm_data_processed,
+        results_dir,
+        figsize,
+        fontsize,
+        confidence_interval=99,
+        max_lag=11,
+    )
 
 
 if __name__ == "__main__":

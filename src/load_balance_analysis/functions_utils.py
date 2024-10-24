@@ -6,6 +6,9 @@ import pandas as pd
 import matplotlib.font_manager as fm
 import numpy as np
 import scipy.stats as stats
+from load_balance_analysis.functions_statistics import (
+    hac_newey_west_confidence_interval,
+)
 
 
 mpl.rcParams["font.family"] = "Open Sans"
@@ -55,7 +58,11 @@ project_dir = Path(__file__).resolve().parent.parent.parent
 
 
 def reduce_df_by_parameter_mean_and_std(
-    df: pd.DataFrame, parameter: str
+    df: pd.DataFrame,
+    parameter: str,
+    is_with_ci: bool = False,
+    confidence_interval: float = 99,
+    max_lag: int = 11,
 ) -> pd.DataFrame:
     """
     Reduces a dataframe to unique values of a parameter, averaging specified columns
@@ -115,21 +122,20 @@ def reduce_df_by_parameter_mean_and_std(
     #     ci_block_df.to_list(), columns=[f"{col}_CI_block" for col in coef_columns]
     # )
 
-    # # Calculate & rename CI using HAC/Newey-West
-    # ci_hac_df = df.groupby(parameter)[coef_columns].apply(
-    #     hac_newey_west_confidence_interval
-    # )
-    # ci_hac_df = pd.DataFrame(
-    #     ci_hac_df.to_list(), columns=[f"{col}_CI_hac" for col in coef_columns]
-    # )
+    if is_with_ci:
+        alpha_ci = 1 - (confidence_interval / 100)
+        ci_hac_df = df.groupby(parameter)[coef_columns].apply(
+            hac_newey_west_confidence_interval, max_lag=max_lag, alpha=alpha_ci
+        )
+        # Convert the list of confidence intervals to a DataFrame
+        ci_hac_df = pd.DataFrame(
+            ci_hac_df, columns=[f"{col}_ci" for col in coef_columns]
+        )
 
-    # Combine dataframes
-    # result_df = pd.concat(
-    #     [mean_df, std_df, ci_df, ci_block_df, ci_hac_df], axis=1
-    # ).reset_index()
-    # ci_df = ci_df.reset_index(drop=True)
-    # result_df = pd.concat([mean_df, std_df, ci_df], axis=1).reset_index()
-    result_df = pd.concat([mean_df, std_df], axis=1).reset_index()
+        # Concatenate mean, standard deviation, and confidence interval dataframes
+        result_df = pd.concat([mean_df, std_df, ci_hac_df], axis=1).reset_index()
+    else:
+        result_df = pd.concat([mean_df, std_df], axis=1).reset_index()
 
     # Round the velocities to 0 decimal places
     result_df["vw"] = result_df["vw"].round(0)
