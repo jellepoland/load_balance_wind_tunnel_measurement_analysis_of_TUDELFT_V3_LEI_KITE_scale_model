@@ -441,6 +441,7 @@ def plotting_polars_alpha(
 
     data_lebesque_paths = [
         "V3_CL_CD_RANS_Lebesque_2024_Rey_10e4.csv",
+        # "V3_CL_CD_RANS_Vire2020_Rey_50e4.csv",
         "V3_CL_CD_RANS_Lebesque_2024_Rey_100e4.csv",
         "V3_CL_CD_RANS_Lebesque_2024_Rey_300e4.csv",
     ]
