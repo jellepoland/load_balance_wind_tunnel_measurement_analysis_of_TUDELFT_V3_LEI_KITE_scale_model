@@ -19,8 +19,6 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
     stats_all: pd.DataFrame,
     betas_to_be_plotted: str,
     plot_speeds: list,
-    figsize: tuple,
-    fontsize: int,
     columns: list,
     y_labels: list,
     subplot_titles: list,
@@ -53,7 +51,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
 
         if sideslip in betas_to_be_plotted:
             # Create a subplot with 4 rows and 3 columns
-            fig, axs = plt.subplots(2, 3, figsize=figsize)
+            fig, axs = plt.subplots(2, 3, figsize=(15, 10))
 
             # Flatten the subplot array for easier indexing
             axs = axs.flatten()
@@ -105,6 +103,8 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
                     if vw in plot_speeds:
                         Re = np.around((vw_group["Rey"].mean()) / 1e5, 1)
 
+                        axs[i].set_xlim(-13, 24)
+
                         plot_on_ax(
                             axs[i],
                             vw_group["aoa_kite"],
@@ -146,8 +146,6 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
     stats_all: pd.DataFrame,
     alphas_to_be_plotted: list,
     plot_speeds: list,
-    figsize: tuple,
-    fontsize: int,
     columns: list,
     y_labels: list,
     subplot_titles: list,
@@ -181,7 +179,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
             entries = len(group["vw"])
             if entries > 5:
                 # Create a subplot with 4 rows and 3 columns
-                fig, axs = plt.subplots(2, 3, figsize=figsize)
+                fig, axs = plt.subplots(2, 3, figsize=(15, 10))
 
                 # Flatten the subplot array for easier indexing
                 axs = axs.flatten()
@@ -295,7 +293,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                     #     y_axis_labels[y_labels[i]]
                     # )  # , fontsize=fontsize)
                     if i == 1:
-                        axs[i].legend()
+                        axs[i].legend(loc="upper center")
                     # axs[i].set_xlim([-21, 21])
                     # axs[i].grid()
                 # axs[1].set_ylim([-0.04,0.75])
@@ -347,8 +345,8 @@ def main(results_path, project_dir):
     alphas_to_be_plotted = [6.8]
 
     ### Other figure settings
-    figsize = (16, 12)
-    fontsize = 18
+    # figsize = (16, 12)
+    # fontsize = 18
     columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
     y_labels = ["CL", "CD", "CS", "CMx", "CMy", "CMz"]
     subplot_titles = [
@@ -380,8 +378,6 @@ def main(results_path, project_dir):
         stats_all,
         betas_to_be_plotted,
         plot_speeds,
-        figsize,
-        fontsize,
         columns,
         y_labels,
         subplot_titles,
@@ -407,8 +403,6 @@ def main(results_path, project_dir):
         stats_all,
         alphas_to_be_plotted,
         plot_speeds,
-        figsize,
-        fontsize,
         columns,
         y_labels,
         subplot_titles,

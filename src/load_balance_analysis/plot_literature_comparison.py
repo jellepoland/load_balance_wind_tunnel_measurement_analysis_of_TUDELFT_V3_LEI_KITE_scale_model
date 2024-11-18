@@ -209,8 +209,6 @@ def saving_alpha_and_beta_sweeps(
 def plotting_polars_alpha(
     project_dir: str,
     results_dir: str,
-    figsize: tuple,
-    fontsize: int,
     confidence_interval: float,
 ):
 
@@ -270,7 +268,7 @@ def plotting_polars_alpha(
     fmt_wt = "o"
 
     # Plot CL, CD, and CL/CD in subplots
-    fig, axs = plt.subplots(1, 3, figsize=figsize)
+    fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 
     aoa_col = f"aoa"
     cl_col = f"CL"
@@ -279,7 +277,6 @@ def plotting_polars_alpha(
     for i, (data_frame, label, color, linestyle, marker) in enumerate(
         zip(data_frame_list, labels, colors, linestyles, markers)
     ):
-
         plot_on_ax(
             axs[0],
             data_frame[aoa_col],
@@ -340,6 +337,10 @@ def plotting_polars_alpha(
                 label=f"WT CI of {confidence_interval}\%",
             )
 
+    axs[0].set_xlim(-13, 24)
+    axs[1].set_xlim(-13, 24)
+    axs[2].set_xlim(-13, 24)
+
     # Format axes
     axs[0].set_xlabel(x_axis_labels["alpha"])
     axs[0].set_ylabel(y_axis_labels["CL"])
@@ -363,8 +364,6 @@ def plotting_polars_alpha(
 def plotting_polars_beta(
     project_dir: str,
     results_dir: str,
-    figsize: tuple,
-    fontsize: int,
     ratio_projected_area_to_side_area: float,
     confidence_interval: float,
 ):
@@ -440,6 +439,9 @@ def plotting_polars_beta(
             else:
                 markersize = None
 
+            if "CFD" in label:
+                axs[0].set_ylim(0.5, 1.1)
+
             plot_on_ax(
                 axs[0],
                 data_frame["beta"],
@@ -488,39 +490,53 @@ def plotting_polars_beta(
                     alpha=0.15,  # Adjust transparency
                     label=f"WT CI of {confidence_interval}\%",
                 )
+                low_bound = (
+                    data_frame["CS"] / ratio_projected_area_to_side_area
+                    - data_frame["CS_ci"] / ratio_projected_area_to_side_area
+                )
+                upper_bound = (
+                    data_frame["CS"] / ratio_projected_area_to_side_area
+                    + data_frame["CS_ci"] / ratio_projected_area_to_side_area
+                )
+
                 axs[2].fill_between(
                     data_frame["beta"],
-                    data_frame["CS"] - data_frame["CS_ci"],  # Lower bound
-                    data_frame["CS"] + data_frame["CS_ci"],  # Upper bound
+                    low_bound,  # Lower bound
+                    upper_bound,  # Upper bound
                     color=color,
                     alpha=0.15,  # Adjust transparency
                     label=f"WT CI of {confidence_interval}\%",
                 )
 
-                # Plot negative beta with dashed lines
-                axs[0].plot(
+                plot_on_ax(
+                    axs[0],
                     -data_frame["beta"],
                     data_frame["CL"],
-                    linestyle.replace("-", "--"),  # Change to dashed line
                     label=label + rf"(-$\beta$)",
                     color=color,
+                    linestyle=linestyle.replace("-", "--"),
                     marker=marker,
+                    markersize=markersize,
                 )
-                axs[1].plot(
+                plot_on_ax(
+                    axs[1],
                     -data_frame["beta"],
                     data_frame["CD"],
-                    linestyle.replace("-", "--"),
                     label=label + rf"(-$\beta$)",
                     color=color,
+                    linestyle=linestyle.replace("-", "--"),
                     marker=marker,
+                    markersize=markersize,
                 )
-                axs[2].plot(
+                plot_on_ax(
+                    axs[2],
                     -data_frame["beta"],
-                    -data_frame["CS"],
-                    linestyle.replace("-", "--"),
+                    -data_frame["CS"] / ratio_projected_area_to_side_area,
                     label=label + rf"(-$\beta$)",
                     color=color,
+                    linestyle=linestyle.replace("-", "--"),
                     marker=marker,
+                    markersize=markersize,
                 )
                 # Create shaded regions for confidence intervals
                 axs[0].fill_between(
@@ -530,7 +546,7 @@ def plotting_polars_beta(
                     color="white",
                     facecolor=color,
                     alpha=0.3,  # Adjust transparency
-                    label=f"WT CI of {confidence_interval}\%",
+                    label=rf"WT CI of {confidence_interval}\% (-$\beta$)",
                     hatch="||",
                 )
                 axs[1].fill_between(
@@ -540,17 +556,23 @@ def plotting_polars_beta(
                     color="white",
                     facecolor=color,
                     alpha=0.3,  # Adjust transparency
-                    label=f"WT CI of {confidence_interval}\%",
+                    label=rf"WT CI of {confidence_interval}\% (-$\beta$)",
                     hatch="||",
                 )
                 axs[2].fill_between(
                     -data_frame["beta"],
-                    -(data_frame["CS"] - data_frame["CS_ci"]),  # Lower bound
-                    -(data_frame["CS"] + data_frame["CS_ci"]),  # Upper bound
+                    -(
+                        data_frame["CS"] / ratio_projected_area_to_side_area
+                        - data_frame["CS_ci"] / ratio_projected_area_to_side_area
+                    ),  # Lower bound
+                    -(
+                        data_frame["CS"] / ratio_projected_area_to_side_area
+                        + data_frame["CS_ci"] / ratio_projected_area_to_side_area
+                    ),  # Upper bound
                     color="white",
                     facecolor=color,
                     alpha=0.3,  # Adjust transparency
-                    label=f"WT CI of {confidence_interval}\%",
+                    label=rf"WT CI of {confidence_interval}\% (-$\beta$)",
                     hatch="||",
                 )
 
@@ -567,11 +589,11 @@ def plotting_polars_beta(
 
         axs[1].set_ylabel(y_axis_labels["CD"])
         axs[2].set_ylabel(y_axis_labels["CS"])
-        axs[2].set_ylim(-0.05, 0.6)
+        # axs[2].set_ylim(-0.05, 0.6)
 
         # Adjust layout and save
         plt.tight_layout()
-        plt.subplots_adjust(bottom=0.15)  # Leave space for legend
+        # plt.subplots_adjust(bottom=0.15)  # Leave space for legend
         saving_pdf_and_pdf_tex(results_dir, file_name)
 
     # Split data into high and low alpha groups
@@ -604,8 +626,8 @@ def plotting_polars_beta(
         high_alpha_labels,
         file_name="literature_polars_beta_high_alpha",
         axs_titles=["CL (High Alpha)", "CD (High Alpha)", "CS (High Alpha)"],
-        legend_location_index=2,
-        legend_location="upper left",
+        legend_location_index=0,
+        legend_location="lower left",
     )
 
     # Second plot: Low Alpha
@@ -614,16 +636,16 @@ def plotting_polars_beta(
         low_alpha_labels,
         file_name="literature_polars_beta_low_alpha",
         axs_titles=["CL (Low Alpha)", "CD (Low Alpha)", "CS (Low Alpha)"],
-        legend_location_index=0,
-        legend_location="lower left",
+        legend_location_index=1,
+        legend_location="upper left",
     )
 
 
 def main(results_dir, project_dir):
 
     confidence_interval = 99
-    fontsize = 18
-    figsize = (20, 6)
+    # fontsize = 18
+    # figsize = (20, 6)
 
     saving_alpha_and_beta_sweeps(
         project_dir,
@@ -634,17 +656,13 @@ def main(results_dir, project_dir):
     plotting_polars_alpha(
         project_dir,
         results_dir,
-        figsize,
-        fontsize,
         confidence_interval=confidence_interval,
     )
 
-    figsize = (20, 6)
+    # figsize = (20, 6)
     plotting_polars_beta(
         project_dir,
         results_dir,
-        figsize,
-        fontsize,
         ratio_projected_area_to_side_area=3.7,
         confidence_interval=confidence_interval,
     )

@@ -19,8 +19,6 @@ from load_balance_analysis.functions_statistics import (
 def plot_zigzag(
     csv_path: str,
     results_dir: str,
-    figsize: tuple,
-    fontsize: float,
     confidence_interval: float = 99,
     max_lag: int = 11,
 ) -> None:
@@ -142,9 +140,9 @@ def plot_zigzag(
 def create_grouped_plot(
     rey_list, data_to_print, labels_to_print, y_axis_labels, yaxis_names, results_dir
 ):
-    fig, axes = plt.subplots(
-        nrows=1, ncols=3, figsize=(15, 5)
-    )  # Increased figure height
+    # this will be a 1x3 plot, so we do 15x5
+    fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(15, 5))
+    # )  # Increased figure height
     axs = axes.flatten()
 
     # Group data by Reynolds number
@@ -202,6 +200,8 @@ def create_grouped_plot(
                 )
 
         # Set x-axis
+        print(f"n_groups: {n_groups}")
+        print(f"group_names: {group_names}")
         ax.set_xticks(range(n_groups))
         ax.set_xticklabels(group_names)
         ax.set_xlabel(r"Re $\times 10^5$ [-]")
@@ -210,8 +210,15 @@ def create_grouped_plot(
         ax.grid(True, axis="y")
         ax.grid(False, axis="x")
 
-    axs[0].set_ylim(0.65, 0.90)
+        for ax in axs:
+            # Get current x-axis limits
+            xlim = ax.get_xlim()
 
+            # Extend x-axis limits slightly on both sides
+            padding = 0.19  # Adjust this value to control the gray area size
+            ax.set_xlim(xlim[0] + padding, xlim[1] - padding)
+
+    axs[0].set_ylim(0.65, 0.90)
     # Create legend elements
     legend_elements = [
         plt.Line2D(
@@ -273,17 +280,16 @@ def create_grouped_plot(
     # Add centered legend below the plots
     fig.legend(
         handles=legend_elements,
-        loc="center",
-        bbox_to_anchor=(0.5, 0.05),
+        loc="lower center",  # Changed to lower center
+        bbox_to_anchor=(0.5, 0.0),  # Adjust y value negative to push further down
         ncol=3,
-        fontsize="small",
         frameon=True,
     )
 
     plt.tight_layout()
 
-    # Adjust the layout to make room for the legend
-    plt.subplots_adjust(bottom=0.2)
+    # Increase bottom margin more significantly
+    plt.subplots_adjust(bottom=0.28)  # Increased from 0.24
 
     # Save the figure
     saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_875_beta_0")
@@ -291,9 +297,8 @@ def create_grouped_plot(
 
 def main(results_dir: Path, project_dir: Path) -> None:
 
-    # Increase font size for readability
-    fontsize = 18
-    figsize = (20, 6)
+    # # Increase font size for readability
+    # fontsize = 18
 
     save_path_lvm_data_processed = (
         Path(project_dir)
@@ -305,8 +310,6 @@ def main(results_dir: Path, project_dir: Path) -> None:
     plot_zigzag(
         save_path_lvm_data_processed,
         results_dir,
-        figsize,
-        fontsize,
         confidence_interval=99,
         max_lag=11,
     )

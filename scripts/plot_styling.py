@@ -119,8 +119,8 @@ def set_plot_style():
             "font.family": "serif",
             "font.serif": ["Computer Modern Roman"],
             ## Axes settings
-            "axes.titlesize": 14,
-            "axes.labelsize": 12,
+            "axes.titlesize": 15,
+            "axes.labelsize": 15,
             "axes.linewidth": 1.0,
             "axes.edgecolor": "#C5C5C5",
             "axes.labelcolor": "black",
@@ -138,12 +138,11 @@ def set_plot_style():
             ## Line settings
             "lines.linewidth": 1,
             "lines.markersize": 6,
-            # "lines.color": "grey",
-            "legend.fontsize": 10,
-            "figure.titlesize": 16,
+            # "lines.color": "grey",,
+            "figure.titlesize": 15,
             "pgf.texsystem": "pdflatex",  # Use pdflatex
             "pgf.rcfonts": False,
-            "figure.figsize": (10, 6),  # Default figure size
+            "figure.figsize": (15, 5),  # Default figure size
             "axes.prop_cycle": cycler(
                 "color", color_cycle
             ),  # Set the custom color cycle
@@ -152,14 +151,16 @@ def set_plot_style():
             "ytick.color": "#C5C5C5",
             "xtick.labelcolor": "black",
             "ytick.labelcolor": "black",
-            "xtick.labelsize": 10,
-            "ytick.labelsize": 10,
+            "xtick.labelsize": 15,
+            "ytick.labelsize": 15,
             "xtick.top": True,  # Show ticks on both sides
             "xtick.bottom": True,
             "ytick.left": True,
             "ytick.right": True,
             "xtick.direction": "in",  # Direction for x-axis ticks
             "ytick.direction": "in",  # Direction for y-axis ticks
+            ## legend settings
+            "legend.fontsize": 15,
         }
     )
 
