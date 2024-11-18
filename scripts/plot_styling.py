@@ -226,8 +226,20 @@ def plot_on_ax(
     markersize: int = None,
     is_with_grid: bool = True,
     is_return_ax: bool = False,
+    x_label: str = "X-axis",
+    y_label: str = "Y-axis",
+    is_with_x_label: bool = True,
+    is_with_y_label: bool = True,
+    is_with_x_ticks: bool = True,
+    is_with_y_ticks: bool = True,
 ):
     """Plot data on a given axis."""
+
+    # turning off the ticks
+    if not is_with_x_ticks:
+        ax.tick_params(bottom=False, top=False, labelbottom=False)
+    if not is_with_y_ticks:
+        ax.tick_params(left=False, right=False, labelleft=False)
 
     if is_with_grid:
         ax.tick_params(
@@ -271,5 +283,9 @@ def plot_on_ax(
                     markersize=markersize,
                 )
 
+    if is_with_x_label:
+        ax.set_xlabel(x_label)
+    if is_with_y_label:
+        ax.set_ylabel(y_label)
     if is_return_ax:
         return ax

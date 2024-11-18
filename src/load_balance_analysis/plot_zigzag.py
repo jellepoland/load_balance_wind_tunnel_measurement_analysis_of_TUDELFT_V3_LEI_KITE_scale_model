@@ -210,6 +210,8 @@ def create_grouped_plot(
         ax.grid(True, axis="y")
         ax.grid(False, axis="x")
 
+    axs[0].set_ylim(0.65, 0.90)
+
     # Create legend elements
     legend_elements = [
         plt.Line2D(
@@ -281,7 +283,7 @@ def create_grouped_plot(
     plt.tight_layout()
 
     # Adjust the layout to make room for the legend
-    plt.subplots_adjust(bottom=0.25)
+    plt.subplots_adjust(bottom=0.2)
 
     # Save the figure
     saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_875_beta_0")

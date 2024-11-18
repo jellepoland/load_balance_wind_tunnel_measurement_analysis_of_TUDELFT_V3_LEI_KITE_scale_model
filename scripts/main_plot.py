@@ -23,8 +23,8 @@ def main():
 
     ## plotting
     # plot_zigzag.main(results_path, project_dir)
-    plot_literature_comparison.main(results_path, project_dir)
-    # plot_reynolds_variation.main(results_path, project_dir)
+    # plot_literature_comparison.main(results_path, project_dir)
+    plot_reynolds_variation.main(results_path, project_dir)
     ## NO LONGER NEEDED plot_uncertainty_boxplots.main(results_path, project_dir)
 
     # ## printing

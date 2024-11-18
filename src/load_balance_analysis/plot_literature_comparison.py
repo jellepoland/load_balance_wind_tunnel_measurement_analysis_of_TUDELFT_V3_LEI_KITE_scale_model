@@ -588,14 +588,14 @@ def plotting_polars_beta(
 
     # Split labels, colors and linestyles accordingly
     high_alpha_labels = [
-        rf"CFD $\alpha$ = 12.0$^\circ$ Re = $10\times10^5$",
-        rf"VSM $\alpha$ = 11.9$^\circ$ Re = $5.6\times10^5$",
-        rf"WT $\alpha$ = {11.9}$^\circ$ Re = $5.6\times10^5$",
+        rf"CFD Re = $10\times10^5$",
+        rf"VSM Re = $5.6\times10^5$",
+        rf"WT Re = $5.6\times10^5$",
     ]
     low_alpha_labels = [
         "",  # Empty label for missing Lebesque data
-        rf"VSM $\alpha$ = 6.8$^\circ$ Re = $5.6\times10^5$",
-        rf"WT $\alpha$ = {6.8}$^\circ$ Re = $5.6\times10^5$",
+        rf"VSM Re = $5.6\times10^5$",
+        rf"WT Re = $5.6\times10^5$",
     ]
 
     # First plot: High Alpha
@@ -625,11 +625,11 @@ def main(results_dir, project_dir):
     fontsize = 18
     figsize = (20, 6)
 
-    # saving_alpha_and_beta_sweeps(
-    #     project_dir,
-    #     confidence_interval=confidence_interval,
-    #     max_lag=11,
-    # )
+    saving_alpha_and_beta_sweeps(
+        project_dir,
+        confidence_interval=confidence_interval,
+        max_lag=11,
+    )
 
     plotting_polars_alpha(
         project_dir,

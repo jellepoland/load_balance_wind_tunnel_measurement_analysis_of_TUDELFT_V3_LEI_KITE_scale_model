@@ -11,6 +11,7 @@ from load_balance_analysis.functions_utils import (
     reduce_df_by_parameter_mean_and_std,
     project_dir,
 )
+from plot_styling import plot_on_ax
 
 
 def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
@@ -69,11 +70,18 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
             #     "Yaw moment coefficient",
             # ]
             linestyles = {
-                "5": "s--",
-                "10": "X--",
-                "15": "d-",
-                "20": "o-",
-                "25": "*-",
+                "5": "--",
+                "10": "--",
+                "15": "-",
+                "20": "-",
+                "25": "-",
+            }
+            markers = {
+                "5": "s",
+                "10": "X",
+                "15": "d",
+                "20": "o",
+                "25": "*",
             }
             # colors = {
             #     "5": "green",
@@ -82,26 +90,41 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
             #     "20": "red",
             #     "25": "orange",
             # }
+
             for i, column in enumerate(columns):
+
+                if column in ["C_L", "C_D", "C_S"]:
+                    is_with_x_ticks = False
+                    is_with_x_label = False
+                else:
+                    is_with_x_ticks = True
+                    is_with_x_label = True
+
                 # Plot each distinct value in the vw column (excluding vw=0 and vw=5)
                 for vw, vw_group in group.groupby("vw"):
                     if vw in plot_speeds:
                         Re = np.around((vw_group["Rey"].mean()) / 1e5, 1)
-                        axs[i].plot(
+
+                        plot_on_ax(
+                            axs[i],
                             vw_group["aoa_kite"],
                             vw_group[column],
-                            linestyles[str(int(vw))],
+                            linestyle=linestyles[str(int(vw))],
+                            marker=markers[str(int(vw))],
                             label=rf"Re = {Re} $\times$ $10^5$",
-                            # color=colors[str(int(vw))],
+                            is_with_x_ticks=is_with_x_ticks,
+                            is_with_x_label=is_with_x_label,
+                            x_label=x_axis_labels["alpha"],
+                            y_label=y_axis_labels[y_labels[i]],
                         )
 
                 # axs[i].set_title(subplot_titles[i])
-                axs[i].set_xlabel(x_axis_labels["alpha"])  # , fontsize=fontsize)
-                axs[i].set_ylabel(y_axis_labels[y_labels[i]])  # , fontsize=fontsize)
+                # axs[i].set_xlabel(x_axis_labels["alpha"])  # , fontsize=fontsize)
+                # axs[i].set_ylabel(y_axis_labels[y_labels[i]])  # , fontsize=fontsize)
                 if i == 0:
                     axs[i].legend()
                 # axs[i].set_xlim([-5,24])
-                axs[i].grid()
+                # axs[i].grid()
 
             # Set the title of the subplot
             # fig.suptitle(rf"Force and moment coefficient plots for sideslip angle: $\beta=${sideslip} deg")#, fontsize=14, fontweight='bold')
@@ -175,22 +198,44 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                 #     "Yawing moment coefficient",
                 # ]
                 linestyles = {
-                    "5": "s--",
-                    "10": "X--",
-                    "15": "d--",
-                    "20": "o--",
-                    "25": "*--",
+                    "5": "--",
+                    "10": "--",
+                    "15": "--",
+                    "20": "--",
+                    "25": "--",
+                }
+                markers = {
+                    "5": "s",
+                    "10": "X",
+                    "15": "d",
+                    "20": "o",
+                    "25": "*",
                 }
                 for i, column in enumerate(columns):
+
+                    if column in ["C_L", "C_D", "C_S"]:
+                        is_with_x_ticks = False
+                        is_with_x_label = False
+                    else:
+                        is_with_x_ticks = True
+                        is_with_x_label = True
+
                     # Plot each distinct value in the vw column (excluding vw=0 and vw=5)
                     for vw, vw_group in group.groupby("vw"):
                         if vw in plot_speeds:
                             Re = np.around((vw_group["Rey"].mean()) / 1e5, 1)
-                            axs[i].plot(
+
+                            plot_on_ax(
+                                axs[i],
                                 vw_group["sideslip"],
                                 vw_group[column],
-                                linestyles[str(int(vw))],
+                                linestyle=linestyles[str(int(vw))],
+                                marker=markers[str(int(vw))],
                                 label=rf"Re = {Re} $\times$ $10^5$",
+                                is_with_x_ticks=is_with_x_ticks,
+                                is_with_x_label=is_with_x_label,
+                                x_label=x_axis_labels["beta"],
+                                y_label=y_axis_labels[y_labels[i]],
                             )
 
                             pos_values, neg_values = [], []
@@ -245,14 +290,14 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                             # print(f" mean delta: {np.average(delta)*100}%")
 
                     # axs[i].set_title(subplot_titles[i])
-                    axs[i].set_xlabel(x_axis_labels["beta"])  # , fontsize=fontsize)
-                    axs[i].set_ylabel(
-                        y_axis_labels[y_labels[i]]
-                    )  # , fontsize=fontsize)
+                    # axs[i].set_xlabel(x_axis_labels["beta"])  # , fontsize=fontsize)
+                    # axs[i].set_ylabel(
+                    #     y_axis_labels[y_labels[i]]
+                    # )  # , fontsize=fontsize)
                     if i == 1:
                         axs[i].legend()
-                    axs[i].set_xlim([-21, 21])
-                    axs[i].grid()
+                    # axs[i].set_xlim([-21, 21])
+                    # axs[i].grid()
                 # axs[1].set_ylim([-0.04,0.75])
 
                 # Set the title of the subplot
