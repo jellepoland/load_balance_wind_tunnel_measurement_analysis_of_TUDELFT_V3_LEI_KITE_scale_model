@@ -10,31 +10,28 @@ from load_balance_analysis.functions_statistics import (
     hac_newey_west_confidence_interval,
 )
 
+# mpl.rcParams["font.family"] = "Open Sans"
+# mpl.rcParams.update({"font.size": 14})
+# mpl.rcParams["figure.figsize"] = 10, 5.625
+# mpl.rc("xtick", labelsize=13)
+# mpl.rc("ytick", labelsize=13)
+# mpl.rcParams["pdf.fonttype"] = 42  # Output Type 3 (Type3) or Type 42(TrueType)
 
-mpl.rcParams["font.family"] = "Open Sans"
-mpl.rcParams.update({"font.size": 14})
-mpl.rcParams["figure.figsize"] = 10, 5.625
-mpl.rc("xtick", labelsize=13)
-mpl.rc("ytick", labelsize=13)
-mpl.rcParams["pdf.fonttype"] = 42  # Output Type 3 (Type3) or Type 42(TrueType)
+# # disable outline paths for inkscape > PDF+Latex
+# # important: comment out all other local font settings
+# mpl.rcParams["svg.fonttype"] = "none"
 
-# disable outline paths for inkscape > PDF+Latex
-# important: comment out all other local font settings
-mpl.rcParams["svg.fonttype"] = "none"
+# # Path to the directory where your fonts are installed
+# font_dir = "/home/jellepoland/.local/share/fonts/"
 
-# Path to the directory where your fonts are installed
-font_dir = "/home/jellepoland/.local/share/fonts/"
-
-# Add each font in the directory
-for font_file in os.listdir(font_dir):
-    if font_file.endswith(".ttf") or font_file.endswith(".otf"):
-        fm.fontManager.addfont(os.path.join(font_dir, font_file))
+# # Add each font in the directory
+# for font_file in os.listdir(font_dir):
+#     if font_file.endswith(".ttf") or font_file.endswith(".otf"):
+#         fm.fontManager.addfont(os.path.join(font_dir, font_file))
 
 
 def saving_pdf_and_pdf_tex(results_dir: str, filename: str):
     plt.savefig(Path(results_dir) / f"{filename}.pdf")
-    plt.savefig(Path(results_dir) / "pdf_tex" / f"{filename}.pdf")
-    plt.savefig(Path(results_dir) / "pdf_tex" / f"{filename}.pdf_tex", format="pgf")
     plt.close()
 
 

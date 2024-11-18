@@ -71,10 +71,17 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
             linestyles = {
                 "5": "s--",
                 "10": "X--",
-                "15": "d--",
-                "20": "o--",
-                "25": "*--",
+                "15": "d-",
+                "20": "o-",
+                "25": "*-",
             }
+            # colors = {
+            #     "5": "green",
+            #     "10": "yellow",
+            #     "15": "blue",
+            #     "20": "red",
+            #     "25": "orange",
+            # }
             for i, column in enumerate(columns):
                 # Plot each distinct value in the vw column (excluding vw=0 and vw=5)
                 for vw, vw_group in group.groupby("vw"):
@@ -85,6 +92,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
                             vw_group[column],
                             linestyles[str(int(vw))],
                             label=rf"Re = {Re} $\times$ $10^5$",
+                            # color=colors[str(int(vw))],
                         )
 
                 # axs[i].set_title(subplot_titles[i])

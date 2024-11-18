@@ -108,13 +108,12 @@ def running_vsm_to_generate_csv_data(project_dir: str, vw: float) -> None:
     pd.DataFrame(
         {
             "aoa": polar_data[0],
-            "CL": polar_data[1],
-            "CL_stall": polar_data_stall[1],
-            "CD": polar_data[2],
-            "CD_stall": polar_data_stall[2],
-            "CL/CD": np.array(polar_data[1]) / np.array(polar_data[2]),
-            "CL/CD_stall": np.array(polar_data_stall[1])
-            / np.array(polar_data_stall[2]),
+            "CL_no_stall": polar_data[1],
+            "CL": polar_data_stall[1],
+            "CD_no_stall": polar_data[2],
+            "CD": polar_data_stall[2],
+            "CL/CD_no_stall": np.array(polar_data[1]) / np.array(polar_data[2]),
+            "CL/CD": np.array(polar_data_stall[1]) / np.array(polar_data_stall[2]),
         }
     ).to_csv(path_to_csv, index=False)
 
