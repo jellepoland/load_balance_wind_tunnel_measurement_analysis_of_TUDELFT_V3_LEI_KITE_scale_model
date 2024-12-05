@@ -9,7 +9,7 @@ This repository contains code that transforms raw data into tables and plots use
 
 2. Navigate to the repository folder:
     ```bash
-    cd Vortex-Step-Method
+    cd load_balance_wind_tunnel_measurement_analysis_of_TUDELFT_V3_LEI_KITE_scale_model
     ```
     
 3. Create a virtual environment:
