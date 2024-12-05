@@ -54,12 +54,12 @@ This repository contains code that transforms raw data into tables and plots use
     ```
 ### Dependencies
 - numpy
-- matplotlib>=3.7.1
-- seaborn
-- scipy
-- numba
-- ipykernel
-- screeninfo
+- pandas>=1.5.3
+- matplotlib>=3.7.1,
+- ipykernel,
+- statsmodels,
+- VSM @ git+https://github.com/ocayon/Vortex-Step-Method.git@develop
+
 
 ## Usages
 ...
