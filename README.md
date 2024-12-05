@@ -62,7 +62,18 @@ This repository contains code that transforms raw data into tables and plots use
 
 
 ## Usages
-...
+1. Follow installation instructions
+2. Run `scripts/main.py`
+
+## Inner Logic
+`scripts/main_process.py` calls all the processing scripts, a short listing and description follows:
+- `process_raw_lvm_with_labbook_into_df`: reads the labbook in csv format and raw measurements in lvm format, and save them in csv format to `processed_data/without_csv` folder
+- `process_support_struc_aero_interp_coeffs.py`: reads the processed_data and interpolates the support structure measurements, saves these as csv into `processed_data` folder
+- `process_normal_csv`: Use the `process_raw_lvm_with_labbook_into_df` script to analyze the "normal" runs and save these into as csv in `processed_data/normal` folder
+- `process_zigzag_csv`: Read out the zigzag specific measurements, and saved as csv in `processed_data/zigzag`
+- `process_vsm`: Run the [Vortex-Step Method](https://github.com/ocayon/Vortex-Step-Method/tree/main/src/VSM) to produce aerodynamic results, that will be used in the comparison. 
+- `process_bundling_beta_0`: bundles the results for the beta_0 case, such that it is easier to process
+
 
 ## Citation
 If you use this project in your research, please consider citing it. 
