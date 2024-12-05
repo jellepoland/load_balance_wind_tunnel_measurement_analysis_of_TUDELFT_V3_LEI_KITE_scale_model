@@ -140,6 +140,18 @@ def reduce_df_by_parameter_mean_and_std(
     return result_df
 
 
+def save_latex_table(df_table, file_path):
+    """
+    Saves the LaTeX representation of the table to a .tex file.
+
+    Args:
+        df_table (pd.DataFrame): The formatted table DataFrame.
+        file_path (str or Path): The path where the .tex file will be saved.
+    """
+    with open(file_path, "w") as f:
+        f.write(df_table.to_latex(escape=False, multicolumn=True, multirow=False))
+
+
 if __name__ == "__main__":
     print(f"project_dir: {project_dir}")
     print(f"\nlabel_x:")

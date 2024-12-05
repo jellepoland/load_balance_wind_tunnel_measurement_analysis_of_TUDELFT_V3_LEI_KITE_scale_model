@@ -137,9 +137,6 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
             filename = f"re_variation_alpha_sweep_at_fixed_beta_{sideslip:.2f}"
             saving_pdf_and_pdf_tex(results_path, filename)
 
-            # Print a message when the plot is saved
-            print(f"Plot for sideslip {sideslip} saved as {filename}")
-
 
 def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
     results_path: str,
@@ -311,7 +308,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                 saving_pdf_and_pdf_tex(results_path, filename)
 
                 # Print a message when the plot is saved
-                print(f"Plot for angle of attack {alpha} saved as {filename}")
+                # print(f"Plot for angle of attack {alpha} saved as {filename}")
 
 
 def main(results_path, project_dir):

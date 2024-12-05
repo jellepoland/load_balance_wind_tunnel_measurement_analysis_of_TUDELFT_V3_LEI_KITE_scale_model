@@ -84,6 +84,8 @@ dependencies = [
   "matplotlib>=3.7.1",
   "ipykernel",
   "statsmodels",
+  "tabulate",
+  "Jinja2",
   "VSM @ git+https://github.com/ocayon/Vortex-Step-Method.git@develop"
 ]
 

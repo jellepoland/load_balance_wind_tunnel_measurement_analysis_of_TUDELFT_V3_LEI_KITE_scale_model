@@ -335,7 +335,7 @@ def main(results_path, project_dir):
         #     normal_folder_path, suffix
         # )  # Read and process files
 
-        print(f"analyzing vw: {plot_speeds[j]}")
+        # print(f"analyzing vw: {plot_speeds[j]}")
 
         for sideslip in betas_to_be_plotted:
             # columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]

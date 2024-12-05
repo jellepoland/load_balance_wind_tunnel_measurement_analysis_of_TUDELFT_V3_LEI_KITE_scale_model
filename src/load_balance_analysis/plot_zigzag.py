@@ -30,7 +30,7 @@ def plot_zigzag(
     merged_df["vw_actual_rounded"] = np.round(merged_df["vw"], 0)
     merged_df["Rey_rounded"] = np.round(merged_df["Rey"], -4)
 
-    print(f" sideslip_angles: {merged_df['sideslip'].unique()}")
+    # print(f" sideslip_angles: {merged_df['sideslip'].unique()}")
 
     # Defining coefficients
     coefficients = ["C_L", "C_D", "C_pitch"]
@@ -46,7 +46,7 @@ def plot_zigzag(
         rey = round(df_vw["Rey"].mean() * 1e-5, 1)
         if rey == 2.9:
             rey = 2.8
-        print(f"\nvw: {vw}, rey: {rey}")
+        # print(f"\nvw: {vw}, rey: {rey}")
         # separating into zz and no zz
         data_zz = df_vw[df_vw["Filename"].str.startswith("ZZ")]
         data_no_zz = df_vw[df_vw["Filename"].str.startswith("normal")]
@@ -90,7 +90,7 @@ def plot_zigzag(
             ]
 
         for data, label in zip(data_list, label_list):
-            print(f"\nlabel: {label}")
+            # print(f"\nlabel: {label}")
             # skipping the data that has rey = 1.4
             if "1.4" in label:
                 continue
@@ -200,8 +200,8 @@ def create_grouped_plot(
                 )
 
         # Set x-axis
-        print(f"n_groups: {n_groups}")
-        print(f"group_names: {group_names}")
+        # print(f"n_groups: {n_groups}")
+        # print(f"group_names: {group_names}")
         ax.set_xticks(range(n_groups))
         ax.set_xticklabels(group_names)
         ax.set_xlabel(r"Re $\times 10^5$ [-]")

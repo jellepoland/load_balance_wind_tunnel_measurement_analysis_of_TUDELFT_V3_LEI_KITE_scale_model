@@ -23,8 +23,7 @@ def printing_stats(project_dir: Path) -> None:
             if file.startswith("raw_normal_aoa"):  # Only process the raw files
                 file_path = os.path.join(root, file)
 
-                # Read the CSV file into a DataFrame
-                df = pd.read_csv(file_path, sep=",")
+                df = pd.read_csv(file_path, sep=",", low_memory=False)
 
                 # Extract relevant columns
                 subset = df[columns]

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from pathlib import Path
-from load_balance_analysis.functions_utils import project_dir
+from load_balance_analysis.functions_utils import project_dir, save_latex_table
 
 
 def print_sensor_drift_values(project_dir: str) -> None:
@@ -51,25 +51,61 @@ def print_sensor_drift_values(project_dir: str) -> None:
     Mz_min = -60
     Mz_max = 60
 
-    print("\nSensor drift values:")
-    print(
-        f"Fx: mean: {np.mean(CL_list):.2f}, std: {np.std(CL_list):.2f}, min: {Fx_min:.2f}, max: {Fx_max:.2f}"
+    # print("\nSensor drift values:")
+    # print(
+    #     f"Fx: mean: {np.mean(CL_list):.2f}, std: {np.std(CL_list):.2f}, min: {Fx_min:.2f}, max: {Fx_max:.2f}"
+    # )
+    # print(
+    #     f"Fy: mean: {np.mean(CD_list):.2f}, std: {np.std(CD_list):.2f}, min: {Fy_min:.2f}, max: {Fy_max:.2f}"
+    # )
+    # print(
+    #     f"Fz: mean: {np.mean(CS_list):.2f}, std: {np.std(CS_list):.2f}, min: {Fz_min:.2f}, max: {Fz_max:.2f}"
+    # )
+    # print(
+    #     f"Mx: mean: {np.mean(CMx_list):.2f}, std: {np.std(CMx_list):.2f}, min: {Mx_min:.2f}, max: {Mx_max:.2f}"
+    # )
+    # print(
+    #     f"My: mean: {np.mean(CMy_list):.2f}, std: {np.std(CMy_list):.2f}, min: {My_min:.2f}, max: {My_max:.2f}"
+    # )
+    # print(
+    #     f"Mz: mean: {np.mean(CMz_list):.2f}, std: {np.std(CMz_list):.2f}, min: {Mz_min:.2f}, max: {Mz_max:.2f}"
+    # )
+
+    # Prepare the data for the table
+    load_names = ["Fx [N]", "Fy [N]", "Fz [N]", "Mx [N/m]", "My [N/m]", "Mz [N/m]"]
+    means = [
+        np.mean(CL_list),
+        np.mean(CD_list),
+        np.mean(CS_list),
+        np.mean(CMx_list),
+        np.mean(CMy_list),
+        np.mean(CMz_list),
+    ]
+    stds = [
+        np.std(CL_list),
+        np.std(CD_list),
+        np.std(CS_list),
+        np.std(CMx_list),
+        np.std(CMy_list),
+        np.std(CMz_list),
+    ]
+
+    # Create a DataFrame for the formatted output
+    data = {
+        "Load": load_names,
+        "Mean": [f"{mean:.2f}" for mean in means],
+        "std": [f"{std:.2f}" for std in stds],
+    }
+
+    df_table = pd.DataFrame(data)
+
+    # Save the table as LaTeX
+    save_latex_table(
+        df_table, Path(project_dir) / "results" / "tables" / "sensor_drift.tex"
     )
-    print(
-        f"Fy: mean: {np.mean(CD_list):.2f}, std: {np.std(CD_list):.2f}, min: {Fy_min:.2f}, max: {Fy_max:.2f}"
-    )
-    print(
-        f"Fz: mean: {np.mean(CS_list):.2f}, std: {np.std(CS_list):.2f}, min: {Fz_min:.2f}, max: {Fz_max:.2f}"
-    )
-    print(
-        f"Mx: mean: {np.mean(CMx_list):.2f}, std: {np.std(CMx_list):.2f}, min: {Mx_min:.2f}, max: {Mx_max:.2f}"
-    )
-    print(
-        f"My: mean: {np.mean(CMy_list):.2f}, std: {np.std(CMy_list):.2f}, min: {My_min:.2f}, max: {My_max:.2f}"
-    )
-    print(
-        f"Mz: mean: {np.mean(CMz_list):.2f}, std: {np.std(CMz_list):.2f}, min: {Mz_min:.2f}, max: {Mz_max:.2f}"
-    )
+
+    # Print the table to verify
+    print(df_table.to_string(index=False))
 
 
 def main(project_dir: str) -> None:

@@ -139,7 +139,7 @@ def saving_alpha_and_beta_sweeps(
     df_alpha.to_csv(
         Path(project_dir)
         / "processed_data"
-        / "literature_comparison"
+        / "polar_data"
         / "V3_CL_CD_CS_alpha_sweep_for_beta_0_WindTunnel_Poland_2025_Rey_560e4.csv",
         columns=col_names,
         index=False,
@@ -187,7 +187,7 @@ def saving_alpha_and_beta_sweeps(
     data_WT_beta_re_56e4_alpha_high.to_csv(
         Path(project_dir)
         / "processed_data"
-        / "literature_comparison"
+        / "polar_data"
         / "V3_CL_CD_CS_beta_sweep_alpha_11_9_WindTunnel_Poland_2025_Rey_560e4.csv",
         # columns=col_names,
         index=False,
@@ -199,7 +199,7 @@ def saving_alpha_and_beta_sweeps(
     data_WT_beta_re_56e4_alpha_low.to_csv(
         Path(project_dir)
         / "processed_data"
-        / "literature_comparison"
+        / "polar_data"
         / "V3_CL_CD_CS_beta_sweep_alpha_6_8_WindTunnel_Poland_2025_Rey_560e4.csv",
         # columns=col_names,
         index=False,
@@ -216,7 +216,7 @@ def plotting_polars_alpha(
     path_to_csv_VSM_alpha_re_56e4 = (
         Path(project_dir)
         / "processed_data"
-        / "literature_comparison"
+        / "polar_data"
         / "VSM_results_alpha_sweep_Rey_5.6.csv"
     )
     data_VSM_alpha_re_56e4 = pd.read_csv(path_to_csv_VSM_alpha_re_56e4)
@@ -228,9 +228,7 @@ def plotting_polars_alpha(
         "V3_CL_CD_RANS_Lebesque_2024_Rey_300e4.csv",
     ]
     data_lebesque = [
-        pd.read_csv(
-            Path(project_dir) / "processed_data" / "literature_comparison" / file
-        )
+        pd.read_csv(Path(project_dir) / "data" / "CFD_polar_data" / file)
         for file in data_lebesque_paths
     ]
 
@@ -238,7 +236,7 @@ def plotting_polars_alpha(
     path_to_csv = (
         Path(project_dir)
         / "processed_data"
-        / "literature_comparison"
+        / "polar_data"
         / "V3_CL_CD_CS_alpha_sweep_for_beta_0_WindTunnel_Poland_2025_Rey_560e4.csv"
     )
     data_windtunnel = pd.read_csv(path_to_csv)
@@ -251,7 +249,7 @@ def plotting_polars_alpha(
         # pd.read_csv(
         #     Path(project_dir)
         #     / "processed_data"
-        #     / "literature_comparison"
+        #     / "polar_data"
         #     / "polar_2019-10-08.csv"
         # ),
     ]
@@ -372,7 +370,7 @@ def plotting_polars_beta(
     path_to_csv_VSM_beta_re_56e4_alpha_1195 = (
         Path(project_dir)
         / "processed_data"
-        / "literature_comparison"
+        / "polar_data"
         / "VSM_results_beta_sweep_Rey_5.6_alpha_1195.csv"
     )
     data_VSM_beta_re_56e4_alpha_1195 = pd.read_csv(
@@ -383,7 +381,7 @@ def plotting_polars_beta(
     path_to_csv_VSM_beta_re_56e4_alpha_675 = (
         Path(project_dir)
         / "processed_data"
-        / "literature_comparison"
+        / "polar_data"
         / "VSM_results_beta_sweep_Rey_5.6_alpha_675.csv"
     )
     data_VSM_beta_re_56e4_alpha_675 = pd.read_csv(
@@ -394,7 +392,7 @@ def plotting_polars_beta(
     path_to_csv_lebesque_re_100e4_alpha_1195 = (
         Path(project_dir)
         / "processed_data"
-        / "literature_comparison"
+        / "polar_data"
         / "V3_CL_CD_CS_RANS_Lebesque_2024_Rey_100e4_beta_sweep.csv"
     )
     data_lebesque_re_100e4_alpha_1195 = pd.read_csv(
@@ -404,13 +402,13 @@ def plotting_polars_beta(
     data_WT_beta_re_56e4_alpha_6_8 = pd.read_csv(
         Path(project_dir)
         / "processed_data"
-        / "literature_comparison"
+        / "polar_data"
         / "V3_CL_CD_CS_beta_sweep_alpha_6_8_WindTunnel_Poland_2025_Rey_560e4.csv"
     )
     data_WT_beta_re_56e4_alpha_11_9 = pd.read_csv(
         Path(project_dir)
         / "processed_data"
-        / "literature_comparison"
+        / "polar_data"
         / "V3_CL_CD_CS_beta_sweep_alpha_11_9_WindTunnel_Poland_2025_Rey_560e4.csv"
     )
 

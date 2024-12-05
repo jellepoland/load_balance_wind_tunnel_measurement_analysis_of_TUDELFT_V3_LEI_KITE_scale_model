@@ -2,12 +2,11 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from load_balance_analysis.functions_utils import project_dir
+from load_balance_analysis.functions_utils import project_dir, save_latex_table
 
 
-def print_repeatability_uncertainty(project_dir: Path) -> None:
+def main(project_dir: Path) -> None:
 
-    print("\n--> Repeatability uncertainty:")
     # Read the interpolation coefficients
     path_support_struc_aero_interp_coeffs = (
         Path(project_dir) / "processed_data" / "support_struc_aero_interp_coeffs.csv"
@@ -17,9 +16,7 @@ def print_repeatability_uncertainty(project_dir: Path) -> None:
     )
 
     # Read the labbook data
-    path_labbook_double = (
-        Path(project_dir) / "processed_data" / "repeatibility" / "labbook_double.csv"
-    )
+    path_labbook_double = Path(project_dir) / "data" / "labbook_repeatibility.csv"
     data = pd.read_csv(path_labbook_double, delimiter=";")
     data["measurement"] = data.groupby("Filename").cumcount()
 
@@ -226,23 +223,67 @@ def print_repeatability_uncertainty(project_dir: Path) -> None:
         merged_df.groupby("sideslip").cumcount() % 3 + 1
     )  # Measurement labels: 1, 2, 3
 
+    # for sideslip in sideslip_angles:
+    #     print(f"\nSideslip angle: {sideslip}°")
+    #     df_local = merged_df[merged_df["sideslip"] == sideslip]
+    #     df_local_m1 = df_local[df_local["measurement"] == 1]
+    #     df_local_m2 = df_local[df_local["measurement"] == 2]
+    #     df_local_m3 = df_local[df_local["measurement"] == 3]
+    #     for coeff in coefficients_plot_xaxis:
+    #         # print(
+    #         #     f"coeff: {coeff}, m1_mean: {df_local_m1[coeff].mean()}, m2_mean: {df_local_m2[coeff].mean()}, m3_mean: {df_local_m3[coeff].mean()}"
+    #         # )
+    #         print(
+    #             f"coeff: {coeff}, std of mean: {1e4*np.std([df_local_m1[coeff].mean(), df_local_m2[coeff].mean(), df_local_m3[coeff].mean()]):.3f} x 1e-4"
+    #         )
+
+    # Coefficients to be used
+    coefficients_plot_xaxis = ["C_L", "C_D", "C_S", "C_roll", "C_pitch", "C_yaw"]
+
+    # Assuming merged_df is your DataFrame containing the data with the appropriate columns
+    # Create a DataFrame to hold the formatted data
+    formatted_data = []
+
+    # Loop over sideslip angles and coefficients
     for sideslip in sideslip_angles:
-        print(f"\nSideslip angle: {sideslip}°")
+        # Initialize a row for each sideslip angle
+        row = {r"Sideslip angle ($\beta$)": rf"{sideslip} \unit{{\degree}}"}
+
+        # Filter data for the current sideslip angle
         df_local = merged_df[merged_df["sideslip"] == sideslip]
         df_local_m1 = df_local[df_local["measurement"] == 1]
         df_local_m2 = df_local[df_local["measurement"] == 2]
         df_local_m3 = df_local[df_local["measurement"] == 3]
+
+        # For each coefficient, calculate the standard deviation of the mean
         for coeff in coefficients_plot_xaxis:
-            # print(
-            #     f"coeff: {coeff}, m1_mean: {df_local_m1[coeff].mean()}, m2_mean: {df_local_m2[coeff].mean()}, m3_mean: {df_local_m3[coeff].mean()}"
-            # )
-            print(
-                f"coeff: {coeff}, std of mean: {1e4*np.std([df_local_m1[coeff].mean(), df_local_m2[coeff].mean(), df_local_m3[coeff].mean()]):.3f} x 1e-4"
+            std_of_mean = 1e4 * np.std(
+                [
+                    df_local_m1[coeff].mean(),
+                    df_local_m2[coeff].mean(),
+                    df_local_m3[coeff].mean(),
+                ]
             )
+            row[coeff] = f"{std_of_mean:.3f}"
 
+        # Append the row to the formatted data list
+        formatted_data.append(row)
 
-def main(project_dir: Path) -> None:
-    print_repeatability_uncertainty(project_dir)
+    # Convert the formatted data into a DataFrame
+    df_table = pd.DataFrame(formatted_data)
+
+    # Save the table
+    save_latex_table(
+        df_table,
+        Path(project_dir)
+        / "results"
+        / "tables"
+        / "repeatibility_standard_deviation.tex",
+    )
+
+    # Show the table
+    print(f"\n--- Repeatability uncertainty table ---\n")
+    print(df_table.to_string(index=False))
 
 
 if __name__ == "__main__":
