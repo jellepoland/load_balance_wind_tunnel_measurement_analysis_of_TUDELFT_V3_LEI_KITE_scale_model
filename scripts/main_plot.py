@@ -24,17 +24,17 @@ def main():
     # )
 
     ## plotting
-    # plot_zigzag.main(results_path, project_dir)
+    plot_zigzag.main(results_path, project_dir)
     plot_literature_comparison.main(results_path, project_dir)
-    # plot_reynolds_variation.main(results_path, project_dir)
+    plot_reynolds_variation.main(results_path, project_dir)
 
     # ## printing
-    # print_kite_dimensions.main(project_dir)
-    # print_relative_standard_deviation.main(project_dir)
-    # print_repeatability_uncertainty.main(project_dir)
-    # print_sensor_drift.main(project_dir)
-    # print_min_max.main(project_dir)
-    # print_kite_cg.main(project_dir)
+    print_kite_dimensions.main(project_dir)
+    print_relative_standard_deviation.main(project_dir)
+    print_repeatability_uncertainty.main(project_dir)
+    print_sensor_drift.main(project_dir)
+    print_min_max.main(project_dir)
+    print_kite_cg.main(project_dir)
 
     print(f"\n--> New plots and tables generated, and saved inside: \n {results_path}")
 
