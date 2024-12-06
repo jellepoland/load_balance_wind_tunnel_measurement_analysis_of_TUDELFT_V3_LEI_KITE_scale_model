@@ -63,7 +63,8 @@ This repository contains code that transforms raw data into tables and plots use
 
 ## Usages
 1. Follow installation instructions
-2. Run `scripts/main.py`
+2. Download data from [Insert Link](..) and place all data, with current names, inside the `data/` folder
+3. Run `scripts/main.py`
 
 ### Inner Logic
 `scripts/main_process.py` calls all the processing scripts, a short listing and description follows:
