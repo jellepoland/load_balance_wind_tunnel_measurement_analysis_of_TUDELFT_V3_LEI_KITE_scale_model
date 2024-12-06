@@ -11,6 +11,7 @@ from load_balance_analysis import print_relative_standard_deviation
 from load_balance_analysis import print_repeatability_uncertainty
 from load_balance_analysis import print_min_max
 from load_balance_analysis import print_kite_cg
+from load_balance_analysis import plot_critical_trip_height
 
 from load_balance_analysis.functions_utils import *
 
@@ -24,15 +25,16 @@ def main():
     # )
 
     ## plotting
-    # plot_zigzag.main(results_path, project_dir)
-    # plot_literature_comparison.main(results_path, project_dir)
-    # plot_reynolds_variation.main(results_path, project_dir)
+    plot_zigzag.main(results_path, project_dir)
+    plot_literature_comparison.main(results_path, project_dir)
+    plot_reynolds_variation.main(results_path, project_dir)
+    plot_critical_trip_height.main(results_path, project_dir)
 
     # ## printing
-    # print_kite_dimensions.main(project_dir)
+    print_kite_dimensions.main(project_dir)
     print_relative_standard_deviation.main(project_dir)
     print_repeatability_uncertainty.main(project_dir)
-    # print_sensor_drift.main(project_dir)
+    print_sensor_drift.main(project_dir)
     # print_min_max.main(project_dir)
     # print_kite_cg.main(project_dir)
 

@@ -27,6 +27,7 @@ y_axis_labels = {
     "CMy": r"$C_{\mathrm{M,y}}$ [-]",
     "CMz": r"$C_{\mathrm{M,z}}$ [-]",
     "L/D": r"$L/D$ [-]",
+    "kcrit": r"$k_{\mathrm{crit}}$ [mm]",
 }
 
 project_dir = Path(__file__).resolve().parent.parent
