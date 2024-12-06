@@ -369,7 +369,11 @@ def processing_raw_lvm_data_into_csv(
     if is_zigzag:
         print(f"Processing ZIGZAG")
 
-    for i, file in enumerate(folder_dir.iterdir()):
+    files = sorted(
+        folder_dir.iterdir(), key=lambda x: (not str(x).endswith("_00.csv"), str(x))
+    )
+    for i, file in enumerate(files):
+        # for i, file in enumerate(folder_dir.iterdir()):
         # only read the raw files
         if "raw" not in file.name:
             continue
