@@ -60,7 +60,6 @@ This repository contains code that transforms raw data into tables and plots use
     python3 -m venv venv
     source venv/bin/activate
     pip install -e .[dev]
-    ```
 </details>
 
 ### Dependencies
