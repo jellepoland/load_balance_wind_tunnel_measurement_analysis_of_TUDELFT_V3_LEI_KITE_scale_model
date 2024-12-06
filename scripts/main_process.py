@@ -6,6 +6,7 @@ from load_balance_analysis import process_zigzag_csv
 from load_balance_analysis import process_raw_lvm_with_labbook_into_df
 from load_balance_analysis import plot_zigzag
 from load_balance_analysis import process_vsm
+from load_balance_analysis import process_uncertainty_table
 from load_balance_analysis.functions_utils import project_dir
 
 
@@ -27,6 +28,7 @@ def main():
     process_zigzag_csv.main()
     process_vsm.main()
     process_bundling_beta_0.main()
+    process_uncertainty_table.main()
 
 
 if __name__ == "__main__":
