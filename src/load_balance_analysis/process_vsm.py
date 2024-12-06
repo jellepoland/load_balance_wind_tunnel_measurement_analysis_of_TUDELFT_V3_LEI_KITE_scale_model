@@ -103,7 +103,8 @@ def running_vsm_to_generate_csv_data(project_dir: str, vw: float) -> None:
     path_to_csv = (
         Path(project_dir)
         / "processed_data"
-        / f"VSM_results_alpha_sweep_Rey_{(reynolds_number/1e5):.1f}_NEW.csv"
+        / "polar_data"
+        / f"VSM_results_alpha_sweep_Rey_{(reynolds_number/1e5):.1f}.csv"
     )
     pd.DataFrame(
         {
@@ -161,7 +162,8 @@ def running_vsm_to_generate_csv_data(project_dir: str, vw: float) -> None:
     path_to_csv = (
         Path(project_dir)
         / "processed_data"
-        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}_NEW.csv"
+        / "polar_data"
+        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}.csv"
     )
     pd.DataFrame(
         {
@@ -222,7 +224,8 @@ def running_vsm_to_generate_csv_data(project_dir: str, vw: float) -> None:
     path_to_csv = (
         Path(project_dir)
         / "processed_data"
-        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}_NEW.csv"
+        / "polar_data"
+        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}.csv"
     )
     pd.DataFrame(
         {
