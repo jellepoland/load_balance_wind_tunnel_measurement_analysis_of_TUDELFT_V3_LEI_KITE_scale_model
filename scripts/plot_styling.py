@@ -238,7 +238,7 @@ def plot_on_ax(
 
     # turning off the ticks
     if not is_with_x_ticks:
-        ax.tick_params(bottom=False, top=False, labelbottom=False)
+        ax.tick_params(labelbottom=False)
     if not is_with_y_ticks:
         ax.tick_params(left=False, right=False, labelleft=False)
 
