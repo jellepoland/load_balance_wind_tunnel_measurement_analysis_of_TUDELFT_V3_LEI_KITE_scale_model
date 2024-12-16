@@ -343,10 +343,10 @@ def plotting_polars_alpha(
     axs[0].set_xlabel(x_axis_labels["alpha"])
     axs[0].set_ylabel(y_axis_labels["CL"])
     # axs[0].grid()
-    axs[0].legend(loc="lower right")
 
     axs[1].set_xlabel(x_axis_labels["alpha"])
     axs[1].set_ylabel(y_axis_labels["CD"])
+    axs[1].legend(loc="upper left")
     # axs[1].grid()
 
     axs[2].set_xlabel(x_axis_labels["alpha"])
@@ -425,10 +425,17 @@ def plotting_polars_beta(
         linestyles = ["-", "-", "-"]
         markers = ["*", "s", "o"]
         fmt_wt = "x"
+        is_CFD = False
 
         for i, (data_frame, label, color, linestyle, marker) in enumerate(
             zip(data_frames, labels, colors, linestyles, markers)
         ):
+
+            if "CFD" in label:
+                ratio_projected_area_to_side_area = 3.7
+            else:
+                ratio_projected_area_to_side_area = 1.0
+
             if data_frame is None:
                 continue
 
@@ -438,7 +445,8 @@ def plotting_polars_beta(
                 markersize = None
 
             if "CFD" in label:
-                axs[0].set_ylim(0.5, 1.1)
+                is_CFD = True
+                # axs[0].set_ylim(0.5, 1.1)
 
             plot_on_ax(
                 axs[0],
@@ -583,14 +591,108 @@ def plotting_polars_beta(
 
         # Only add legend to the first plot (CL)
         axs[0].set_ylabel(y_axis_labels["CL"])
-        axs[legend_location_index].legend(loc=legend_location)
+        # axs[legend_location_index].legend(loc=legend_location)
+        # Adjust the layout to make room for the legend
+        # plt.tight_layout(rect=[0, 0.03, 1, 1.1])
+        # # Add centered legend below the plots
+        # fig.legend(
+        # handles=handles,
+        # loc="lower center",  # Changed to lower center
+        # bbox_to_anchor=(0.5, 0.0),  # Adjust y value negative to push further down
+        # ncol=3,
+        # frameon=True,
+        # )
+
+        # plt.tight_layout()
+
+        # Increase bottom margin more significantly
+        plt.tight_layout()
+        plt.subplots_adjust(bottom=0.28)
+
+        from matplotlib.patches import Patch
+
+        # Create legend elements
+        legend_elements = [
+            plt.Line2D(
+                [0],
+                [0],
+                marker="*",
+                color="black",
+                label=r"CFD Re = $10 \times 10^5$",
+                # markersize=10,
+                linestyle="-",
+            ),
+            plt.Line2D(
+                [0],
+                [0],
+                marker="s",
+                color="blue",
+                label=r"VSM Re = $5.6 \times 10^5$",
+                # markersize=10,
+                linestyle="-",
+            ),
+            plt.Line2D(
+                [0],
+                [0],
+                marker="o",
+                color="red",
+                label=r"WT Re = $5.6 \times 10^5$",
+                # markersize=10,
+                linestyle="-",
+            ),
+            Patch(
+                facecolor="red",
+                edgecolor="none",
+                alpha=0.15,
+                label=r"WT CI of 99%",
+            ),
+            plt.Line2D(
+                [0],
+                [0],
+                marker="o",
+                color="red",
+                linestyle="--",
+                label=r"WT Re = $5.6 \times 10^5$ $(-\beta)$",
+                # markersize=10,
+            ),
+            Patch(
+                # color="white",
+                facecolor="red",
+                edgecolor="white",
+                alpha=0.3,
+                hatch="||",
+                label=r"WT CI of 99% $(-\beta)$",
+            ),
+        ]
+
+        if not is_CFD:
+            legend_elements = legend_elements[1:]
+
+        # Create a blank figure for the legend
+        fig.legend(
+            handles=legend_elements,
+            loc="lower center",
+            bbox_to_anchor=(0.5, 0.01),  # Adjust the y value to position the legend
+            ncol=3,
+            frameon=True,
+        )
+        # Create a combined legend below the plots
+        # # ncol determines the number of columns in the legend
+        # # Use all_lines to ensure all labels are printed
+        # fig.legend(
+        #     # handles=all_lines,  # Pass all line objects
+        #     # labels=labels,  # Pass all labels
+        #     loc="lower center",
+        #     bbox_to_anchor=(0.5, -0.05),
+        #     ncol=3,
+        # )
 
         axs[1].set_ylabel(y_axis_labels["CD"])
         axs[2].set_ylabel(y_axis_labels["CS"])
-        # axs[2].set_ylim(-0.05, 0.6)
+        axs[2].set_ylim(-0.05, 0.4)
 
         # Adjust layout and save
-        plt.tight_layout()
+        # plt.tight_layout()
         # plt.subplots_adjust(bottom=0.15)  # Leave space for legend
         saving_pdf_and_pdf_tex(results_dir, file_name)
 
@@ -634,8 +736,8 @@ def plotting_polars_beta(
         low_alpha_labels,
         file_name="literature_polars_beta_low_alpha",
         axs_titles=["CL (Low Alpha)", "CD (Low Alpha)", "CS (Low Alpha)"],
-        legend_location_index=1,
-        legend_location="upper left",
+        legend_location_index=0,
+        legend_location="lower left",
     )
 
 
@@ -664,9 +766,3 @@ def main(results_dir, project_dir):
         ratio_projected_area_to_side_area=3.7,
         confidence_interval=confidence_interval,
     )
-
-
-if __name__ == "__main__":
-
-    results_dir = Path(project_dir) / "results"
-    main(results_dir, project_dir)

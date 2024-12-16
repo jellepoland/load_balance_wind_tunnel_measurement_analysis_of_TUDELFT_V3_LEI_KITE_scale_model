@@ -63,7 +63,14 @@ def plot_frequency_peaks_multi_vw(all_data, save_path, x_max):
         save_path (Path): Path to save the plot
     """
     channels = ["F_X", "F_Y", "F_Z", "M_X", "M_Y", "M_Z"]
-    channel_labels = ["$F_X$", "$F_Y$", "$F_Z$", "$M_X$", "$M_Y$", "$M_Z$"]
+    channel_labels = [
+        r"$F_{\mathrm{x}}$",
+        r"$F_{\mathrm{y}}$",
+        r"$F_{\mathrm{z}}$",
+        r"$M_{\mathrm{x}}$",
+        r"$M_{\mathrm{y}}$",
+        r"$M_{\mathrm{z}}$",
+    ]
     wind_speeds = list(all_data.keys())
     colors = ["red", "blue", "green", "orange", "purple"]
 
@@ -88,13 +95,23 @@ def plot_frequency_peaks_multi_vw(all_data, save_path, x_max):
             peaks, _ = find_peaks(Pxx_normalized, height=0)
 
             # Plot on each axis
-            axs[i].plot(f, Pxx_normalized, label=f"{vw}", linestyle="-")
+            plot_on_ax(
+                axs[i],
+                f,
+                Pxx_normalized,
+                label=f"{vw}",
+                linestyle="-",
+                # color=color,
+                title=channel_labels[i],
+            )
+
+            # axs[i].plot(f, Pxx_normalized, label=f"{vw}", linestyle="-")
 
             # Safely plot peaks
             # if len(peaks) > 0:
             # axs[i].plot(f[peaks], Pxx_normalized[peaks], ".", markersize=10)
 
-            axs[i].set_title(rf"{channel_labels[i]}")
+            # axs[i].set_title(rf"{channel_labels[i]}")
             axs[i].set_xlim([0, x_max])  # Limit to 0-1000 Hz
             # axs[i].set_ylim([0, 1.05])  # Limit to 0-1 PSD
             if i >= 3:
@@ -278,7 +295,14 @@ def plot_time_series_aoa_vw(aoa_folder, vw, project_dir, save_path, x_max):
 
     # Channels to plot
     channels = ["F_X", "F_Y", "F_Z", "M_X", "M_Y", "M_Z"]
-    channel_labels = ["$F_X$", "$F_Y$", "$F_Z$", "$M_X$", "$M_Y$", "$M_Z$"]
+    channel_labels = [
+        r"$F_{\mathrm{x}}$",
+        r"$F_{\mathrm{y}}$",
+        r"$F_{\mathrm{z}}$",
+        r"$M_{\mathrm{x}}$",
+        r"$M_{\mathrm{y}}$",
+        r"$M_{\mathrm{z}}$",
+    ]
 
     # Time vector
     time = df["time"].values
@@ -291,7 +315,7 @@ def plot_time_series_aoa_vw(aoa_folder, vw, project_dir, save_path, x_max):
         data = df[channel].values
 
         # Plot the time series
-        axs[i].plot(time, data, label=label, color="tab:blue")
+        axs[i].plot(time, data, label=label, color="black")
         axs[i].set_title(label)
         axs[i].set_xlabel("Time [s]" if i >= 3 else "")
         axs[i].set_ylabel("Force/Moment [N/Nm]" if i % 3 == 0 else "")
@@ -327,28 +351,29 @@ def plot_time_series_aoa_vw(aoa_folder, vw, project_dir, save_path, x_max):
 
 
 def main(results_dir, project_dir):
+    set_plot_style()
     # Path for saving/loading data
     data_output_path = Path(project_dir) / "processed_data" / "frequency_psd_data.json"
 
-    # Collect and save wind speed data
+    ## Collect and save wind speed data
     # wind_speed_data = collect_wind_speed_data(project_dir)
     # save_wind_speed_data(wind_speed_data, data_output_path)
 
-    # Plot wind speed data
-    # wind_speed_data = load_wind_speed_data(data_output_path)
+    ## Plot wind speed data
+    wind_speed_data = load_wind_speed_data(data_output_path)
 
-    # x_max = 10  # Maximum frequency to plot
-    # plot_save_path = (
-    #     Path(results_dir)
-    #     / f"freq_plot_multi_vw_all_aoa_bundled_{x_max}Hz_periodogram.pdf"
-    # )
-    # plot_wind_speed_data(wind_speed_data, plot_save_path, x_max)
-    # x_max = 10000  # Maximum frequency to plot
-    # plot_save_path = (
-    #     Path(results_dir)
-    #     / f"freq_plot_multi_vw_all_aoa_bundled_{x_max}Hz_periodogram.pdf"
-    # )
-    # plot_wind_speed_data(wind_speed_data, plot_save_path, x_max)
+    x_max = 10  # Maximum frequency to plot
+    plot_save_path = (
+        Path(results_dir)
+        / f"freq_plot_multi_vw_all_aoa_bundled_{x_max}Hz_periodogram.pdf"
+    )
+    plot_wind_speed_data(wind_speed_data, plot_save_path, x_max)
+    x_max = 100  # Maximum frequency to plot
+    plot_save_path = (
+        Path(results_dir)
+        / f"freq_plot_multi_vw_all_aoa_bundled_{x_max}Hz_periodogram.pdf"
+    )
+    plot_wind_speed_data(wind_speed_data, plot_save_path, x_max)
 
     ####
     aoa_folder = "aoa_21"  # Replace with your AoA folder

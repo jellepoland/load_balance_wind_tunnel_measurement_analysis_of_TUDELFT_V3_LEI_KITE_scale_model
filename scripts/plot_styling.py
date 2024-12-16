@@ -233,6 +233,7 @@ def plot_on_ax(
     is_with_y_label: bool = True,
     is_with_x_ticks: bool = True,
     is_with_y_ticks: bool = True,
+    title: str = None,
 ):
     """Plot data on a given axis."""
 
@@ -283,6 +284,8 @@ def plot_on_ax(
                     marker=marker,
                     markersize=markersize,
                 )
+    if title is not None:
+        ax.set_title(title)
 
     if is_with_x_label:
         ax.set_xlabel(x_label)

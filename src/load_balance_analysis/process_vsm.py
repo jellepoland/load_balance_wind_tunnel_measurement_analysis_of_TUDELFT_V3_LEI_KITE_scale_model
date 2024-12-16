@@ -11,16 +11,18 @@ from VSM.Solver import Solver
 from VSM.plotting import generate_polar_data
 
 
-def running_vsm_to_generate_csv_data(project_dir: str, vw: float) -> None:
+def running_vsm_to_generate_csv_data(
+    project_dir: str, vw: float, geom_scaling=6.5
+) -> None:
 
     # Defining discretisation
     n_panels = 54
     spanwise_panel_distribution = "split_provided"
 
     ### rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs
+    vsm_input_path = Path(project_dir) / "data" / "vsm_input"
     csv_file_path = (
-        Path(project_dir)
-        / "data"
+        Path(vsm_input_path)
         / "TUDELFT_V3_LEI_KITE_rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs.csv"
     )
     (
@@ -46,7 +48,23 @@ def running_vsm_to_generate_csv_data(project_dir: str, vw: float) -> None:
     for i, CAD_rib_i in enumerate(
         rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs
     ):
-        CAD_wing.add_section(CAD_rib_i[0], CAD_rib_i[1], CAD_rib_i[2])
+
+        # ### using breukels
+        # CAD_wing.add_section(
+        #     CAD_rib_i[0] / geom_scaling, CAD_rib_i[1] / geom_scaling, CAD_rib_i[2]
+        # )
+
+        ### using polar
+        df_polar_data = pd.read_csv(Path(vsm_input_path) / f"polar_engineering_{i}.csv")
+        alpha = df_polar_data["alpha"].values
+        cl = df_polar_data["cl"].values
+        cd = df_polar_data["cd"].values
+        cm = df_polar_data["cm"].values
+        polar_data = ["polar_data", np.array([alpha, cl, cd, cm])]
+        CAD_wing.add_section(
+            CAD_rib_i[0] / geom_scaling, CAD_rib_i[1] / geom_scaling, polar_data
+        )
+
     wing_aero_CAD_19ribs = WingAerodynamics([CAD_wing])
 
     # Solvers
@@ -246,7 +264,7 @@ def running_vsm_to_generate_csv_data(project_dir: str, vw: float) -> None:
 
 
 def main():
-    running_vsm_to_generate_csv_data(project_dir, vw=3.15)
+    running_vsm_to_generate_csv_data(project_dir, vw=20)  # vw=3.15)
 
 
 if __name__ == "__main__":
