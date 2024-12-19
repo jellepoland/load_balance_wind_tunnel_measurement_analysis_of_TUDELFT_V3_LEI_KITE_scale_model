@@ -22,7 +22,7 @@ import math
 #         df["alpha"],
 #         df["cl"],
 #         label="Corrected",
-#         color="red",
+#         color="blue",
 #         linestyle="--",
 #         # marker=marker,
 #         is_with_grid=True,
@@ -34,7 +34,7 @@ import math
 #         df["alpha"],
 #         df["cd"],
 #         label=r"Corrected",
-#         color="red",
+#         color="blue",
 #         linestyle="--",
 #         # marker=marker,
 #         is_with_grid=True,
@@ -46,7 +46,7 @@ import math
 #         df["alpha"],
 #         df["cm"],
 #         label=r"Corrected",
-#         color="red",
+#         color="blue",
 #         linestyle="--",
 #         # marker=marker,
 #         is_with_grid=True,
@@ -176,7 +176,7 @@ def main(results_dir, project_dir):
     # Load polar data
     vsm_input_dir = Path(project_dir) / "data" / "vsm_input"
     panel_index = 8
-    df = pd.read_csv(vsm_input_dir / f"polar_engineering_{panel_index}.csv")
+    df = pd.read_csv(vsm_input_dir / f"corrected_polar_{panel_index}.csv")
 
     df["alpha"] = np.rad2deg(df["alpha"])
 
@@ -203,7 +203,7 @@ def main(results_dir, project_dir):
         df["alpha"],
         df["cl"],
         label="Corrected",
-        color="red",
+        color="blue",
         linestyle="--",
         is_with_grid=True,
         x_label=r"$\alpha$ [$^\circ$]",
@@ -230,7 +230,7 @@ def main(results_dir, project_dir):
         df["alpha"],
         df["cd"],
         label="Corrected",
-        color="red",
+        color="blue",
         linestyle="--",
         is_with_grid=True,
         x_label=r"$\alpha$ [$^\circ$]",
@@ -256,7 +256,7 @@ def main(results_dir, project_dir):
         df["alpha"],
         df["cl"] / df["cd"],
         label="Corrected",
-        color="red",
+        color="blue",
         linestyle="--",
         is_with_grid=True,
         x_label=r"$\alpha$ [$^\circ$]",
@@ -274,6 +274,7 @@ def main(results_dir, project_dir):
         y_label=r"$C_{\mathrm{l}}/C_{\mathrm{d}}$ [-]",
     )
     ax3.set_xlim([-30, 30])
+    ax2.set_ylim([-0.3, 0.6])
 
     # Adjust layout and save
     plt.tight_layout()

@@ -12,8 +12,18 @@ from VSM.plotting import generate_polar_data
 
 
 def running_vsm_to_generate_csv_data(
-    project_dir: str, vw: float, geom_scaling=6.5
+    project_dir: str,
+    vw: float,
+    geom_scaling=6.5,
+    is_with_corrected_polar=True,
+    mu=1.76e-5,
 ) -> None:
+    if is_with_corrected_polar:
+        print("Running VSM with corrected polar")
+        name_appendix = ""
+    else:
+        print("Running VSM with breukels polar")
+        name_appendix = "_no_correction"
 
     # Defining discretisation
     n_panels = 54
@@ -48,22 +58,24 @@ def running_vsm_to_generate_csv_data(
     for i, CAD_rib_i in enumerate(
         rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs
     ):
-
-        # ### using breukels
-        # CAD_wing.add_section(
-        #     CAD_rib_i[0] / geom_scaling, CAD_rib_i[1] / geom_scaling, CAD_rib_i[2]
-        # )
-
-        ### using polar
-        df_polar_data = pd.read_csv(Path(vsm_input_path) / f"polar_engineering_{i}.csv")
-        alpha = df_polar_data["alpha"].values
-        cl = df_polar_data["cl"].values
-        cd = df_polar_data["cd"].values
-        cm = df_polar_data["cm"].values
-        polar_data = ["polar_data", np.array([alpha, cl, cd, cm])]
-        CAD_wing.add_section(
-            CAD_rib_i[0] / geom_scaling, CAD_rib_i[1] / geom_scaling, polar_data
-        )
+        if is_with_corrected_polar:
+            ### using corrected polar
+            df_polar_data = pd.read_csv(
+                Path(vsm_input_path) / f"corrected_polar_{i}.csv"
+            )
+            alpha = df_polar_data["alpha"].values
+            cl = df_polar_data["cl"].values
+            cd = df_polar_data["cd"].values
+            cm = df_polar_data["cm"].values
+            polar_data = ["polar_data", np.array([alpha, cl, cd, cm])]
+            CAD_wing.add_section(
+                CAD_rib_i[0] / geom_scaling, CAD_rib_i[1] / geom_scaling, polar_data
+            )
+        else:
+            ### using breukels
+            CAD_wing.add_section(
+                CAD_rib_i[0] / geom_scaling, CAD_rib_i[1] / geom_scaling, CAD_rib_i[2]
+            )
 
     wing_aero_CAD_19ribs = WingAerodynamics([CAD_wing])
 
@@ -71,10 +83,12 @@ def running_vsm_to_generate_csv_data(
     VSM = Solver(
         aerodynamic_model_type="VSM",
         is_with_artificial_damping=False,
+        mu=mu,
     )
     VSM_with_stall_correction = Solver(
         aerodynamic_model_type="VSM",
         is_with_artificial_damping=True,
+        mu=mu,
     )
 
     ### alpha sweep
@@ -122,7 +136,7 @@ def running_vsm_to_generate_csv_data(
         Path(project_dir)
         / "processed_data"
         / "polar_data"
-        / f"VSM_results_alpha_sweep_Rey_{(reynolds_number/1e5):.1f}.csv"
+        / f"VSM_results_alpha_sweep_Rey_{(reynolds_number/1e5):.1f}{name_appendix}.csv"
     )
     pd.DataFrame(
         {
@@ -181,7 +195,7 @@ def running_vsm_to_generate_csv_data(
         Path(project_dir)
         / "processed_data"
         / "polar_data"
-        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}.csv"
+        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}{name_appendix}.csv"
     )
     pd.DataFrame(
         {
@@ -243,7 +257,7 @@ def running_vsm_to_generate_csv_data(
         Path(project_dir)
         / "processed_data"
         / "polar_data"
-        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}.csv"
+        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}{name_appendix}.csv"
     )
     pd.DataFrame(
         {
@@ -264,7 +278,8 @@ def running_vsm_to_generate_csv_data(
 
 
 def main():
-    running_vsm_to_generate_csv_data(project_dir, vw=20)  # vw=3.15)
+    running_vsm_to_generate_csv_data(project_dir, vw=20, is_with_corrected_polar=True)
+    running_vsm_to_generate_csv_data(project_dir, vw=20, is_with_corrected_polar=False)
 
 
 if __name__ == "__main__":
