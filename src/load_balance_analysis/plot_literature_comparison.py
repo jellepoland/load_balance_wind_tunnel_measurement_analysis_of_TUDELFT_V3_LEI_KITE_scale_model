@@ -407,7 +407,7 @@ def plotting_polars_alpha_correction_comparison(
     ]
     labels = [
         rf"VSM Breukels Re = $5.6\times10^5$",
-        rf"VSM Corrected Re = $10\times10^5$",
+        rf"VSM Corrected Re = $5.6\times10^5$",
         rf"WT Re = $5.6\times10^5$",
         # rf"Polars Uri",
     ]
@@ -457,7 +457,7 @@ def plotting_polars_alpha_correction_comparison(
             is_with_grid=True,
         )
         # adding the confidence interval
-        if i == 3:
+        if i == 2:
             alpha = 0.2
             axs[0].fill_between(
                 data_frame[aoa_col],
@@ -532,7 +532,7 @@ def plot_single_row(
         is_with_label_0 = True
     elif "correction" in labels[0]:
         label_0 = r"VSM Breukels Re = $5.6 \times 10^5$"
-        label_1 = r"VSM Corrected Re = $10 \times 10^5$"
+        label_1 = r"VSM Corrected Re = $5.6 \times 10^5$"
         is_with_label_0 = True
         colors = ["blue", "blue", "red"]
         linestyles = ["--", "-", "-"]
