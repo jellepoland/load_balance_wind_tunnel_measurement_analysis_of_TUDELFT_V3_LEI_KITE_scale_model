@@ -390,7 +390,7 @@ def main(results_path, project_dir):
             combined_df = pd.read_csv(path_to_csv)
 
             figsize = (16, 12)
-            columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
+            columns = ["C_L", "C_D", "C_S", "C_roll", "C_pitch", "C_yaw"]
             y_labels = ["C_L", "C_D", "C_S", "C_{M,x}", "C_{M,y}", "C_{M,z}"]
             subplot_titles = [
                 "Lift coefficient",

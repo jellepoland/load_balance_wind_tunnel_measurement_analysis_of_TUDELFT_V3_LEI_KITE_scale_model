@@ -181,17 +181,6 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                 # Flatten the subplot array for easier indexing
                 axs = axs.flatten()
 
-                # Loop through each column (F_X, F_Y, ..., M_Z)
-                # columns = ["C_D", "C_S", "C_L", "C_roll", "C_pitch", "C_yaw"]
-                # y_labels = ["C_D", "C_S", "C_L", "C_{roll}", "C_{pitch}", "C_{yaw}"]
-                # subplot_titles = [
-                #     "Drag coefficient",
-                #     "Side force",
-                #     "Lift coefficient",
-                #     "Rolling moment coefficient",
-                #     "Pitching moment coefficient",
-                #     "Yawing moment coefficient",
-                # ]
                 linestyles = {
                     "5": "--",
                     "10": "--",
@@ -237,78 +226,367 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
 
                             for j, column_j in enumerate(vw_group[column].values):
                                 beta = vw_group["sideslip"].values[j]
-                                # print(f"--> beta: {beta}")
-                                # print(f"column: {column_j}")
 
                                 if beta > 1:
                                     pos_values.append(column_j)
                                 elif beta < 1:
                                     neg_values.append(column_j)
-
-                            # print(f"neg_values: {neg_values}")
-                            # print(f"pos_values: {pos_values[::-1]}")
                             diff = []
                             for idx, (pos, neg) in enumerate(
                                 zip(pos_values, neg_values[::-1])
                             ):
-                                # print(f"\n pos: {pos}")
-                                # print(f"neg: {neg}")
-                                # print(f"diff: {np.abs(1 - np.abs(pos / neg))}")
                                 if idx > 3:
                                     diff.append(np.abs(1 - np.abs(pos / neg)))
 
-                            # print(
-                            #     f" y_labels[i]: {y_labels[i]} alpha: {alpha}, Re: {Re}, --> diff average : {np.average(diff)*100:.02f}%"
-                            # )
-                            # diff = [
-                            #     np.abs(np.abs(pos - neg) / pos)
-                            #     for pos, neg in zip(pos_values, neg_values[::-1])
-                            # ]
-                            # print(f"diff: {diff}")
-                            # print(
-                            #     f'\n y_labels[i]: {y_labels[i]}, alpha: {alpha}, \n beta: {vw_group["sideslip"].values}, \n Re: {Re}, \n column: {vw_group[column].values}'
-                            # )
-
-                            # pos_values = vw_group[column].values[0:8]
-                            # neg_values = vw_group[column].values[9:]
-                            # print(
-                            #     f"pos_values: {len(pos_values)} {pos_values}, \n neg_values: {len(neg_values)} {neg_values[:-1]}"
-                            # )
-                            # delta = [
-                            #     np.abs(np.abs(pos - neg) / pos)
-                            #     for i, (pos, neg) in enumerate(
-                            #         zip(pos_values, neg_values[::-1])
-                            #     )
-                            # ]
-                            # print(f"delta: {len(delta)} {delta}")
-                            # print(f" average delta: {np.average(delta)}")
-                            # print(f" mean delta: {np.average(delta)*100}%")
-
-                    # axs[i].set_title(subplot_titles[i])
-                    # axs[i].set_xlabel(x_axis_labels["beta"])  # , fontsize=fontsize)
-                    # axs[i].set_ylabel(
-                    #     y_axis_labels[y_labels[i]]
-                    # )  # , fontsize=fontsize)
                     if i == 1:
                         axs[i].legend(loc="upper center")
-                    # axs[i].set_xlim([-21, 21])
-                    # axs[i].grid()
-                # axs[1].set_ylim([-0.04,0.75])
-
-                # Set the title of the subplot
-                # fig.suptitle(rf"Force and moment coefficient plots for angle of attack: $\alpha=${np.around(alpha,2)}$^o$")#, fontsize=14, fontweight='bold')
-
-                # Save the plot in the plots folder
-                # plot_filename = f"plots/alpha_{alpha}_plot.png"
-                # plot_filename = (
-                #     foldername + "/beta" + f"/alpha_{np.around(alpha,2)}_plot.pdf"
-                # )
                 plt.tight_layout()
                 filename = f"re_variation_beta_sweep_at_fixed_alpha_{alpha:.2f}"
                 saving_pdf_and_pdf_tex(results_path, filename)
 
-                # Print a message when the plot is saved
-                # print(f"Plot for angle of attack {alpha} saved as {filename}")
+
+def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
+    results_path: str,
+    stats_all: pd.DataFrame,
+    alphas_to_be_plotted: list,
+    plot_speeds: list,
+    columns: list,
+    y_labels: list,
+    subplot_titles: list,
+):
+    """
+    Plots, for each alpha in alphas_to_be_plotted, the 'kite' contribution (e.g. C_L),
+    the 'support' contribution (C_L_s), and their total (C_L + C_L_s),
+    across sideslip (beta) for multiple wind speeds.
+
+    Parameters
+    ----------
+    results_path : str
+        Path to directory where figures will be saved.
+    stats_all : pd.DataFrame
+        DataFrame containing columns like [vw, sideslip, aoa_kite, C_L, C_L_s, C_D, C_D_s, ...].
+    alphas_to_be_plotted : list
+        Which alpha (aoa_kite) values to plot.
+    plot_speeds : list
+        Which wind speeds (vw) to plot.
+    columns : list
+        Which aerodynamic coefficients to plot, e.g. ["C_L", "C_D", "C_S", "C_roll", "C_pitch", "C_yaw"].
+    y_labels : list
+        Y-axis labels, same length as columns.
+    subplot_titles : list
+        Titles for each subplot, same length as columns.
+    """
+
+    # Sort for consistent plotting by sideslip
+    stats_plotvsbeta = stats_all.sort_values(by="sideslip")
+
+    # Group by alpha
+    grouped = stats_plotvsbeta.groupby("aoa_kite")
+
+    # We'll assign distinct colors for each wind speed
+    color_map = {
+        5: "blue",
+        10: "green",
+        15: "red",
+        20: "orange",
+        25: "purple",
+    }
+
+    # Line styles for kite, support, and total
+    line_styles = {
+        "kite": "-",
+        "support": "--",
+        "total": ":",
+    }
+
+    for alpha_value, group in grouped:
+        if alpha_value in alphas_to_be_plotted:
+            # Only plot if there is some reasonable amount of data
+            entries = len(group["vw"])
+            if entries < 3:
+                # Skip if too few points
+                continue
+
+            # Create a subplot with 2 rows and 3 columns
+            fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+            axs = axs.flatten()
+
+            for i, column in enumerate(columns):
+                ax = axs[i]
+
+                # Plot only 20m/s
+                vw = 20
+                vw_group = group[group["vw"] == vw]
+
+                # Prepare x-values
+                x_vals = vw_group["sideslip"].values
+
+                # 'Kite' is the nominal column
+                y_kite = vw_group[column].values
+
+                # 'Support' is the subscript _s column
+                support_col = column + "_s"
+                if support_col not in vw_group.columns:
+                    # If no support column, skip or assume zero
+                    y_support = np.zeros_like(y_kite)
+                    print(f"Warning: No support column for {column}")
+                else:
+                    y_support = vw_group[support_col].values
+
+                # 'Total' = sum of the two
+                y_total = y_kite + y_support
+
+                # Color for this wind speed
+                plot_color = color_map.get(vw, "black")
+
+                # Plot 'kite'
+                ax.plot(
+                    x_vals,
+                    y_kite,
+                    linestyle=line_styles["kite"],
+                    color=plot_color,
+                    label=(
+                        f"kite" if i == 0 else None
+                    ),  # show legend once or handle differently
+                )
+
+                # Plot 'support'
+                ax.plot(
+                    x_vals,
+                    y_support,
+                    linestyle=line_styles["support"],
+                    color=plot_color,
+                    label=f"support" if i == 0 else None,
+                )
+
+                # Plot 'total'
+                ax.plot(
+                    x_vals,
+                    y_total,
+                    linestyle=line_styles["total"],
+                    color=plot_color,
+                    label=f"total" if i == 0 else None,
+                )
+
+                # Title, labels, etc.
+                ax.set_title(subplot_titles[i])
+                ax.set_xlabel("Sideslip [deg]")
+                ax.set_ylabel(y_labels[i])
+                ax.grid(True)
+
+            # Make sure the legends don’t get overly repeated.
+            # You can refine how/where to place the legend.
+            handles, labels_ = axs[0].get_legend_handles_labels()
+            # Remove duplicates from the merged legend
+            unique = list(dict(zip(labels_, handles)).items())
+            axs[0].legend([val for _, val in unique], [key for key, _ in unique])
+
+            plt.tight_layout()
+            filename = f"beta_sweep_alpha_{alpha_value:.2f}_kite_support_total"
+            saving_pdf_and_pdf_tex(results_path, filename)
+
+            # Optionally, close the figure if you generate many plots
+            plt.close(fig)
+
+
+def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
+    results_path: str,
+    stats_all: pd.DataFrame,
+    alphas_to_be_plotted: list,
+    plot_speeds: list,  # Not used since only vw=20 is plotted
+    columns: list,
+    y_labels: list,
+    subplot_titles: list,  # Not used since titles are removed
+):
+    """
+    Plots, for each alpha in alphas_to_be_plotted, the 'kite' contribution (e.g. C_L),
+    the 'support' contribution (C_L_s), and their total (C_L + C_L_s),
+    across sideslip (beta) for a fixed wind speed of 20 m/s.
+
+    Parameters
+    ----------
+    results_path : str
+        Path to directory where figures will be saved.
+    stats_all : pd.DataFrame
+        DataFrame containing columns like [vw, sideslip, aoa_kite, C_L, C_L_s, C_D, C_D_s, ...].
+    alphas_to_be_plotted : list
+        Which alpha (aoa_kite) values to plot.
+    plot_speeds : list
+        Not used in this function since only vw=20 is plotted.
+    columns : list
+        Which aerodynamic coefficients to plot, e.g. ["C_L", "C_D", "C_S", "C_roll", "C_pitch", "C_yaw"].
+    y_labels : list
+        Y-axis labels, same length as columns.
+    subplot_titles : list
+        Titles for each subplot, same length as columns (not used).
+    """
+
+    # Ensure only positive beta values are plotted
+    stats_plotvsbeta = stats_all[stats_all["sideslip"] > 0].sort_values(by="sideslip")
+
+    # Group by alpha
+    grouped = stats_plotvsbeta.groupby("aoa_kite")
+
+    # Define fixed wind speed
+    fixed_vw = 20
+
+    # Define styles
+    styles = {
+        "kite": {"color": "red", "marker": "o", "linestyle": "-", "label": "Kite"},
+        "support": {
+            "color": "blue",
+            "marker": "s",
+            "linestyle": "-",
+            "label": "Support",
+        },
+        "total": {"color": "black", "marker": "*", "linestyle": "-", "label": "Total"},
+    }
+
+    for alpha_value, group in grouped:
+        if alpha_value in alphas_to_be_plotted:
+            # Filter for fixed wind speed
+            vw_group = group[group["vw"] == fixed_vw]
+
+            # Check if there is sufficient data
+            if len(vw_group) < 3:
+                print(
+                    f"Skipping alpha={alpha_value} due to insufficient data (n={len(vw_group)})"
+                )
+                continue
+
+            # Create a subplot with 2 rows and 3 columns
+            fig, axs = plt.subplots(2, 3, figsize=(18, 10))
+            axs = axs.flatten()
+
+            for i, column in enumerate(columns):
+                ax = axs[i]
+
+                # Extract sideslip and ensure positive values
+                x_vals = vw_group["sideslip"].values
+
+                # 'Kite' is the nominal column
+                y_kite = vw_group[column].values
+
+                # 'Support' is the subscript _s column
+                support_col = column + "_s"
+                if support_col not in vw_group.columns:
+                    # If no support column, assume zero and warn
+                    y_support = np.zeros_like(y_kite)
+                    print(f"Warning: No support column for {column}, assuming zero.")
+                else:
+                    y_support = vw_group[support_col].values
+
+                # 'Total' = sum of the two
+                y_total = y_kite + y_support
+
+                # Plot 'kite'
+                ax.plot(
+                    x_vals,
+                    y_kite,
+                    color=styles["kite"]["color"],
+                    marker=styles["kite"]["marker"],
+                    linestyle=styles["kite"]["linestyle"],
+                    label=styles["kite"]["label"],
+                )
+
+                # Plot 'support'
+                ax.plot(
+                    x_vals,
+                    y_support,
+                    color=styles["support"]["color"],
+                    marker=styles["support"]["marker"],
+                    linestyle=styles["support"]["linestyle"],
+                    label=styles["support"]["label"],
+                )
+
+                # Plot 'total'
+                ax.plot(
+                    x_vals,
+                    y_total,
+                    color=styles["total"]["color"],
+                    marker=styles["total"]["marker"],
+                    linestyle=styles["total"]["linestyle"],
+                    label=styles["total"]["label"],
+                )
+
+                # Set x and y labels
+                ax.set_xlabel(r"$\beta$ [deg]", fontsize=12)
+                ax.set_ylabel(y_labels[i], fontsize=12)
+
+                # Enable grid
+                ax.grid(True)
+
+                # Remove subplot titles
+                # ax.set_title(subplot_titles[i])  # Removed as per requirement
+
+            # Adjust layout
+            plt.tight_layout()
+
+            # Create a unified legend
+            # To avoid duplicate labels, create custom handles
+            from matplotlib.lines import Line2D
+
+            custom_lines = [
+                Line2D(
+                    [0],
+                    [0],
+                    color=styles["kite"]["color"],
+                    marker=styles["kite"]["marker"],
+                    linestyle=styles["kite"]["linestyle"],
+                    label=styles["kite"]["label"],
+                ),
+                Line2D(
+                    [0],
+                    [0],
+                    color=styles["support"]["color"],
+                    marker=styles["support"]["marker"],
+                    linestyle=styles["support"]["linestyle"],
+                    label=styles["support"]["label"],
+                ),
+                Line2D(
+                    [0],
+                    [0],
+                    color=styles["total"]["color"],
+                    marker=styles["total"]["marker"],
+                    linestyle=styles["total"]["linestyle"],
+                    label=styles["total"]["label"],
+                ),
+            ]
+
+            ## Adding ylims
+            axs[0].set_ylim([0, 1.0])
+            axs[1].set_ylim([0, 1.2])
+            axs[2].set_ylim([0, 0.4])
+            axs[3].set_ylim([-0.6, 0.6])
+            axs[4].set_ylim([-1.4, 0.2])
+            axs[5].set_ylim([-1.5, 1.5])
+
+            # Place the legend at the top center outside the subplots
+            fig.legend(handles=custom_lines, loc="upper center", ncol=3, fontsize=12)
+
+            # Adjust layout to make space for the legend
+            plt.subplots_adjust(top=0.92)
+
+            # Define filename
+            filename = f"beta_sweep_alpha_{alpha_value:.2f}_kite_support_total"
+
+            # Save the figure
+            save_path = Path(results_path) / f"{filename}.pdf"
+            save_tex_path = (
+                Path(results_path) / f"{filename}.tex"
+            )  # Assuming saving_tex is needed
+
+            # Save as PDF
+            plt.savefig(save_path, format="pdf")
+
+            # If you need to save as TeX or other formats, implement accordingly
+            # For example, using matplotlib's pgf backend for TeX integration
+            # plt.savefig(save_tex_path, format='pgf')
+
+            print(f"Saved plot for alpha={alpha_value} to {save_path}")
+
+            # Close the figure to free memory
+            plt.close(fig)
 
 
 def main(results_path, project_dir):
@@ -345,6 +623,7 @@ def main(results_path, project_dir):
     # figsize = (16, 12)
     # fontsize = 18
     columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
+    columns = ["C_L", "C_D", "C_S", "C_roll", "C_pitch", "C_yaw"]
     y_labels = ["CL", "CD", "CS", "CMx", "CMy", "CMz"]
     subplot_titles = [
         "Lift coefficient",
@@ -396,6 +675,16 @@ def main(results_path, project_dir):
 
     # Plot beta sweep - Rey
     plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
+        results_path,
+        stats_all,
+        alphas_to_be_plotted,
+        plot_speeds,
+        columns,
+        y_labels,
+        subplot_titles,
+    )
+
+    plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
         results_path,
         stats_all,
         alphas_to_be_plotted,

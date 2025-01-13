@@ -54,6 +54,17 @@ def get_all_raw_data_for_vw_value(vw: int, normal_csv_dir: str) -> pd.DataFrame:
                         data, confidence_interval=99.99, max_lag=11
                     )
 
+                for snr_col in [
+                    "SNR_CF_X",
+                    "SNR_CF_Y",
+                    "SNR_CF_Z",
+                    "SNR_CM_X",
+                    "SNR_CM_Y",
+                    "SNR_CM_Z",
+                ]:
+                    data = sideslip_df[snr_col].values
+                    row_data[snr_col] = np.mean(data)
+
                 processed_data.append(row_data)
 
             # Convert processed data to DataFrame

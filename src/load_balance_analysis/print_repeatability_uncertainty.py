@@ -185,7 +185,7 @@ def main(project_dir: Path) -> None:
 
         # Create arrays for forces and moments
         forces = np.array([df["C_D"], df["C_S"], df["C_L"]]).T
-        moments = np.array([df["C_pitch"], df["C_yaw"], df["C_roll"]]).T
+        moments = np.array([df["C_roll"], df["C_pitch"], df["C_yaw"]]).T
 
         # Initialize arrays for corrected forces and moments
         corrected_forces = np.zeros_like(forces)
@@ -199,7 +199,7 @@ def main(project_dir: Path) -> None:
 
         # Update dataframe with corrected values
         df["C_D"], df["C_S"], df["C_L"] = corrected_forces.T
-        df["C_pitch"], df["C_yaw"], df["C_roll"] = corrected_moments.T
+        df["C_roll"], df["C_pitch"], df["C_yaw"] = corrected_moments.T
 
         return df
 

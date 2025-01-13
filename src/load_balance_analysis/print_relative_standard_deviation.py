@@ -136,10 +136,20 @@ def main(project_dir: str) -> pd.DataFrame:
     for df, Re in zip(df_list, Reynolds_list):
         # Compute relative standard deviation for each coefficient
         for col in ["C_D", "C_S", "C_L", "C_roll", "C_pitch", "C_yaw"]:
+
+            if col in ["C_S", "C_roll", "C_yaw"]:
+                # filter the df, only take sideslip values that are positive > 0
+                df = df[df["sideslip"] > 0]
+
             mean_mean = np.abs(df[f"{col}_mean"].mean())
             std_mean = df[f"{col}_std"].mean()
             rel_std_mean = std_mean / mean_mean
             table_data[Re][col] = f"{rel_std_mean:.2f}"
+
+    # for Re in Reynolds_list:
+    #     print(f"\nRe: {Re}")
+    #     for key, value in table_data[Re].items():
+    #         print(f"{key}: {value}")
 
     # Generate the table
     table_df = generate_table(table_data)
@@ -149,6 +159,59 @@ def main(project_dir: str) -> pd.DataFrame:
     )
     print(f"\n--- Relative standard deviation table ---\n")
     print(table_df.to_string(index=False))
+
+
+# def main(project_dir: str) -> pd.DataFrame:
+#     # Load and store processed data
+
+#     # Load data
+#     save_csv_dir = Path(project_dir) / "processed_data" / "uncertainty_table"
+
+#     df_vw_5 = pd.read_csv(save_csv_dir / "df_vw_5.csv")
+#     df_vw_10 = pd.read_csv(save_csv_dir / "df_vw_10.csv")
+#     df_vw_15 = pd.read_csv(save_csv_dir / "df_vw_15.csv")
+#     df_vw_20 = pd.read_csv(save_csv_dir / "df_vw_20.csv")
+
+#     df_list = [df_vw_5, df_vw_10, df_vw_15, df_vw_20]
+#     Reynolds_list = ["1.4", "2.8", "4.2", "5.6"]
+
+#     # Dictionary to store data for the table
+#     table_data = {Re: {} for Re in Reynolds_list}
+
+#     for df, Re in zip(df_list, Reynolds_list):
+#         # Compute relative standard deviation for each coefficient
+#         for col in ["C_D", "C_S", "C_L", "C_roll", "C_pitch", "C_yaw"]:
+
+#             if col in ["C_S", "C_roll", "C_yaw"]:
+#                 # filter the df, only take sideslip values that are positive > 0
+#                 df = df[df["sideslip"] > 0]
+
+#             mean_mean = np.abs(df[f"{col}_mean"].mean())
+#             std_mean = df[f"{col}_std"].mean()
+#             rel_std_mean = std_mean / mean_mean
+#             table_data[Re][col] = f"{rel_std_mean:.2f}"
+
+#         print(f"\nRe: {Re}")
+#         # Compute mean SNR for each variable
+#         for snr_col in [
+#             "SNR_CF_X",
+#             "SNR_CF_Y",
+#             "SNR_CF_Z",
+#             "SNR_CM_X",
+#             "SNR_CM_Y",
+#             "SNR_CM_Z",
+#         ]:
+#             if snr_col in df.columns:
+#                 mean_snr = df[snr_col].mean()
+#                 table_data[Re][snr_col] = f"{mean_snr:.2f}"
+
+#     for Re in Reynolds_list:
+#         print(f"\nRe: {Re}")
+#         # print(table_data[Re])
+#         for key, value in table_data[Re].items():
+#             print(f"{key}: {value}")
+
+#     return pd.DataFrame.from_dict(table_data, orient="index")
 
 
 if __name__ == "__main__":

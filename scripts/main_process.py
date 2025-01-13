@@ -24,9 +24,9 @@ def main():
 
     # process_raw_lvm_with_labbook_into_df.main()
     # process_support_struc_aero_interp_coeffs.main()
-    # process_normal_csv.main()
+    process_normal_csv.main()
     # process_zigzag_csv.main()
-    process_vsm.main()
+    # process_vsm.main()
     # process_bundling_beta_0.main()
     # process_uncertainty_table.main(project_dir)
 

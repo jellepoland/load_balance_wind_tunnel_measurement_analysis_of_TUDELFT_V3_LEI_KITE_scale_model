@@ -9,6 +9,7 @@ from VSM.WingGeometry import Wing
 from VSM.WingAerodynamics import WingAerodynamics
 from VSM.Solver import Solver
 from VSM.plotting import generate_polar_data
+from VSM.interactive import interactive_plot
 
 
 def running_vsm_to_generate_csv_data(
@@ -17,6 +18,7 @@ def running_vsm_to_generate_csv_data(
     geom_scaling=6.5,
     is_with_corrected_polar=True,
     mu=1.76e-5,
+    reference_point=None,
 ) -> None:
     if is_with_corrected_polar:
         print("Running VSM with corrected polar")
@@ -79,16 +81,28 @@ def running_vsm_to_generate_csv_data(
 
     wing_aero_CAD_19ribs = WingAerodynamics([CAD_wing])
 
+    # #### INTERACTIVE PLOT
+    # interactive_plot(
+    #     wing_aero_CAD_19ribs,
+    #     vel=20,
+    #     angle_of_attack=6.75,
+    #     side_slip=0,
+    #     yaw_rate=0,
+    #     is_with_aerodynamic_details=True,
+    # )
+
     # Solvers
     VSM = Solver(
         aerodynamic_model_type="VSM",
         is_with_artificial_damping=False,
         mu=mu,
+        reference_point=reference_point,
     )
     VSM_with_stall_correction = Solver(
         aerodynamic_model_type="VSM",
         is_with_artificial_damping=True,
         mu=mu,
+        reference_point=reference_point,
     )
 
     ### alpha sweep
@@ -120,6 +134,7 @@ def running_vsm_to_generate_csv_data(
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
+        # reference_point=reference_point,
     )
     polar_data_stall, _ = generate_polar_data(
         solver=VSM_with_stall_correction,
@@ -130,6 +145,7 @@ def running_vsm_to_generate_csv_data(
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
+        # reference_point=reference_point,
     )
     # Create dataframe and save to CSV
     path_to_csv = (
@@ -179,6 +195,7 @@ def running_vsm_to_generate_csv_data(
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
+        # reference_point=reference_point,
     )
     polar_data_stall, _ = generate_polar_data(
         solver=VSM_with_stall_correction,
@@ -189,6 +206,7 @@ def running_vsm_to_generate_csv_data(
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
+        # reference_point=reference_point,
     )
     # Create dataframe and save to CSV
     path_to_csv = (
@@ -214,6 +232,141 @@ def running_vsm_to_generate_csv_data(
 
     ### beta sweep
     alpha = 11.95
+    # betas_to_be_plotted = [
+    #     # -20,
+    #     # -14,
+    #     # -12,
+    #     # -10,
+    #     # -8,
+    #     # -6,
+    #     # -4,
+    #     # -2,
+    #     0,
+    #     2,
+    #     4,
+    #     6,
+    #     8,
+    #     12,
+    #     14,
+    #     20,
+    # ]
+    polar_data, _ = generate_polar_data(
+        solver=VSM,
+        wing_aero=wing_aero_CAD_19ribs,
+        angle_range=betas_to_be_plotted,
+        angle_type="side_slip",
+        angle_of_attack=np.deg2rad(alpha),
+        side_slip=0,
+        yaw_rate=0,
+        Umag=vw,
+        # reference_point=reference_point,
+    )
+    polar_data_stall, _ = generate_polar_data(
+        solver=VSM_with_stall_correction,
+        wing_aero=wing_aero_CAD_19ribs,
+        angle_range=betas_to_be_plotted,
+        angle_type="side_slip",
+        angle_of_attack=np.deg2rad(alpha),
+        side_slip=0,
+        yaw_rate=0,
+        Umag=vw,
+        # reference_point=reference_point,
+    )
+    # Create dataframe and save to CSV
+    path_to_csv = (
+        Path(project_dir)
+        / "processed_data"
+        / "polar_data"
+        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}{name_appendix}.csv"
+    )
+    pd.DataFrame(
+        {
+            "beta": polar_data[0],
+            "CL": polar_data[1],
+            "CL_stall": polar_data_stall[1],
+            "CD": polar_data[2],
+            "CD_stall": polar_data_stall[2],
+            "CL/CD": np.array(polar_data[1]) / np.array(polar_data[2]),
+            "CL/CD_stall": np.array(polar_data_stall[1])
+            / np.array(polar_data_stall[2]),
+            "CS": polar_data[3],
+            "CS_stall": polar_data_stall[3],
+        }
+    ).to_csv(path_to_csv, index=False)
+
+    #######################################################################
+    ### Create additional data for plotting the moment coefficients
+    #######################################################################
+
+    ### alpha sweep
+    alphas_to_be_plotted = [
+        -12.65,
+        -7.15,
+        -3.0,
+        -2.25,
+        2.35,
+        4.75,
+        6.75,
+        8.8,
+        10.95,
+        11.95,
+        12.8,
+        14.0,
+        15.75,
+        17.85,
+        19.75,
+        22.55,
+        24.0,
+    ]
+    polar_data, reynolds_number = generate_polar_data(
+        solver=VSM,
+        wing_aero=wing_aero_CAD_19ribs,
+        angle_range=alphas_to_be_plotted,
+        angle_type="angle_of_attack",
+        angle_of_attack=0,
+        side_slip=0,
+        yaw_rate=0,
+        Umag=vw,
+        # reference_point=reference_point,
+    )
+    polar_data_stall, _ = generate_polar_data(
+        solver=VSM_with_stall_correction,
+        wing_aero=wing_aero_CAD_19ribs,
+        angle_range=alphas_to_be_plotted,
+        angle_type="angle_of_attack",
+        angle_of_attack=0,
+        side_slip=0,
+        yaw_rate=0,
+        Umag=vw,
+        # reference_point=reference_point,
+    )
+    # Create dataframe and save to CSV
+    path_to_csv = (
+        Path(project_dir)
+        / "processed_data"
+        / "polar_data"
+        / f"VSM_results_alpha_sweep_Rey_{(reynolds_number/1e5):.1f}{name_appendix}_moment.csv"
+    )
+    pd.DataFrame(
+        {
+            "aoa": polar_data[0],
+            "CL_no_stall": polar_data[1],
+            "CL": polar_data_stall[1],
+            "CD_no_stall": polar_data[2],
+            "CD": polar_data_stall[2],
+            "CL/CD_no_stall": np.array(polar_data[1]) / np.array(polar_data[2]),
+            "CL/CD": np.array(polar_data_stall[1]) / np.array(polar_data_stall[2]),
+            "CMx": polar_data[4],
+            "CMx_stall": polar_data_stall[4],
+            "CMy": polar_data[5],
+            "CMy_stall": polar_data_stall[5],
+            "CMz": polar_data[6],
+            "CMz_stall": polar_data_stall[6],
+        }
+    ).to_csv(path_to_csv, index=False)
+
+    ### beta sweep
+    alpha = 6.75
     betas_to_be_plotted = [
         # -20,
         # -14,
@@ -241,6 +394,7 @@ def running_vsm_to_generate_csv_data(
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
+        # reference_point=reference_point,
     )
     polar_data_stall, _ = generate_polar_data(
         solver=VSM_with_stall_correction,
@@ -251,13 +405,68 @@ def running_vsm_to_generate_csv_data(
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
+        # reference_point=reference_point,
     )
     # Create dataframe and save to CSV
     path_to_csv = (
         Path(project_dir)
         / "processed_data"
         / "polar_data"
-        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}{name_appendix}.csv"
+        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}{name_appendix}_moment.csv"
+    )
+
+    pd.DataFrame(
+        {
+            "beta": polar_data[0],
+            "CL": polar_data[1],
+            "CL_stall": polar_data_stall[1],
+            "CD": polar_data[2],
+            "CD_stall": polar_data_stall[2],
+            "CL/CD": np.array(polar_data[1]) / np.array(polar_data[2]),
+            "CL/CD_stall": np.array(polar_data_stall[1])
+            / np.array(polar_data_stall[2]),
+            "CS": polar_data[3],
+            "CS_stall": polar_data_stall[3],
+            "CMx": polar_data[4],
+            "CMx_stall": polar_data_stall[4],
+            "CMy": polar_data[5],
+            "CMy_stall": polar_data_stall[5],
+            "CMz": polar_data[6],
+            "CMz_stall": polar_data_stall[6],
+        }
+    ).to_csv(path_to_csv, index=False)
+
+    ### beta sweep
+    alpha = 11.95
+
+    polar_data, _ = generate_polar_data(
+        solver=VSM,
+        wing_aero=wing_aero_CAD_19ribs,
+        angle_range=betas_to_be_plotted,
+        angle_type="side_slip",
+        angle_of_attack=np.deg2rad(alpha),
+        side_slip=0,
+        yaw_rate=0,
+        Umag=vw,
+        # reference_point=reference_point,
+    )
+    polar_data_stall, _ = generate_polar_data(
+        solver=VSM_with_stall_correction,
+        wing_aero=wing_aero_CAD_19ribs,
+        angle_range=betas_to_be_plotted,
+        angle_type="side_slip",
+        angle_of_attack=np.deg2rad(alpha),
+        side_slip=0,
+        yaw_rate=0,
+        Umag=vw,
+        # reference_point=reference_point,
+    )
+    # Create dataframe and save to CSV
+    path_to_csv = (
+        Path(project_dir)
+        / "processed_data"
+        / "polar_data"
+        / f"VSM_results_beta_sweep_Rey_{(reynolds_number/1e5):.1f}_alpha_{alpha*100:.0f}{name_appendix}_moment.csv"
     )
     pd.DataFrame(
         {
@@ -271,6 +480,12 @@ def running_vsm_to_generate_csv_data(
             / np.array(polar_data_stall[2]),
             "CS": polar_data[3],
             "CS_stall": polar_data_stall[3],
+            "CMx": polar_data[4],
+            "CMx_stall": polar_data_stall[4],
+            "CMy": polar_data[5],
+            "CMy_stall": polar_data_stall[5],
+            "CMz": polar_data[6],
+            "CMz_stall": polar_data_stall[6],
         }
     ).to_csv(path_to_csv, index=False)
 
@@ -278,8 +493,30 @@ def running_vsm_to_generate_csv_data(
 
 
 def main():
-    running_vsm_to_generate_csv_data(project_dir, vw=20, is_with_corrected_polar=True)
-    running_vsm_to_generate_csv_data(project_dir, vw=20, is_with_corrected_polar=False)
+
+    ## Computing the reference point, to be equal as used for calc. the wind tunnel data Moments
+    x_displacement_from_te = -0.172
+    z_displacement_from_te = -0.229
+    te_point_full_size = np.array([2.16733994663813, 0, 10.889841638961673])
+    geom_scaling = 6.5
+    te_point_scaled = te_point_full_size / geom_scaling
+    reference_point = te_point_scaled + np.array(
+        [x_displacement_from_te, 0, z_displacement_from_te]
+    )
+    print(f"reference_point: {reference_point}")
+
+    running_vsm_to_generate_csv_data(
+        project_dir,
+        vw=20,
+        is_with_corrected_polar=True,
+        reference_point=reference_point,
+    )
+    running_vsm_to_generate_csv_data(
+        project_dir,
+        vw=20,
+        is_with_corrected_polar=False,
+        reference_point=reference_point,
+    )
 
 
 if __name__ == "__main__":

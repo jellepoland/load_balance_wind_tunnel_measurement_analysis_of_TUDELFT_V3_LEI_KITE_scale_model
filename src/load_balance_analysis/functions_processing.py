@@ -155,7 +155,7 @@ def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
 
     # Create arrays for forces and moments
     forces = np.array([df["C_D"], df["C_S"], df["C_L"]]).T
-    moments = np.array([df["C_pitch"], df["C_yaw"], df["C_roll"]]).T
+    moments = np.array([df["C_roll"], df["C_pitch"], df["C_yaw"]]).T
 
     # Initialize arrays for corrected forces and moments
     corrected_forces = np.zeros_like(forces)
@@ -169,7 +169,7 @@ def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
 
     # Update dataframe with corrected values
     df["C_D"], df["C_S"], df["C_L"] = corrected_forces.T
-    df["C_pitch"], df["C_yaw"], df["C_roll"] = corrected_moments.T
+    df["C_roll"], df["C_pitch"], df["C_yaw"] = corrected_moments.T
 
     return df
 
@@ -321,6 +321,14 @@ def substract_support_structure_aero_coefficients(
         df.loc[df["sideslip"] == k, "C_roll"] -= C_Mx_s
         df.loc[df["sideslip"] == k, "C_pitch"] -= C_My_s
         df.loc[df["sideslip"] == k, "C_yaw"] -= C_Mz_s
+
+        # add the support structure aero coefficients to the dataframe
+        df.loc[df["sideslip"] == k, "C_D_s"] = C_Fx_s
+        df.loc[df["sideslip"] == k, "C_S_s"] = C_Fy_s
+        df.loc[df["sideslip"] == k, "C_L_s"] = C_Fz_s
+        df.loc[df["sideslip"] == k, "C_roll_s"] = C_Mx_s
+        df.loc[df["sideslip"] == k, "C_pitch_s"] = C_My_s
+        df.loc[df["sideslip"] == k, "C_yaw_s"] = C_Mz_s
 
     return df
 
