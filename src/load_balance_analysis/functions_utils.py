@@ -61,6 +61,7 @@ def reduce_df_by_parameter_mean_and_std(
     is_with_ci: bool = False,
     confidence_interval: float = 99,
     max_lag: int = 11,
+    is_support: bool = False,
 ) -> pd.DataFrame:
     """
     Reduces a dataframe to unique values of a parameter, averaging specified columns
@@ -74,22 +75,34 @@ def reduce_df_by_parameter_mean_and_std(
     pandas.DataFrame: Reduced dataframe with averages and coefficient standard deviations
     """
     # All columns to average
-    columns_to_average = [
-        "C_L",
-        "C_S",
-        "C_D",
-        "C_roll",
-        "C_pitch",
-        "C_yaw",
-        "C_L_s",
-        "C_S_s",
-        "C_D_s",
-        "C_roll_s",
-        "C_pitch_s",
-        "C_yaw_s",
-        "Rey",
-        "vw",
-    ]
+    if is_support:
+        columns_to_average = [
+            "C_L",
+            "C_S",
+            "C_D",
+            "C_roll",
+            "C_pitch",
+            "C_yaw",
+            "Rey",
+            "vw",
+        ]
+    else:
+        columns_to_average = [
+            "C_L",
+            "C_S",
+            "C_D",
+            "C_roll",
+            "C_pitch",
+            "C_yaw",
+            "C_L_s",
+            "C_S_s",
+            "C_D_s",
+            "C_roll_s",
+            "C_pitch_s",
+            "C_yaw_s",
+            "Rey",
+            "vw",
+        ]
 
     if parameter == "aoa_kite":
         columns_to_average += ["sideslip"]

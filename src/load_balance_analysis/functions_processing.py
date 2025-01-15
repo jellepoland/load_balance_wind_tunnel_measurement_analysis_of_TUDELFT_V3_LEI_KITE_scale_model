@@ -114,20 +114,40 @@ def translate_coordinate_system(
     c_ref: float,
 ) -> pd.DataFrame:
 
-    alpha_cg = np.deg2rad(df["aoa"] - alpha_cg_delta_with_rod)
-    x_cg = l_cg * np.cos(alpha_cg)
-    z_cg = l_cg * np.sin(alpha_cg)
-    x_hcg = (x_hinge + x_cg) / (1000 * c_ref)
-    z_hcg = (z_hinge + z_cg) / (1000 * c_ref)
+    ##TODO: update alpha_cg_comes_in_deg should be rad
+    # alpha_cg = np.deg2rad(df["aoa"] - alpha_cg_delta_with_rod)
+    # x_cg = l_cg * np.cos(alpha_cg)
+    # z_cg = l_cg * np.sin(alpha_cg)
+    # x_hcg = (x_hinge + x_cg) / (1000 * c_ref)
+    # z_hcg = (z_hinge + z_cg) / (1000 * c_ref)
+
+    ### Calculations for origin movement to cg
+    alpha_cg = np.deg2rad(df["aoa"]) - np.deg2rad(alpha_cg_delta_with_rod)
+    x_hinge_to_cg_mm = l_cg * np.cos(alpha_cg)
+    z_hinge_to_cg_mm = l_cg * np.sin(alpha_cg)
+    x_cg_to_origin_mm = x_hinge + x_hinge_to_cg_mm
+    z_cg_to_origin_mm = z_hinge + z_hinge_to_cg_mm
+    # converting to meters
+    x_cg_to_origin = x_cg_to_origin_mm / 1000
+    z_cg_to_origin = z_cg_to_origin_mm / 1000
 
     # rotation of coordinate system: force coefficients change
-    df["C_L"] = df["CF_Z"] * -1
-    df["C_S"] = df["CF_Y"] * -1
     df["C_D"] = df["CF_X"]
+    df["C_S"] = df["CF_Y"] * -1
+    df["C_L"] = df["CF_Z"] * -1
 
-    df["C_roll"] = df["CM_X"] - df["CF_Y"] * z_hcg
-    df["C_pitch"] = -df["CM_Y"] + df["CF_Z"] * x_hcg - df["CF_X"] * z_hcg
-    df["C_yaw"] = -df["CM_Z"] - df["CF_Y"] * x_hcg
+    # rotation of coordinate system: moment coefficients change
+    # df["C_roll"] = df["CM_X"] - df["CF_Y"] * z_cg_to_origin
+    # df["C_pitch"] = (
+    #     -df["CM_Y"] + df["CF_Z"] * x_cg_to_origin - df["CF_X"] * z_cg_to_origin
+    # )
+    # df["C_yaw"] = -df["CM_Z"] - df["CF_Y"] * x_cg_to_origin
+
+    df["C_roll"] = df["CM_X"] - z_cg_to_origin * df["CF_Y"]
+    df["C_pitch"] = (
+        -df["CM_Y"] - z_cg_to_origin * df["CF_X"] + x_cg_to_origin * df["CF_Z"]
+    )
+    df["C_yaw"] = -df["CM_Z"] - x_cg_to_origin * df["CF_Y"]
 
     return df
 
@@ -140,6 +160,9 @@ def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
     """
 
     ## Grabbing sideslip array and converting to radians
+    ## also making it negative to align with axis definition
+    ## beta turntable was defined positive clockwise, but we need it counter-clockwise
+    # df["sideslip"] = -df["sideslip"]
     beta = np.deg2rad(df["sideslip"])
     # beta = np.deg2rad(10) * np.ones_like(df["sideslip"])
 
@@ -170,6 +193,9 @@ def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
     # Update dataframe with corrected values
     df["C_D"], df["C_S"], df["C_L"] = corrected_forces.T
     df["C_roll"], df["C_pitch"], df["C_yaw"] = corrected_moments.T
+
+    ### correcting for sideslip
+    df["sideslip"] = -df["sideslip"]
 
     return df
 

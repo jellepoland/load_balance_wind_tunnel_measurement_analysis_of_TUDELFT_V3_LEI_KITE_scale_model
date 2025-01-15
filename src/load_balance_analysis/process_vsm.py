@@ -16,6 +16,7 @@ def running_vsm_to_generate_csv_data(
     project_dir: str,
     vw: float,
     geom_scaling=6.5,
+    height_correction_factor=0.82762003813,
     is_with_corrected_polar=True,
     mu=1.76e-5,
     reference_point=None,
@@ -60,6 +61,14 @@ def running_vsm_to_generate_csv_data(
     for i, CAD_rib_i in enumerate(
         rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs
     ):
+        ### Correcting the geometry
+        CAD_rib_i_0 = CAD_rib_i[0] / geom_scaling
+        CAD_rib_i_1 = CAD_rib_i[1] / geom_scaling
+
+        ## Height was off even tho chord and span are matching perfectly...
+        CAD_rib_i_0[2] = CAD_rib_i_0[2] * height_correction_factor
+        CAD_rib_i_1[2] = CAD_rib_i_1[2] * height_correction_factor
+
         if is_with_corrected_polar:
             ### using corrected polar
             df_polar_data = pd.read_csv(
@@ -70,26 +79,23 @@ def running_vsm_to_generate_csv_data(
             cd = df_polar_data["cd"].values
             cm = df_polar_data["cm"].values
             polar_data = ["polar_data", np.array([alpha, cl, cd, cm])]
-            CAD_wing.add_section(
-                CAD_rib_i[0] / geom_scaling, CAD_rib_i[1] / geom_scaling, polar_data
-            )
+            CAD_wing.add_section(CAD_rib_i_0, CAD_rib_i_1, polar_data)
         else:
             ### using breukels
-            CAD_wing.add_section(
-                CAD_rib_i[0] / geom_scaling, CAD_rib_i[1] / geom_scaling, CAD_rib_i[2]
-            )
+            CAD_wing.add_section(CAD_rib_i_0, CAD_rib_i_1, CAD_rib_i[2])
 
     wing_aero_CAD_19ribs = WingAerodynamics([CAD_wing])
 
-    # #### INTERACTIVE PLOT
+    # ### INTERACTIVE PLOT
     # interactive_plot(
     #     wing_aero_CAD_19ribs,
-    #     vel=20,
+    #     vel=3.15,
     #     angle_of_attack=6.75,
     #     side_slip=0,
     #     yaw_rate=0,
     #     is_with_aerodynamic_details=True,
     # )
+    # breakpoint()
 
     # Solvers
     VSM = Solver(
@@ -191,7 +197,7 @@ def running_vsm_to_generate_csv_data(
         wing_aero=wing_aero_CAD_19ribs,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
-        angle_of_attack=np.deg2rad(alpha),
+        angle_of_attack=alpha,
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
@@ -202,7 +208,7 @@ def running_vsm_to_generate_csv_data(
         wing_aero=wing_aero_CAD_19ribs,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
-        angle_of_attack=np.deg2rad(alpha),
+        angle_of_attack=alpha,
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
@@ -255,7 +261,7 @@ def running_vsm_to_generate_csv_data(
         wing_aero=wing_aero_CAD_19ribs,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
-        angle_of_attack=np.deg2rad(alpha),
+        angle_of_attack=alpha,
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
@@ -266,7 +272,7 @@ def running_vsm_to_generate_csv_data(
         wing_aero=wing_aero_CAD_19ribs,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
-        angle_of_attack=np.deg2rad(alpha),
+        angle_of_attack=alpha,
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
@@ -390,7 +396,7 @@ def running_vsm_to_generate_csv_data(
         wing_aero=wing_aero_CAD_19ribs,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
-        angle_of_attack=np.deg2rad(alpha),
+        angle_of_attack=alpha,
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
@@ -401,7 +407,7 @@ def running_vsm_to_generate_csv_data(
         wing_aero=wing_aero_CAD_19ribs,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
-        angle_of_attack=np.deg2rad(alpha),
+        angle_of_attack=alpha,
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
@@ -444,7 +450,7 @@ def running_vsm_to_generate_csv_data(
         wing_aero=wing_aero_CAD_19ribs,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
-        angle_of_attack=np.deg2rad(alpha),
+        angle_of_attack=alpha,
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
@@ -455,7 +461,7 @@ def running_vsm_to_generate_csv_data(
         wing_aero=wing_aero_CAD_19ribs,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
-        angle_of_attack=np.deg2rad(alpha),
+        angle_of_attack=alpha,
         side_slip=0,
         yaw_rate=0,
         Umag=vw,
@@ -496,10 +502,13 @@ def main():
 
     ## Computing the reference point, to be equal as used for calc. the wind tunnel data Moments
     x_displacement_from_te = -0.172
-    z_displacement_from_te = -0.229
+    z_displacement_from_te = -0.252
     te_point_full_size = np.array([2.16733994663813, 0, 10.889841638961673])
     geom_scaling = 6.5
     te_point_scaled = te_point_full_size / geom_scaling
+    ## height was off even tho chord and span are matching perfectly...
+    height_correction_factor = 1.0
+    te_point_scaled[2] = te_point_scaled[2] * height_correction_factor
     reference_point = te_point_scaled + np.array(
         [x_displacement_from_te, 0, z_displacement_from_te]
     )
@@ -509,12 +518,16 @@ def main():
         project_dir,
         vw=20,
         is_with_corrected_polar=True,
+        geom_scaling=geom_scaling,
+        height_correction_factor=height_correction_factor,
         reference_point=reference_point,
     )
     running_vsm_to_generate_csv_data(
         project_dir,
         vw=20,
         is_with_corrected_polar=False,
+        geom_scaling=geom_scaling,
+        height_correction_factor=height_correction_factor,
         reference_point=reference_point,
     )
 

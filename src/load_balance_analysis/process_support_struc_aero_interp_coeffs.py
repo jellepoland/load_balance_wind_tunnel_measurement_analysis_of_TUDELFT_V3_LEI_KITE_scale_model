@@ -33,7 +33,9 @@ def process_and_merge_without_csv(folder_dir: Path, save_path: Path) -> None:
             df = pd.read_csv(vw_file)
 
             # Reduce the dataframe using your existing function
-            reduced_df = reduce_df_by_parameter_mean_and_std(df, parameter="sideslip")
+            reduced_df = reduce_df_by_parameter_mean_and_std(
+                df, parameter="sideslip", is_support=True
+            )
 
             # Add alpha column
             reduced_df["aoa"] = alpha
