@@ -16,7 +16,7 @@ def running_vsm_to_generate_csv_data(
     project_dir: str,
     vw: float,
     geom_scaling=6.5,
-    height_correction_factor=0.82762003813,
+    height_correction_factor=0.82,
     is_with_corrected_polar=True,
     mu=1.76e-5,
     reference_point=None,
@@ -86,12 +86,29 @@ def running_vsm_to_generate_csv_data(
 
     wing_aero_CAD_19ribs = WingAerodynamics([CAD_wing])
 
+    # ### Plotting reference point at mid-span plane
+    # plt.figure()
+    # LE = rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs[8][0] / geom_scaling
+    # TE = rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs[8][1] / geom_scaling
+    # LE[2] = LE[2] * height_correction_factor
+    # TE[2] = TE[2] * height_correction_factor
+    # plt.plot(LE[0], LE[2], "ro", label="LE")
+    # plt.plot(TE[0], TE[2], "bo", label="TE")
+    # plt.plot((TE[0] - 0.395), TE[2], "bx", label="LE (approximate)")
+    # plt.plot(reference_point[0], reference_point[2], "go", label="Reference point")
+    # plt.legend()
+    # plt.axis("equal")
+    # plt.grid()
+    # plt.show()
+    # plt.close()
+    # breakpoint()
+
     # ### INTERACTIVE PLOT
     # interactive_plot(
     #     wing_aero_CAD_19ribs,
     #     vel=3.15,
     #     angle_of_attack=6.75,
-    #     side_slip=0,
+    #     side_slip=10,
     #     yaw_rate=0,
     #     is_with_aerodynamic_details=True,
     # )
@@ -501,18 +518,19 @@ def running_vsm_to_generate_csv_data(
 def main():
 
     ## Computing the reference point, to be equal as used for calc. the wind tunnel data Moments
-    x_displacement_from_te = -0.172
+    x_displacement_from_te = -0.157  # -0.172
     z_displacement_from_te = -0.252
     te_point_full_size = np.array([2.16733994663813, 0, 10.889841638961673])
     geom_scaling = 6.5
     te_point_scaled = te_point_full_size / geom_scaling
     ## height was off even tho chord and span are matching perfectly...
-    height_correction_factor = 1.0
+    height_correction_factor = 0.82
     te_point_scaled[2] = te_point_scaled[2] * height_correction_factor
     reference_point = te_point_scaled + np.array(
         [x_displacement_from_te, 0, z_displacement_from_te]
     )
     print(f"reference_point: {reference_point}")
+    # breakpoint()
 
     running_vsm_to_generate_csv_data(
         project_dir,

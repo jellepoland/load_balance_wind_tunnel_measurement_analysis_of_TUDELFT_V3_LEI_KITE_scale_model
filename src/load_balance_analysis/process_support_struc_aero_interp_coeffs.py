@@ -498,22 +498,6 @@ def plot_interpolation_fit(
 
 def main():
 
-    S_ref = 0.46
-    c_ref = 0.4
-
-    # parameters necessary to translate moments (aka determine position of cg)
-    x_hinge = (
-        441.5  # x distance between force balance coord. sys. and hinge point in mm
-    )
-    z_hinge = 1359  # z distance between force balance coord. sys. and hinge point in mm
-    l_cg = 625.4  # distance between hinge point and kite CG
-    alpha_cg_delta_with_rod = 23.82
-    delta_celsius_kelvin = 273.15
-    mu_0 = 1.716e-5
-    T_0 = 273.15
-    C_suth = 110.4
-    delta_aoa_rod_to_alpha = 7.25
-
     # processing all the folders for the without case
     support_struc_aero_interp_coeffs_path = None
     is_kite = False
@@ -525,20 +509,9 @@ def main():
             folder_dir = Path(without_csv_dir) / folder
             processing_raw_lvm_data_into_csv(
                 folder_dir,
-                S_ref,
-                c_ref,
                 is_kite,
                 is_zigzag,
                 support_struc_aero_interp_coeffs_path,
-                x_hinge,
-                z_hinge,
-                l_cg,
-                alpha_cg_delta_with_rod,
-                delta_celsius_kelvin,
-                mu_0,
-                T_0,
-                C_suth,
-                delta_aoa_rod_to_alpha,
             )
 
     ## Process and merge

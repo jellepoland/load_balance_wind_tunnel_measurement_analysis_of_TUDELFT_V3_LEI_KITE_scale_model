@@ -16,43 +16,6 @@ from load_balance_analysis.functions_statistics import (
 )
 
 
-# def read_and_process_files(
-#     normal_folder_path: str, suffix: str, aoa_offset: float = 7.25
-# ) -> pd.DataFrame:
-#     """
-#     Read and process .lvm files for a given wind speed suffix.
-
-#     Args:
-#     - normal_folder_path (str): Path to the main data folder.
-#     - suffix (str): Suffix indicating the wind speed and data type.
-
-#     Returns:
-#     - pd.DataFrame: Combined DataFrame of all processed data.
-#     """
-#     all_data = []  # Initialize list to store data from multiple files
-#     for aoa_folder in os.listdir(
-#         normal_folder_path
-#     ):  # Iterate through angle of attack folders
-#         # aoa_folder_path = os.path.join(normal_folder_path, aoa_folder)
-#         aoa_folder_path = Path(normal_folder_path) / aoa_folder
-#         if os.path.isdir(aoa_folder_path):  # Check if it is a directory
-#             for lvm_file in os.listdir(
-#                 aoa_folder_path
-#             ):  # Iterate through files in the folder
-#                 if lvm_file.startswith("processed_") and lvm_file.endswith(
-#                     suffix
-#                 ):  # Check file name pattern
-#                     # lvm_file_path = os.path.join(aoa_folder_path, lvm_file)
-#                     lvm_file_path = Path(aoa_folder_path) / lvm_file
-#                     df = pd.read_csv(
-#                         lvm_file_path, delimiter="\t"
-#                     )  # Read file into DataFrame
-#                     df["aoa"] -= aoa_offset  # Adjust angle of attack values
-#                     # print(f'aoa with offset substracted: {df["aoa"].unique()}')
-#                     all_data.append(df)  # Append to list
-#     return pd.concat(all_data)  # Concatenate all DataFrames
-
-
 ## PLOTS STANDARD DEVIATION
 def generate_boxplots_vs_aoa(
     combined_df: pd.DataFrame,
@@ -75,27 +38,9 @@ def generate_boxplots_vs_aoa(
     - titlespeeds (list): List of wind speed titles for labeling plots.
     - j (int): Index of the current wind speed in the list.
     """
-    # all
-    # columns = ["C_D", "C_S", "C_L", "C_roll", "C_pitch", "C_yaw"]
-    # y_labels = ["C_D", "C_S", "C_L", "C_{roll}", "C_{pitch}", "C_{yaw}"]
-    # subplot_titles = [
-    #     "Drag coefficient",
-    #     "Side force coefficient",
-    #     "Lift coefficient",
-    #     "Rolling moment coefficient",
-    #     "Pitching moment coefficient",
-    #     "Yawing moment coefficient",
-    # ]
+
     if len(columns) == 6:
         fig, axs = plt.subplots(2, 3, figsize=figsize)
-    # # selection
-    # columns = ["C_L", "C_D", "C_pitch"]
-    # y_labels = ["C_L", "C_D", "C_{pitch}"]
-    # subplot_titles = [
-    #     "Lift coefficient",
-    #     "Drag coefficient",
-    #     "Pitch moment coefficient",
-    # ]
     elif len(columns) == 3:
         fig, axs = plt.subplots(1, 3, figsize=figsize)
     elif len(columns) == 2:
@@ -113,22 +58,6 @@ def generate_boxplots_vs_aoa(
         ]
         positions = unique_aoa
 
-        # # box plot
-        # bplot = axs[i].boxplot(
-        #     box_data,
-        #     positions=positions,
-        #     widths=0.6,
-        #     showfliers=False,
-        #     patch_artist=True,
-        # )
-        # for patch, color in zip(
-        #     bplot["boxes"], cmap(np.linspace(0, 1, len(unique_aoa)))
-        # ):
-        #     color = "grey"
-        #     patch.set_facecolor(color)
-
-        # means = [data.mean() for data in box_data]
-
         means = [data.mean() for data in box_data]
 
         ### ERROR BARS
@@ -136,27 +65,12 @@ def generate_boxplots_vs_aoa(
         alpha_CI = 1 - CI_value
         # standard deviation
         std = [data.std() for data in box_data]
-        # confidence interval
-        # std = [
-        #     calculate_confidence_interval(data, alpha=alpha_CI) for data in box_data
-        # ]
-        # confidence interval BLOCK BOOTSTRAP
-        # std = [
-        #     block_bootstrap_confidence_interval(data, alpha=alpha_CI)
-        #     for data in box_data
-        # ]
-        # hac/Newey-West
-        # std = [
-        #     hac_newey_west_confidence_interval(data, alpha=alpha_CI)
-        #     for data in box_data
-        # ]
 
         axs[i].errorbar(
             positions, means, yerr=std, fmt="o", color="black", capsize=5, markersize=1
         )
         axs[i].plot(positions, means, marker="o", linestyle="--", color="black")
 
-        # axs[i].set_title(f"{subplot_titles[i]}")
         axs[i].set_ylabel(y_axis_labels[y_labels[i]])  # , fontsize=fontsize)
         axs[i].set_xticks(range(-15, 26, 5))
         axs[i].set_xticklabels(range(-15, 26, 5))
@@ -167,8 +81,6 @@ def generate_boxplots_vs_aoa(
         ax.set_xlabel(x_axis_labels["alpha"])  # , fontsize=fontsize)
 
     plt.tight_layout()
-    # output_dir = f"plots_unsteady_final/vw_{vw}/alpha"
-    # os.makedirs(output_dir, exist_ok=True)
 
     filename = f"boxplot_alpha_sweep_at_fixed_beta_{sideslip:.2f}_vw_{vw}_STD"  # CI_NEWEYWEST_{CI_value}"
     saving_pdf_and_pdf_tex(results_path, filename)
@@ -318,36 +230,11 @@ def main(results_path, project_dir):
     plot_speeds = ["20"]
     betas_to_be_plotted = [0]
     alphas_to_be_plotted = [6.75, 11.95]
-
-    ### Other figure settings
-    # plt.rcParams.update({"font.size": 14})
-    # figsize = (16, 8)
     fontsize = 18
 
     # Loop through each wind speed
     for j, vw in enumerate(plot_speeds):
-        # suffix = (
-        #     vw + "_unsteady.lvm"
-        # )  # Construct file suffix for the current wind speed
-
-        ## OLD
-        # combined_df = read_and_process_files(
-        #     normal_folder_path, suffix
-        # )  # Read and process files
-
-        # print(f"analyzing vw: {plot_speeds[j]}")
-
         for sideslip in betas_to_be_plotted:
-            # columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
-            # y_labels = ["C_L", "C_D", "C_S", "C_{pitch}", "C_{roll}", "C_{yaw}"]
-            # subplot_titles = [
-            #     "Lift coefficient",
-            #     "Drag Coefficient",
-            #     "Side Force coefficient",
-            #     "Pitch moment coefficient",
-            #     "Roll moment coefficient",
-            #     "Yaw moment coefficient",
-            # ]
 
             ## NEW
             path_to_csv = Path(normal_csv_dir) / f"beta_{sideslip}" / f"vw_{vw}.csv"

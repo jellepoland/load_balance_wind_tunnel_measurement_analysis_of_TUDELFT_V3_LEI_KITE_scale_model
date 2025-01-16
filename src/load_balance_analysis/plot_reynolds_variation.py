@@ -56,17 +56,6 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
             # Flatten the subplot array for easier indexing
             axs = axs.flatten()
 
-            # # Loop through each column (F_X, F_Y, ..., M_Z)
-            # columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
-            # y_labels = ["C_L", "C_D", "C_S", "C_{pitch}", "C_{roll}", "C_{yaw}"]
-            # subplot_titles = [
-            #     "Lift coefficient",
-            #     "Drag Coefficient",
-            #     "Side Force coefficient",
-            #     "Pitch moment coefficient",
-            #     "Roll moment coefficient",
-            #     "Yaw moment coefficient",
-            # ]
             linestyles = {
                 "5": "--",
                 "10": "--",
@@ -81,13 +70,6 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
                 "20": "o",
                 "25": "*",
             }
-            # colors = {
-            #     "5": "green",
-            #     "10": "yellow",
-            #     "15": "blue",
-            #     "20": "red",
-            #     "25": "orange",
-            # }
 
             for i, column in enumerate(columns):
 
@@ -118,22 +100,9 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
                             y_label=y_axis_labels[y_labels[i]],
                         )
 
-                # axs[i].set_title(subplot_titles[i])
-                # axs[i].set_xlabel(x_axis_labels["alpha"])  # , fontsize=fontsize)
-                # axs[i].set_ylabel(y_axis_labels[y_labels[i]])  # , fontsize=fontsize)
                 if i == 0:
                     axs[i].legend()
-                # axs[i].set_xlim([-5,24])
-                # axs[i].grid()
-
-            # Set the title of the subplot
-            # fig.suptitle(rf"Force and moment coefficient plots for sideslip angle: $\beta=${sideslip} deg")#, fontsize=14, fontweight='bold')
-
-            # Save the plot in the plots folder
-            # plot_filename = f"plots/sideslip_{sideslip}_plot.png"
-            # plot_filename = foldername + '/alpha' + f"/sideslip_{sideslip}_plot.pdf"
             plt.tight_layout()
-
             filename = f"re_variation_alpha_sweep_at_fixed_beta_{sideslip:.2f}"
             saving_pdf_and_pdf_tex(results_path, filename)
 
@@ -159,8 +128,6 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                 subfolder = subfolder + f"+{v}"
     else:
         subfolder = "all_vw"
-
-    # foldername = Path(project_dir) / "results"
 
     # sort everything for plotting correctly
     stats_plotvsbeta = stats_all.sort_values(by="sideslip")
@@ -372,9 +339,6 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
                 # Enable grid
                 ax.grid(True)
 
-                # Remove subplot titles
-                # ax.set_title(subplot_titles[i])  # Removed as per requirement
-
             # Adjust layout
             plt.tight_layout()
 
@@ -409,14 +373,6 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
                 ),
             ]
 
-            ## Adding ylims
-            axs[0].set_ylim([0, 1.0])
-            axs[1].set_ylim([0, 1.2])
-            axs[2].set_ylim([-0.05, 0.45])
-            axs[3].set_ylim([-0.6, 0.6])
-            axs[4].set_ylim([-1.4, 0.2])
-            axs[5].set_ylim([-1.5, 1.5])
-
             # Place the legend at the top center outside the subplots
             fig.legend(
                 handles=custom_lines, loc="upper center", ncol=3
@@ -436,10 +392,6 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
 
             # Save as PDF
             plt.savefig(save_path, format="pdf")
-
-            # If you need to save as TeX or other formats, implement accordingly
-            # For example, using matplotlib's pgf backend for TeX integration
-            # plt.savefig(save_tex_path, format='pgf')
 
             print(f"Saved plot for alpha={alpha_value} to {save_path}")
 
@@ -471,15 +423,11 @@ def main(results_path, project_dir):
         14,
         20,
     ]
-    # alphas_to_be_plotted = [2.35, 4.75, 6.75, 11.95, 17.85]
-    # # selection
-    # betas_to_be_plotted = [0]
-    # alphas_to_be_plotted = [2.35, 4.75, 6.75]
-    alphas_to_be_plotted = [6.8]
+
+    alphas_to_be_plotted = [2.35, 4.75, 6.75]
+    # alphas_to_be_plotted = [6.8]
 
     ### Other figure settings
-    # figsize = (16, 12)
-    # fontsize = 18
     columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]
     columns = ["C_L", "C_D", "C_S", "C_roll", "C_pitch", "C_yaw"]
     y_labels = ["CL", "CD", "CS", "CMx", "CMy", "CMz"]
@@ -506,9 +454,6 @@ def main(results_path, project_dir):
         df_all.append(df)
     stats_all = pd.concat(df_all)
 
-    ## making all betas negative
-    stats_all["sideslip"] = stats_all["sideslip"] * -1
-
     # Plot alpha sweep
     plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
         results_path,
@@ -533,8 +478,6 @@ def main(results_path, project_dir):
         df_all.append(df)
 
     stats_all = pd.concat(df_all)
-    ## making all betas negative
-    # stats_all["sideslip"] = stats_all["sideslip"] * -1
 
     # Plot beta sweep - Rey
     plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(

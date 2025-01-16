@@ -180,7 +180,7 @@ def main(results_path, project_dir):
 
     # Kinematic viscosity of air at 27°C and 1.19 kg/m^3
     nu = kinematic_viscosity_air(T_deg=27, rho=1.19)
-    c_values = [0.396]  # Chord lengths in meters
+    c_values = [0.395]  # Chord lengths in meters
     xtr_values = [0.05]  # Transition locations (%c)
 
     Re_values = np.array([1.4, 2.8, 4.2, 5.6, 6.9]) * 1e5

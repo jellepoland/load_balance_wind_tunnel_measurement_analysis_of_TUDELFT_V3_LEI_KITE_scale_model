@@ -157,7 +157,3 @@ def print_sensor_drift_values(results_path: Path, project_dir: Path) -> None:
 
 def main(results_path: Path, project_dir: Path) -> None:
     print_sensor_drift_values(results_path, project_dir)
-
-
-if __name__ == "__main__":
-    main(project_dir)

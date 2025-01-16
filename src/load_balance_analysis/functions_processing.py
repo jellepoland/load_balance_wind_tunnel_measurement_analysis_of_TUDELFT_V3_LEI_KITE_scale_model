@@ -125,77 +125,122 @@ def translate_coordinate_system(
     alpha_cg = np.deg2rad(df["aoa"]) - np.deg2rad(alpha_cg_delta_with_rod)
     x_hinge_to_cg_mm = l_cg * np.cos(alpha_cg)
     z_hinge_to_cg_mm = l_cg * np.sin(alpha_cg)
-    x_cg_to_origin_mm = x_hinge + x_hinge_to_cg_mm
+    x_cg_to_origin_mm = x_hinge - x_hinge_to_cg_mm
     z_cg_to_origin_mm = z_hinge + z_hinge_to_cg_mm
     # converting to meters
     x_cg_to_origin = x_cg_to_origin_mm / 1000
     z_cg_to_origin = z_cg_to_origin_mm / 1000
 
-    # rotation of coordinate system: force coefficients change
-    df["C_D"] = df["CF_X"]
-    df["C_S"] = df["CF_Y"] * -1
-    df["C_L"] = df["CF_Z"] * -1
+    # print(f"\nCalculating the translation of the coordinate system")
+    # print(f" x_hinge = {x_cg_to_origin} m")
+    # print(f" z_hinge = {z_cg_to_origin} m")
 
-    # rotation of coordinate system: moment coefficients change
-    # df["C_roll"] = df["CM_X"] - df["CF_Y"] * z_cg_to_origin
+    # enforcing the right signs
+    # this must be represented in the OLD coordinate system
+    # "That is literally the vector from the old origin to the CG in the old coordinate system.""
+    x_cg_to_origin = -np.abs(x_cg_to_origin)
+    z_cg_to_origin = -np.abs(z_cg_to_origin)
+
+    # print(f"after sign correction")
+    # print(f" x_hinge = {x_cg_to_origin} m")
+    # print(f" z_hinge = {z_cg_to_origin} m")
+
+    # # rotation of coordinate system: force coefficients change
+    # df["C_D"] = df["CF_X"]
+    # df["C_S"] = df["CF_Y"] * -1
+    # df["C_L"] = df["CF_Z"] * -1
+
+    # # rotation of coordinate system: moment coefficients change
+    # # df["C_roll"] = df["CM_X"] - df["CF_Y"] * z_cg_to_origin
+    # # df["C_pitch"] = (
+    # #     -df["CM_Y"] + df["CF_Z"] * x_cg_to_origin - df["CF_X"] * z_cg_to_origin
+    # # )
+    # # df["C_yaw"] = -df["CM_Z"] - df["CF_Y"] * x_cg_to_origin
+
+    # df["C_roll"] = df["CM_X"] - z_cg_to_origin * df["CF_Y"]
     # df["C_pitch"] = (
-    #     -df["CM_Y"] + df["CF_Z"] * x_cg_to_origin - df["CF_X"] * z_cg_to_origin
+    #     -df["CM_Y"] - z_cg_to_origin * df["CF_X"] + x_cg_to_origin * df["CF_Z"]
     # )
-    # df["C_yaw"] = -df["CM_Z"] - df["CF_Y"] * x_cg_to_origin
+    # df["C_yaw"] = -df["CM_Z"] - x_cg_to_origin * df["CF_Y"]
 
-    df["C_roll"] = df["CM_X"] - z_cg_to_origin * df["CF_Y"]
-    df["C_pitch"] = (
-        -df["CM_Y"] - z_cg_to_origin * df["CF_X"] + x_cg_to_origin * df["CF_Z"]
-    )
-    df["C_yaw"] = -df["CM_Z"] - x_cg_to_origin * df["CF_Y"]
+    # # Suppose x_cg_to_origin, z_cg_to_origin are scalar floats
+    # # describing the translation from the old origin (bottom-right)
+    # # to the new origin (top-left, c.g.) in the OLD coordinate frame.
+    # x_cg_to_origin = 1.23
+    # z_cg_to_origin = 4.56
+
+    # 1) Define the shift vector r (from old origin O to cg in OLD reference frame')
+    # r = np.array(x_cg_to_origin, 0.0, z_cg_to_origin)
+    r = np.column_stack([x_cg_to_origin, np.zeros_like(x_cg_to_origin), z_cg_to_origin])
+
+    # 3) Pull out the old forces & moments as NumPy arrays of shape (N,3)
+    F_old = df[["CF_X", "CF_Y", "CF_Z"]].values  # shape (N, 3)
+    M_old = df[["CM_X", "CM_Y", "CM_Z"]].values  # shape (N, 3)
+
+    # 4) Compute the moment about the c.g. in the OLD axes:
+    #    M_cg_old = M_old + r x F_old
+    #    np.cross(r, F_old) will broadcast r (shape (3,)) across each row of F_old
+    M_cg_old = M_old + np.cross(r, F_old)
+
+    # 5) Transform forces & moments into the NEW axes via matrix multiplication.
+    #    Because each row is a vector, we multiply on the right by T^T or T
+    #    (for a diagonal matrix T, T^T == T anyway).
+    #   Define the transformation matrix T that flips y and z:
+    #    old vector [x, y, z] becomes [ x, -y, -z ]
+    T = np.diag([1.0, -1.0, -1.0])  # 3x3
+    F_new = F_old @ T
+    M_new = M_cg_old @ T
+
+    # 6) Write results back into the dataframe.
+    #    For example, rename them as (C_D, C_S, C_L) and (C_roll, C_pitch, C_yaw).
+    df["C_D"] = F_new[:, 0]
+    df["C_S"] = F_new[:, 1]
+    df["C_L"] = F_new[:, 2]
+
+    df["C_roll"] = M_new[:, 0]
+    df["C_pitch"] = M_new[:, 1]
+    df["C_yaw"] = M_new[:, 2]
 
     return df
 
 
 def correcting_for_sideslip(df: pd.DataFrame) -> pd.DataFrame:
     """
-    [F_X_new]   [cos(β)  -sin(β)  0] [F_X_old]
-    [F_Y_new] = [sin(β)   cos(β)  0] [F_Y_old]
-    [F_Z_new]   [  0       0      1] [F_Z_old]
+    Suppose the turntable measured beta positive clockwise,
+    but we want it positive counterclockwise in our final x,y,z frame.
     """
+    # Flip the sign so beta is now +10° => -10° for the code
+    df["sideslip"] = -df["sideslip"]
 
-    ## Grabbing sideslip array and converting to radians
-    ## also making it negative to align with axis definition
-    ## beta turntable was defined positive clockwise, but we need it counter-clockwise
-    # df["sideslip"] = -df["sideslip"]
+    # Convert to radians
     beta = np.deg2rad(df["sideslip"])
-    # beta = np.deg2rad(10) * np.ones_like(df["sideslip"])
 
-    ## Defining rotation matrix for each row
+    # Create the rotation matrix
     def create_rotation_matrix(beta_angle):
         return np.array(
             [
-                [np.cos(beta_angle), np.sin(beta_angle), 0],
-                [-np.sin(beta_angle), np.cos(beta_angle), 0],
+                [np.cos(beta_angle), -np.sin(beta_angle), 0],
+                [np.sin(beta_angle), np.cos(beta_angle), 0],
                 [0, 0, 1],
             ]
         )
 
-    # Create arrays for forces and moments
+    # Forces and moments as arrays
     forces = np.array([df["C_D"], df["C_S"], df["C_L"]]).T
     moments = np.array([df["C_roll"], df["C_pitch"], df["C_yaw"]]).T
 
-    # Initialize arrays for corrected forces and moments
+    # Apply rotation row by row
     corrected_forces = np.zeros_like(forces)
     corrected_moments = np.zeros_like(moments)
 
-    # Apply rotation to each row
     for i in range(len(df)):
         R = create_rotation_matrix(beta[i])
         corrected_forces[i] = R @ forces[i]
         corrected_moments[i] = R @ moments[i]
 
-    # Update dataframe with corrected values
+    # Put corrected values back
     df["C_D"], df["C_S"], df["C_L"] = corrected_forces.T
     df["C_roll"], df["C_pitch"], df["C_yaw"] = corrected_moments.T
-
-    ### correcting for sideslip
-    df["sideslip"] = -df["sideslip"]
 
     return df
 
@@ -378,23 +423,145 @@ def add_dyn_visc_and_reynolds(
     return df
 
 
+def computing_kite_cg(x_hinge, z_hinge, l_cg, alpha_cg_delta_with_rod):
+
+    ### OLD measurements ###
+    S_ref = 0.46
+    c_ref = 0.4
+
+    # parameters necessary to translate moments (aka determine position of cg)
+    x_hinge = (
+        441.5  # x distance between force balance coord. sys. and hinge point in mm
+    )
+    z_hinge = 1359  # z distance between force balance coord. sys. and hinge point in mm
+    l_cg = 625.4  # distance between hinge point and kite CG
+    alpha_cg_delta_with_rod = 23.82
+    delta_celsius_kelvin = 273.15
+    mu_0 = 1.716e-5
+    T_0 = 273.15
+    C_suth = 110.4
+    delta_aoa_rod_to_alpha = 7.25
+    l_rod = 400  # length of the rod from hinge to TE
+
+    ### NEW measurements ###
+    x_hinge = -(395 + 39)
+    z_hinge = -(1185 + 168.5)  # 168.5 is the balance internal height
+    l_rod = 415
+
+    print(f"\nThe calculation of the center of gravity")
+    print(
+        f" hinge point is located at: \nx_hinge = {x_hinge} mm\nz_hinge = {z_hinge} mm"
+    )
+    print(f" distance between hinge point and kite CG: l_cg = {l_cg} mm")
+    print(
+        f" angle between the rod and the kite: alpha_cg_delta_with_rod = {alpha_cg_delta_with_rod} deg"
+    )
+    angle_cg = 10 - alpha_cg_delta_with_rod
+    print(
+        f"\n For an measured aoa of 10deg, this would make angle_cg = 10 - alpha_cg_delta_with_rod = {angle_cg} deg"
+    )
+    x_hinge_cg = l_cg * np.cos(np.deg2rad(angle_cg))
+    print(f"x_hinge,cg = l_cg * np.cos(angle_cg) = {x_hinge_cg:.2f} mm")
+    z_hinge_cg = l_cg * np.sin(np.deg2rad(angle_cg))
+    print(f"z_hinge,cg = l_cg * np.sin(angle_cg) = {z_hinge_cg:.2f} mm")
+    x_cg_origin = x_hinge - x_hinge_cg
+    print(f"\n x_cg,origin = x_hinge + x_hinge,cg = {x_cg_origin:.2f} mm")
+    z_cg_origin = z_hinge + z_hinge_cg
+    print(f" z_cg,origin = z_hinge + z_hinge,cg = {z_cg_origin:.2f} mm")
+    print(f"---------------------------------")
+    print(f"\n Location of TE, with a 0 measured aoa")
+    x_te = x_hinge - l_rod
+    print(
+        f" x_te = x_hinge + l_rod = {x_te:.2f} mm, with l_rod (distance from hinge-to-TE) = {l_rod:.2f} mm"
+    )
+    z_te = z_hinge
+    print(f" z_te = z_hinge = {z_te:.2f} mm")
+    angle_cg = 0 - alpha_cg_delta_with_rod
+    print(
+        f" angle cg with 0 deg aoa: angle_cg = 0 - alpha_cg_delta_with_rod = {angle_cg:.2f} deg"
+    )
+    x_cg_origin = x_hinge - l_cg * np.cos(np.deg2rad(angle_cg))
+    print(f"\nx_cg,origin = {x_cg_origin:.2f} mm")
+    print(f"z_cg,origin = {z_cg_origin:.2f} mm")
+    z_cg_origin = z_hinge + l_cg * np.sin(np.deg2rad(angle_cg))
+    print(f"\n Distance between cg and TE at 0 deg aoa")
+    x_te_cg = x_cg_origin - x_te
+    print(f" x_te_cg = x_cg,origin - x_te = {x_te_cg:.2f} mm")
+    z_te_cg = z_cg_origin - z_te
+    print(f" z_te_cg = z_cg,origin - z_te = {z_te_cg:.2f} mm")
+    print(f"alternative x_te_cg: {l_cg * np.cos(np.deg2rad(angle_cg)) - l_rod:.2f}")
+    print(f"alternative z_te_cg: {l_cg * np.sin(np.deg2rad(angle_cg)):.2f}")
+
+    ## Checking the calculation method
+    alpha_cg = np.deg2rad(0) - np.deg2rad(alpha_cg_delta_with_rod)
+    x_hinge_to_cg_mm = l_cg * np.cos(alpha_cg)
+    z_hinge_to_cg_mm = l_cg * np.sin(alpha_cg)
+    x_cg_to_origin_mm = x_hinge - x_hinge_to_cg_mm
+    z_cg_to_origin_mm = z_hinge + z_hinge_to_cg_mm
+    # converting to meters
+    x_cg_to_origin = x_cg_to_origin_mm / 1000
+    z_cg_to_origin = z_cg_to_origin_mm / 1000
+
+    print(f"\nChecking the calculation method")
+    print(f"x_hinge_to_cg_mm: {x_hinge_to_cg_mm:.2f} mm")
+    print(f"z_hinge_to_cg_mm: {z_hinge_to_cg_mm:.2f} mm")
+    print(f"x_cg_to_origin_mm: {x_cg_to_origin_mm:.2f} mm")
+    print(f"z_cg_to_origin_mm: {z_cg_to_origin_mm:.2f} mm")
+    print(f"x_cg_to_origin: {x_cg_to_origin:.2f} m")
+    print(f"z_cg_to_origin: {z_cg_to_origin:.2f} m")
+
+    ## plotting a 2D plot with all the points
+    from matplotlib import pyplot as plt
+
+    ## flipping all the x values
+    # x_cg_origin = -x_cg_origin
+    # x_te = -x_te
+
+    plt.figure()
+    plt.plot(x_hinge, z_hinge, "ro", label="hinge point")
+    plt.plot(x_cg_origin, z_cg_origin, "yo", label="CG")
+    plt.plot(x_te, z_te, "bo", label="TE")
+    plt.plot((x_te - 395), z_te, "bx", label="LE (approximate)")
+    plt.plot(0, 0, "go", label="origin")
+    plt.legend()
+    plt.axis("equal")
+    plt.grid()
+    plt.show()
+    plt.close()
+
+    plt.figure()
+    plt.plot(x_cg_origin, z_cg_origin, "yo", label="CG")
+    plt.plot(x_te, z_te, "bo", label="TE")
+    plt.plot((x_te - 395), z_te, "bx", label="LE (approximate)")
+    plt.legend()
+    plt.axis("equal")
+    plt.grid()
+    plt.show()
+    plt.close()
+
+    breakpoint()
+
+
 def processing_raw_lvm_data_into_csv(
     folder_dir: Path,
-    S_ref: float,
-    c_ref: float,
     is_kite: bool,
     is_zigzag: bool,
     support_struc_aero_interp_coeffs_path: Path,
-    x_hinge: float,
-    z_hinge: float,
-    l_cg: float,
-    alpha_cg_delta_with_rod: float,
-    delta_celsius_kelvin: float,
-    mu_0: float,
-    T_0: float,
-    C_suth: float,
-    delta_aoa_rod_to_alpha: float,
+    S_ref: float = 0.46,
+    c_ref: float = 0.395,
+    x_hinge: float = -434,
+    z_hinge: float = -1353.5,
+    l_cg: float = 625.4,
+    alpha_cg_delta_with_rod: float = 23.82,
+    delta_celsius_kelvin: float = 273.15,
+    mu_0: float = 1.716e-5,
+    T_0: float = 273.15,
+    C_suth: float = 110.4,
+    delta_aoa_rod_to_alpha: float = 7.25,
 ):
+    ##TODO: toggle this on/off
+    # computing_kite_cg(x_hinge, z_hinge, l_cg, alpha_cg_delta_with_rod)
+
     if is_kite:
         print(f"PROCESSING KITE, substracting support-structure")
     else:
