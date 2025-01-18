@@ -424,8 +424,8 @@ def main(results_path, project_dir):
         20,
     ]
 
-    alphas_to_be_plotted = [2.35, 4.75, 6.75]
-    # alphas_to_be_plotted = [6.8]
+    # alphas_to_be_plotted = [2.35, 4.75, 6.75]
+    alphas_to_be_plotted = [6.8]
 
     ### Other figure settings
     columns = ["C_L", "C_D", "C_S", "C_pitch", "C_roll", "C_yaw"]

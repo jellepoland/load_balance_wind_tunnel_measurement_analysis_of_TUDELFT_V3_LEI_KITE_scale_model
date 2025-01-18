@@ -1192,13 +1192,13 @@ def plotting_polars_beta(
         Path(project_dir)
         / "processed_data"
         / "polar_data"
-        / "V3_CL_CD_CS_beta_sweep_alpha_6_8_WindTunnel_Poland_2025_Rey_560e4.csv"
+        / "V3_CL_CD_CS_beta_sweep_alpha_6.8_WindTunnel_Poland_2025_Rey_560e4.csv"
     )
     data_WT_beta_re_56e4_alpha_11_9 = pd.read_csv(
         Path(project_dir)
         / "processed_data"
         / "polar_data"
-        / "V3_CL_CD_CS_beta_sweep_alpha_11_9_WindTunnel_Poland_2025_Rey_560e4.csv"
+        / "V3_CL_CD_CS_beta_sweep_alpha_11.9_WindTunnel_Poland_2025_Rey_560e4.csv"
     )
     # ## correcting the beta
     # data_WT_beta_re_56e4_alpha_11_9["beta"] = -data_WT_beta_re_56e4_alpha_11_9["beta"]

@@ -12,42 +12,24 @@ from VSM.plotting import generate_polar_data
 from VSM.interactive import interactive_plot
 
 
-def running_vsm_to_generate_csv_data(
-    project_dir: str,
-    vw: float,
-    geom_scaling=6.5,
-    height_correction_factor=0.82,
-    is_with_corrected_polar=True,
-    mu=1.76e-5,
-    reference_point=None,
-) -> None:
-    if is_with_corrected_polar:
-        print("Running VSM with corrected polar")
-        name_appendix = ""
-    else:
-        print("Running VSM with breukels polar")
-        name_appendix = "_no_correction"
+def create_wing_aero(
+    file_path,
+    n_panels,
+    spanwise_panel_distribution,
+    is_with_corrected_polar=False,
+    path_polar_data_dir="",
+):
+    df = pd.read_csv(file_path, delimiter=",")  # , skiprows=1)
+    LE_x_array = df["LE_x"].values
+    LE_y_array = df["LE_y"].values
+    LE_z_array = df["LE_z"].values
+    TE_x_array = df["TE_x"].values
+    TE_y_array = df["TE_y"].values
+    TE_z_array = df["TE_z"].values
+    d_tube_array = df["d_tube"].values
+    camber_array = df["camber"].values
 
-    # Defining discretisation
-    n_panels = 54
-    spanwise_panel_distribution = "split_provided"
-
-    ### rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs
-    vsm_input_path = Path(project_dir) / "data" / "vsm_input"
-    csv_file_path = (
-        Path(vsm_input_path)
-        / "TUDELFT_V3_LEI_KITE_rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs.csv"
-    )
-    (
-        LE_x_array,
-        LE_y_array,
-        LE_z_array,
-        TE_x_array,
-        TE_y_array,
-        TE_z_array,
-        d_tube_array,
-        camber_array,
-    ) = np.loadtxt(csv_file_path, delimiter=",", skiprows=1, unpack=True)
+    ## populating this list
     rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs = []
 
     for i in range(len(LE_x_array)):
@@ -61,18 +43,13 @@ def running_vsm_to_generate_csv_data(
     for i, CAD_rib_i in enumerate(
         rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs
     ):
-        ### Correcting the geometry
-        CAD_rib_i_0 = CAD_rib_i[0] / geom_scaling
-        CAD_rib_i_1 = CAD_rib_i[1] / geom_scaling
-
-        ## Height was off even tho chord and span are matching perfectly...
-        CAD_rib_i_0[2] = CAD_rib_i_0[2] * height_correction_factor
-        CAD_rib_i_1[2] = CAD_rib_i_1[2] * height_correction_factor
+        CAD_rib_i_0 = CAD_rib_i[0]
+        CAD_rib_i_1 = CAD_rib_i[1]
 
         if is_with_corrected_polar:
             ### using corrected polar
             df_polar_data = pd.read_csv(
-                Path(vsm_input_path) / f"corrected_polar_{i}.csv"
+                Path(path_polar_data_dir) / f"corrected_polar_{i}.csv"
             )
             alpha = df_polar_data["alpha"].values
             cl = df_polar_data["cl"].values
@@ -84,12 +61,50 @@ def running_vsm_to_generate_csv_data(
             ### using breukels
             CAD_wing.add_section(CAD_rib_i_0, CAD_rib_i_1, CAD_rib_i[2])
 
-    wing_aero_CAD_19ribs = WingAerodynamics([CAD_wing])
+    wing_aero = WingAerodynamics([CAD_wing])
+
+    return wing_aero
+
+
+def running_vsm_to_generate_csv_data(
+    project_dir: str,
+    vw: float,
+    geom_scaling=6.5,
+    height_correction_factor=1.0,  # 0.82,
+    is_with_corrected_polar=True,
+    mu=1.76e-5,
+    reference_point=None,
+    n_panels=105,
+    spanwise_panel_distribution="split_provided",
+) -> None:
+    if is_with_corrected_polar:
+        print("Running VSM with corrected polar")
+        name_appendix = ""
+    else:
+        print("Running VSM with breukels polar")
+        name_appendix = "_no_correction"
+
+    vsm_input_path = Path(project_dir) / "data" / "vsm_input"
+    csv_file_path = Path(vsm_input_path) / "geometry_corrected.csv"
+    wing_aero = create_wing_aero(
+        csv_file_path,
+        n_panels,
+        spanwise_panel_distribution,
+        is_with_corrected_polar,
+        vsm_input_path,
+    )
 
     # ### Plotting reference point at mid-span plane
     # plt.figure()
-    # LE = rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs[8][0] / geom_scaling
-    # TE = rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs[8][1] / geom_scaling
+    # n_half = len(rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs) // 2
+    # LE = (
+    #     rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs[n_half][0]
+    #     / geom_scaling
+    # )
+    # TE = (
+    #     rib_list_from_CAD_LE_TE_and_surfplan_d_tube_camber_19ribs[n_half][1]
+    #     / geom_scaling
+    # )
     # LE[2] = LE[2] * height_correction_factor
     # TE[2] = TE[2] * height_correction_factor
     # plt.plot(LE[0], LE[2], "ro", label="LE")
@@ -101,14 +116,13 @@ def running_vsm_to_generate_csv_data(
     # plt.grid()
     # plt.show()
     # plt.close()
-    # breakpoint()
 
     # ### INTERACTIVE PLOT
     # interactive_plot(
-    #     wing_aero_CAD_19ribs,
+    #     wing_aero,
     #     vel=3.15,
     #     angle_of_attack=6.75,
-    #     side_slip=10,
+    #     side_slip=0,
     #     yaw_rate=0,
     #     is_with_aerodynamic_details=True,
     # )
@@ -150,7 +164,7 @@ def running_vsm_to_generate_csv_data(
     ]
     polar_data, reynolds_number = generate_polar_data(
         solver=VSM,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=alphas_to_be_plotted,
         angle_type="angle_of_attack",
         angle_of_attack=0,
@@ -161,7 +175,7 @@ def running_vsm_to_generate_csv_data(
     )
     polar_data_stall, _ = generate_polar_data(
         solver=VSM_with_stall_correction,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=alphas_to_be_plotted,
         angle_type="angle_of_attack",
         angle_of_attack=0,
@@ -211,7 +225,7 @@ def running_vsm_to_generate_csv_data(
     ]
     polar_data, _ = generate_polar_data(
         solver=VSM,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
         angle_of_attack=alpha,
@@ -222,7 +236,7 @@ def running_vsm_to_generate_csv_data(
     )
     polar_data_stall, _ = generate_polar_data(
         solver=VSM_with_stall_correction,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
         angle_of_attack=alpha,
@@ -275,7 +289,7 @@ def running_vsm_to_generate_csv_data(
     # ]
     polar_data, _ = generate_polar_data(
         solver=VSM,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
         angle_of_attack=alpha,
@@ -286,7 +300,7 @@ def running_vsm_to_generate_csv_data(
     )
     polar_data_stall, _ = generate_polar_data(
         solver=VSM_with_stall_correction,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
         angle_of_attack=alpha,
@@ -343,7 +357,7 @@ def running_vsm_to_generate_csv_data(
     ]
     polar_data, reynolds_number = generate_polar_data(
         solver=VSM,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=alphas_to_be_plotted,
         angle_type="angle_of_attack",
         angle_of_attack=0,
@@ -354,7 +368,7 @@ def running_vsm_to_generate_csv_data(
     )
     polar_data_stall, _ = generate_polar_data(
         solver=VSM_with_stall_correction,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=alphas_to_be_plotted,
         angle_type="angle_of_attack",
         angle_of_attack=0,
@@ -410,7 +424,7 @@ def running_vsm_to_generate_csv_data(
     ]
     polar_data, _ = generate_polar_data(
         solver=VSM,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
         angle_of_attack=alpha,
@@ -421,7 +435,7 @@ def running_vsm_to_generate_csv_data(
     )
     polar_data_stall, _ = generate_polar_data(
         solver=VSM_with_stall_correction,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
         angle_of_attack=alpha,
@@ -464,7 +478,7 @@ def running_vsm_to_generate_csv_data(
 
     polar_data, _ = generate_polar_data(
         solver=VSM,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
         angle_of_attack=alpha,
@@ -475,7 +489,7 @@ def running_vsm_to_generate_csv_data(
     )
     polar_data_stall, _ = generate_polar_data(
         solver=VSM_with_stall_correction,
-        wing_aero=wing_aero_CAD_19ribs,
+        wing_aero=wing_aero,
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
         angle_of_attack=alpha,
@@ -520,32 +534,31 @@ def main():
     ## Computing the reference point, to be equal as used for calc. the wind tunnel data Moments
     x_displacement_from_te = -0.157  # -0.172
     z_displacement_from_te = -0.252
-    te_point_full_size = np.array([2.16733994663813, 0, 10.889841638961673])
-    geom_scaling = 6.5
+    te_point_full_size = np.array([1.472144, 0, 3.696209])
+    geom_scaling = 1.0  # 6.5
     te_point_scaled = te_point_full_size / geom_scaling
     ## height was off even tho chord and span are matching perfectly...
-    height_correction_factor = 0.82
+    height_correction_factor = 1.0
     te_point_scaled[2] = te_point_scaled[2] * height_correction_factor
     reference_point = te_point_scaled + np.array(
         [x_displacement_from_te, 0, z_displacement_from_te]
     )
     print(f"reference_point: {reference_point}")
     # breakpoint()
+    vw = 3.15  # not scaled brings this to 5.6e
+
+    # TODO: geom_scaling AND height_correction DO NOT DO ANYTHING!!
 
     running_vsm_to_generate_csv_data(
         project_dir,
-        vw=20,
+        vw=vw,
         is_with_corrected_polar=True,
-        geom_scaling=geom_scaling,
-        height_correction_factor=height_correction_factor,
         reference_point=reference_point,
     )
     running_vsm_to_generate_csv_data(
         project_dir,
-        vw=20,
+        vw=vw,
         is_with_corrected_polar=False,
-        geom_scaling=geom_scaling,
-        height_correction_factor=height_correction_factor,
         reference_point=reference_point,
     )
 
