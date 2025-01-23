@@ -11,7 +11,7 @@ from utils import PROJECT_DIR, create_wing_aero
 
 file_path = Path(PROJECT_DIR) / "data" / "vsm_input" / "geometry_corrected.csv"
 path_polar_data_dir = Path(PROJECT_DIR) / "data" / "vsm_input"
-n_panels = 130
+n_panels = 150
 angle_of_attack = 6.8
 side_slip = 0
 yaw_rate = 0
@@ -154,7 +154,7 @@ save_folder = Path(PROJECT_DIR) / "processed_data" / "beta_sweep"
 ### Running once each script at alpha = 19 and storing the gamma_distribution
 angle_of_attack = 6.8
 side_slip = 16
-for side_slip in [15, 16, 17, 18, 19, 20]:
+for side_slip in [20]:
     wing_aero_breukels.va_initialize(Umag, angle_of_attack, side_slip, yaw_rate)
     wing_aero_polar.va_initialize(Umag, angle_of_attack, side_slip, yaw_rate)
     results_breukels = VSM_base.solve(wing_aero_breukels)
