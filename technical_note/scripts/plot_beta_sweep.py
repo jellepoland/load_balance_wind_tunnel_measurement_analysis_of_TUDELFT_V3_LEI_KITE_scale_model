@@ -131,7 +131,7 @@ def plotting_polars_beta_correction_comparison(
     # gs_main = gridspec.GridSpec(
     #     nrows=2, ncols=4, width_ratios=[1, 1, 1, 1], height_ratios=[1, 1]
     # )  # , wspace=0.4)
-    fig, axes = plt.subplots(2, 4, figsize=(15, 7), width_ratios=[1, 1, 1, 2])
+    fig, axes = plt.subplots(2, 4, figsize=(15, 7), width_ratios=[1, 1, 1, 1.6])
     # gs_main = axes
     linewidth = 1.5
     # # Left subplot for CL vs AOA
@@ -401,6 +401,8 @@ def plotting_polars_beta_correction_comparison(
         # bbox_to_anchor=(0.05, 0.96),
         frameon=True,
     )
+    # adjusting the vspace between row 0 and row 1
+    # plt.subplots_adjust(hspace=-0.1, wspace=0.05)
     # Tight layout & save
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.2)
