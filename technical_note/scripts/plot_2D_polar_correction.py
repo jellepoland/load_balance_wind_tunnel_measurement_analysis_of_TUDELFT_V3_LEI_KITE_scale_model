@@ -3,8 +3,75 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import pandas as pd
 import math
+import itertools
 from utils import PROJECT_DIR
 from plot_styling import set_plot_style
+
+
+def find_best_circle_fixed(lines, tol=1e-5):
+    """
+    Given the lines from a .dat file (each line containing two floats: x and y),
+    try to find a circle with center (a, 0) (with a in [0, 0.2]) and radius r in [0.01, 0.3]
+    that passes through as many points as possible (within the tolerance tol).
+
+    A point (x,y) is considered to lie on the circle defined by center (a,0) and radius r
+    if |sqrt((x-a)^2 + y^2) - r| < tol.
+
+    Parameters:
+        lines (list of str): Lines read from the .dat file.
+        tol (float): Tolerance for considering a point to be on the circle.
+
+    Returns:
+        best_circle (tuple): (a, 0, r) of the best candidate circle.
+        best_count (int): Number of points that lie on that candidate circle.
+    """
+    # Parse the lines into a list of (x, y) points.
+    points = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            x, y = map(float, line.split())
+            points.append((x, y))
+        except Exception:
+            continue
+
+    best_circle = None
+    best_count = 0
+
+    # Loop over all pairs of distinct points
+    for (x1, y1), (x2, y2) in itertools.combinations(points, 2):
+        # Avoid division by zero if x1 and x2 are too close
+        if abs(x2 - x1) < 1e-12:
+            continue
+
+        # Compute candidate a using:
+        # (x1 - a)^2 + y1^2 = (x2 - a)^2 + y2^2  ==>  a = (x2^2 - x1^2 + y2^2 - y1^2) / (2*(x2 - x1))
+        a = (x2**2 - x1**2 + y2**2 - y1**2) / (2 * (x2 - x1))
+
+        # Enforce a in [0, 0.2]
+        if not (0 <= a <= 0.2):
+            continue
+
+        # Compute radius r from the first point:
+        r = math.sqrt((x1 - a) ** 2 + y1**2)
+        if r < 0.01 or r > 0.3:
+            continue
+
+        # Count how many points lie on the candidate circle (within tolerance)
+        count = 0
+        for x, y in points:
+            dist = math.sqrt((x - a) ** 2 + y**2)
+            if abs(dist - r) < tol:
+                count += 1
+
+        # Update the best candidate if this circle fits more points
+        if count > best_count:
+            best_count = count
+            best_circle = (a, 0.0, r)
+
+    return best_circle, best_count
 
 
 def reading_profile_from_airfoil_dat_files(filepath):
@@ -19,14 +86,13 @@ def reading_profile_from_airfoil_dat_files(filepath):
 
     Returns:
     dict: A dictionary containing the profile name, tube diameter, depth, x_depth, and TE angle.
-          The keys are "name", "tube_diameter", "depth", "x_depth", and "TE_angle".
+        The keys are "name", "tube_diameter", "depth", "x_depth", and "TE_angle".
     """
     with open(filepath, "r") as file:
         lines = file.readlines()
 
     # Initialize variables
     profile_name = lines[0].strip()  # Name of the profile
-    tube_diameter = None  # LE tube diameter of the profile, in % of the chord
     depth = -float("inf")  # Depth of the profile, in % of the chord
     x_depth = None  # Position of the maximum depth of the profile, in % of the chord
     TE_angle_deg = None  # Angle of the TE
@@ -63,9 +129,19 @@ def reading_profile_from_airfoil_dat_files(filepath):
     else:
         TE_angle_deg = None  # Not enough points to calculate the angle
 
+    ## Calculating the tube diameter
+    best_circle, best_count = find_best_circle_fixed(lines, tol=1e-5)
+    if best_circle is not None:
+        a, _, r = best_circle
+        tube_diameter = 2 * r
+    else:
+        a = None
+        tube_diameter = None
+
     return {
         "name": profile_name,
         "tube_diameter": tube_diameter,
+        "tube_center_x": a,
         "depth": depth,
         "x_depth": x_depth,
         "TE_angle": TE_angle_deg,
@@ -110,9 +186,9 @@ def plot_airfoil_and_polars(
     # Do this according to how your data is stored.
 
     # Create the figure with GridSpec
-    fig = plt.figure(figsize=(15, 6))
+    fig = plt.figure(figsize=(15, 8))
     gs = fig.add_gridspec(
-        2, 3, height_ratios=[0.8, 2]  # 0.6,2
+        2, 3, height_ratios=[0.8, 2.2]  # 0.6,2
     )  # top row is a bit smaller, bottom row is larger
     markersize = 3.5
     linewidth = 1.8
@@ -126,13 +202,82 @@ def plot_airfoil_and_polars(
     x_coords = [pt[0] for pt in airfoil_points]
     y_coords = [pt[1] for pt in airfoil_points]
 
-    ax_airfoil.plot(x_coords, y_coords, color="black", linewidth=linewidth)
-    ax_airfoil.set_aspect("equal", adjustable="box")
+    # ax_airfoil.plot(x_coords, y_coords, color="black", linewidth=linewidth)
+    # ax_airfoil.set_aspect("equal", adjustable="box")
+    # ax_airfoil.set_xlabel("$x/c$")
+    # ax_airfoil.set_ylabel("$y/c$")
+    # ax_airfoil.legend(
+    #     loc="best",
+    #     handles=[plt.Line2D([0], [0], color="black", label="Mid-Span Airfoil")],
+    # )
+    # ax_airfoil.grid(False)
+
+    # profile_name = profile.get("name", "Airfoil")
+    depth = profile.get("depth", 0.0)
+    x_depth = profile.get("x_depth", 0.0)
+    TE_angle = profile.get("TE_angle", 0.0)
+    tube_diameter = profile.get("tube_diameter", 0.0)
+    tube_center_x = profile.get("tube_center_x", 0.0)
+
+    # Plot the airfoil outline
+    ax_airfoil.plot(
+        x_coords,
+        y_coords,
+        color="black",
+        linewidth=linewidth,
+        label=f"Mid-span airfoil",
+    )
+
+    # Plot the tube as a circle
+    if tube_diameter is not None:
+        circle = plt.Circle(
+            (tube_center_x, 0),
+            tube_diameter / 2,
+            color="black",
+            fill=False,
+            linestyle="--",
+            linewidth=linewidth,
+            label=f"tube diameter: {tube_diameter:.2f} \ntube center: ({tube_center_x:.2f},0)",
+        )
+        ax_airfoil.add_artist(circle)
+
+    # Set axis labels and equal aspect ratio
     ax_airfoil.set_xlabel("$x/c$")
     ax_airfoil.set_ylabel("$y/c$")
+    ax_airfoil.set_aspect("equal", adjustable="box")
+
+    # Create a legend text with the airfoil's details
+    details = (
+        # f"{profile_name}\n"
+        # f"Depth: {depth:.2f}%\n"
+        # f"x_depth: {x_depth:.2f}%\n"
+        f"TE Angle: {TE_angle:.2f}°"
+    )
+    # Optionally, you could add an annotation for the highest (or any significant) point.
+    # For example, if you wish to mark the point (x_depth, depth), uncomment below:
+    #
+    # ax_airfoil.scatter(
+    #     x_depth,
+    #     depth,
+    #     color="black",
+    #     marker="x",
+    #     zorder=5,
+    #     label=f"x: {x_depth:.2f}, y/c: {depth:.2f}",
+    # )
+    # ax_airfoil.annotate(
+    #     f"({x_depth:.2f}, {depth:.2f})",
+    #     xy=(x_depth, depth),
+    #     xytext=(x_depth, depth + 0.05),
+    #     arrowprops=dict(facecolor="black", arrowstyle="->"),
+    # )
+
+    # Use a legend that shows both the line label and the profile details as title
+    # plot legend on the rightside of the airfoil
     ax_airfoil.legend(
-        loc="best",
-        handles=[plt.Line2D([0], [0], color="black", label="Mid-Span Airfoil")],
+        loc="upper right",
+        bbox_to_anchor=(0.95, 0.98),  # Coordinates in the figure's coordinate system
+        bbox_transform=fig.transFigure,  # Use the figure's coordinate system for bbox_to_anchor
+        # title=details,
     )
     ax_airfoil.grid(False)
 
@@ -165,11 +310,11 @@ def plot_airfoil_and_polars(
     # 2) Bottom row: CL-alpha, CD-alpha, CM-alpha
 
     # Subplot for CL vs alpha
-    height = 0.65
+    height = 0.67
     width = 0.26
     margin = 0.06
     start = 0.07
-    bottom = 0.05
+    bottom = 0.07
     ax_cl = fig.add_axes(
         [start, bottom, width, height]
     )  # [left, bottom, width, height]
@@ -179,20 +324,21 @@ def plot_airfoil_and_polars(
     ax_cm = fig.add_axes(
         [start + 2 * width + 2 * margin, bottom, width, height]
     )  # [left, bottom, width, height]
-    ax_cl.plot(
-        df_neuralfoil["alpha"],
-        df_neuralfoil["cl"],
-        linestyle="dashed",
-        label="NeuralFoil",
-        color="red",
-        markersize=markersize,
-        linewidth=linewidth,
-    )
 
     linestyle_flat_plate = "-."
     linestyle_neuralfoil = "solid"
     linestyle_corrected = "dashed"
     linestyle_breukels = "dotted"
+
+    ax_cl.plot(
+        df_neuralfoil["alpha"],
+        df_neuralfoil["cl"],
+        linestyle=linestyle_neuralfoil,
+        label="NeuralFoil",
+        color="red",
+        markersize=markersize,
+        linewidth=linewidth,
+    )
 
     if df_flat_plate is not None:
         ax_cl.plot(
@@ -224,7 +370,7 @@ def plot_airfoil_and_polars(
         linewidth=linewidth,
     )
     ax_cl.set_xlabel(r"$\alpha$ [°]")
-    ax_cl.set_ylabel(r"$C_L$ [-]")
+    ax_cl.set_ylabel(r"$C_{\textrm{l}}$ [-]")
     ax_cl.grid(True)
     ax_cl.legend()
 
@@ -270,7 +416,7 @@ def plot_airfoil_and_polars(
         linewidth=linewidth,
     )
     ax_cd.set_xlabel(r"$\alpha$ [°]")
-    ax_cd.set_ylabel(r"$C_D$ [-]")
+    ax_cd.set_ylabel(r"$C_{\textrm{d}}$ [-]")
     ax_cd.grid(True)
     # ax_cd.legend()
 
@@ -317,7 +463,7 @@ def plot_airfoil_and_polars(
         linewidth=linewidth,
     )
     ax_cm.set_xlabel(r"$\alpha$ [°]")
-    ax_cm.set_ylabel(r"$C_M$ [-]")
+    ax_cm.set_ylabel(r"$C_{\textrm{M}}$ [-]")
     ax_cm.grid(True)
     # ax_cm.legend()
     ax_cm.set_ylim(-2, 1)
@@ -330,6 +476,10 @@ def plot_airfoil_and_polars(
     #     frameon=True,
     # )
 
+    ax_cl.set_xlim(-35, 35)
+    ax_cd.set_xlim(-35, 35)
+    ax_cm.set_xlim(-35, 35)
+
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close(fig)
@@ -337,22 +487,32 @@ def plot_airfoil_and_polars(
 
 if __name__ == "__main__":
 
+    df = pd.read_csv(
+        Path(PROJECT_DIR) / "data" / "vsm_input" / "corrected_polar_17.csv"
+    )
+    df["alpha"] = np.rad2deg(df["alpha"])
+
+    # Select the correct columns for each DataFrame
+    df_corrected = df.copy()[["alpha", "cl", "cd", "cm"]]
+
+    df_breukels = df.copy()[["alpha", "cl_breukels", "cd_breukels", "cm_breukels"]]
+    df_breukels.columns = ["alpha", "cl", "cd", "cm"]
+
+    df_neuralfoil = df.copy()[
+        ["alpha", "cl_neuralfoil", "cd_neuralfoil", "cm_neuralfoil"]
+    ]
+    df_neuralfoil.columns = ["alpha", "cl", "cd", "cm"]
+
     plot_airfoil_and_polars(
         file_path_airfoil=PROJECT_DIR
         / "processed_data"
         / "2D_correction"
         / "prof_mid_span.dat",
-        df_corrected=pd.read_csv(
-            PROJECT_DIR / "processed_data" / "2D_correction" / "df_corrected_18.csv"
-        ),
-        df_neuralfoil=pd.read_csv(
-            PROJECT_DIR / "processed_data" / "2D_correction" / "df_neuralfoil_18.csv"
-        ),
+        df_corrected=df_corrected,
+        df_neuralfoil=df_neuralfoil,
         df_flat_plate=pd.read_csv(
             PROJECT_DIR / "processed_data" / "2D_correction" / "df_flat_plate_18.csv"
         ),
-        df_breukels=pd.read_csv(
-            PROJECT_DIR / "processed_data" / "2D_correction" / "df_breukels_18.csv"
-        ),
+        df_breukels=df_breukels,
         output_path=Path(PROJECT_DIR) / "results" / "airfoil_and_polars.pdf",
     )

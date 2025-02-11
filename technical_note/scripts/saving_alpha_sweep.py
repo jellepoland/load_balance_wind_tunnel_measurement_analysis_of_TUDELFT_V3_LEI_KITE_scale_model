@@ -7,12 +7,13 @@ import pandas as pd
 from pathlib import Path
 from VSM.Solver import Solver
 from VSM.plotting import generate_polar_data
+from VSM.interactive import interactive_plot
 from utils import PROJECT_DIR, create_wing_aero
 
 file_path = Path(PROJECT_DIR) / "data" / "vsm_input" / "geometry_corrected.csv"
 path_polar_data_dir = Path(PROJECT_DIR) / "data" / "vsm_input"
 n_panels = 150
-angle_of_attack = 0
+angle_of_attack = 6.8
 side_slip = 0
 yaw_rate = 0
 Umag = 3.15
@@ -44,7 +45,7 @@ VSM_with_stall_correction = Solver(
     is_with_artificial_damping=True,
 )
 
-#### INTERACTIVE PLOT
+# ### INTERACTIVE PLOT
 # interactive_plot(
 #     wing_aero_breukels,
 #     vel=Umag,
@@ -60,95 +61,94 @@ angle_type = "angle_of_attack"
 
 save_folder = Path(PROJECT_DIR) / "processed_data" / "alpha_sweep"
 
-
-# ##
-# polar_data, reynolds_number = generate_polar_data(
-#     solver=VSM_base,
-#     wing_aero=wing_aero_breukels,
-#     angle_range=angle_range,
-#     angle_type=angle_type,
-#     angle_of_attack=angle_of_attack,
-#     side_slip=side_slip,
-#     yaw_rate=yaw_rate,
-#     Umag=Umag,
-# )
-# polar_data = {
-#     "aoa": polar_data[0],
-#     "CL": polar_data[1],
-#     "CD": polar_data[2],
-#     "CS": polar_data[3],
-#     "CMx": polar_data[4],
-#     "CMy": polar_data[5],
-#     "CMz": polar_data[6],
-# }
-# df = pd.DataFrame(polar_data)
-# df.to_csv(Path(save_folder) / f"polar_data_vsm_breukels.csv", index=False)
-# ##
-# polar_data, reynolds_number = generate_polar_data(
-#     solver=VSM_with_stall_correction,
-#     wing_aero=wing_aero_breukels,
-#     angle_range=angle_range,
-#     angle_type=angle_type,
-#     angle_of_attack=angle_of_attack,
-#     side_slip=side_slip,
-#     yaw_rate=yaw_rate,
-#     Umag=Umag,
-# )
-# polar_data = {
-#     "aoa": polar_data[0],
-#     "CL": polar_data[1],
-#     "CD": polar_data[2],
-#     "CS": polar_data[3],
-#     "CMx": polar_data[4],
-#     "CMy": polar_data[5],
-#     "CMz": polar_data[6],
-# }
-# df = pd.DataFrame(polar_data)
-# df.to_csv(Path(save_folder) / f"polar_data_vsm_breukels_stall.csv", index=False)
-# ##
-# polar_data, reynolds_number = generate_polar_data(
-#     solver=VSM_base,
-#     wing_aero=wing_aero_polar,
-#     angle_range=angle_range,
-#     angle_type=angle_type,
-#     angle_of_attack=angle_of_attack,
-#     side_slip=side_slip,
-#     yaw_rate=yaw_rate,
-#     Umag=Umag,
-# )
-# polar_data = {
-#     "aoa": polar_data[0],
-#     "CL": polar_data[1],
-#     "CD": polar_data[2],
-#     "CS": polar_data[3],
-#     "CMx": polar_data[4],
-#     "CMy": polar_data[5],
-#     "CMz": polar_data[6],
-# }
-# df = pd.DataFrame(polar_data)
-# df.to_csv(Path(save_folder) / f"polar_data_vsm_polar.csv", index=False)
-# ##
-# polar_data, reynolds_number = generate_polar_data(
-#     solver=VSM_with_stall_correction,
-#     wing_aero=wing_aero_polar,
-#     angle_range=angle_range,
-#     angle_type=angle_type,
-#     angle_of_attack=angle_of_attack,
-#     side_slip=side_slip,
-#     yaw_rate=yaw_rate,
-#     Umag=Umag,
-# )
-# polar_data = {
-#     "aoa": polar_data[0],
-#     "CL": polar_data[1],
-#     "CD": polar_data[2],
-#     "CS": polar_data[3],
-#     "CMx": polar_data[4],
-#     "CMy": polar_data[5],
-#     "CMz": polar_data[6],
-# }
-# df = pd.DataFrame(polar_data)
-# df.to_csv(Path(save_folder) / f"polar_data_vsm_polar_stall.csv", index=False)
+##
+polar_data, reynolds_number = generate_polar_data(
+    solver=VSM_base,
+    wing_aero=wing_aero_breukels,
+    angle_range=angle_range,
+    angle_type=angle_type,
+    angle_of_attack=angle_of_attack,
+    side_slip=side_slip,
+    yaw_rate=yaw_rate,
+    Umag=Umag,
+)
+polar_data = {
+    "aoa": polar_data[0],
+    "CL": polar_data[1],
+    "CD": polar_data[2],
+    "CS": polar_data[3],
+    "CMx": polar_data[4],
+    "CMy": polar_data[5],
+    "CMz": polar_data[6],
+}
+df = pd.DataFrame(polar_data)
+df.to_csv(Path(save_folder) / f"polar_data_vsm_breukels.csv", index=False)
+##
+polar_data, reynolds_number = generate_polar_data(
+    solver=VSM_with_stall_correction,
+    wing_aero=wing_aero_breukels,
+    angle_range=angle_range,
+    angle_type=angle_type,
+    angle_of_attack=angle_of_attack,
+    side_slip=side_slip,
+    yaw_rate=yaw_rate,
+    Umag=Umag,
+)
+polar_data = {
+    "aoa": polar_data[0],
+    "CL": polar_data[1],
+    "CD": polar_data[2],
+    "CS": polar_data[3],
+    "CMx": polar_data[4],
+    "CMy": polar_data[5],
+    "CMz": polar_data[6],
+}
+df = pd.DataFrame(polar_data)
+df.to_csv(Path(save_folder) / f"polar_data_vsm_breukels_stall.csv", index=False)
+##
+polar_data, reynolds_number = generate_polar_data(
+    solver=VSM_base,
+    wing_aero=wing_aero_polar,
+    angle_range=angle_range,
+    angle_type=angle_type,
+    angle_of_attack=angle_of_attack,
+    side_slip=side_slip,
+    yaw_rate=yaw_rate,
+    Umag=Umag,
+)
+polar_data = {
+    "aoa": polar_data[0],
+    "CL": polar_data[1],
+    "CD": polar_data[2],
+    "CS": polar_data[3],
+    "CMx": polar_data[4],
+    "CMy": polar_data[5],
+    "CMz": polar_data[6],
+}
+df = pd.DataFrame(polar_data)
+df.to_csv(Path(save_folder) / f"polar_data_vsm_polar.csv", index=False)
+##
+polar_data, reynolds_number = generate_polar_data(
+    solver=VSM_with_stall_correction,
+    wing_aero=wing_aero_polar,
+    angle_range=angle_range,
+    angle_type=angle_type,
+    angle_of_attack=angle_of_attack,
+    side_slip=side_slip,
+    yaw_rate=yaw_rate,
+    Umag=Umag,
+)
+polar_data = {
+    "aoa": polar_data[0],
+    "CL": polar_data[1],
+    "CD": polar_data[2],
+    "CS": polar_data[3],
+    "CMx": polar_data[4],
+    "CMy": polar_data[5],
+    "CMz": polar_data[6],
+}
+df = pd.DataFrame(polar_data)
+df.to_csv(Path(save_folder) / f"polar_data_vsm_polar_stall.csv", index=False)
 
 ### Running once each script at alpha = 19 and storing the gamma_distribution
 wing_aero_breukels.va_initialize(Umag, 19, side_slip, yaw_rate)
