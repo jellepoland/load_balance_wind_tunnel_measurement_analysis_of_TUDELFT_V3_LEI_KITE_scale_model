@@ -170,7 +170,7 @@ def running_vsm_to_generate_csv_data(
     is_with_corrected_polar=True,
     mu=1.76e-5,
     reference_point=None,
-    n_panels=105,
+    n_panels=150,
     spanwise_panel_distribution="split_provided",
 ) -> None:
     if is_with_corrected_polar:
@@ -316,6 +316,7 @@ def main():
     ## scaled down geometry
     vw = 20
     geom_scaling = 6.5
+    n_panels = 150
 
     # ## scaled down velocity
     # vw = 3.05
@@ -341,6 +342,7 @@ def main():
         is_with_corrected_polar=True,
         reference_point=reference_point,
         geom_scaling=geom_scaling,
+        n_panels=n_panels,
     )
     running_vsm_to_generate_csv_data(
         project_dir,
@@ -348,6 +350,7 @@ def main():
         is_with_corrected_polar=False,
         reference_point=reference_point,
         geom_scaling=geom_scaling,
+        n_panels=n_panels,
     )
 
 

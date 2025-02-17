@@ -463,7 +463,7 @@ def plot_airfoil_and_polars(
         linewidth=linewidth,
     )
     ax_cm.set_xlabel(r"$\alpha$ [°]")
-    ax_cm.set_ylabel(r"$C_{\textrm{M}}$ [-]")
+    ax_cm.set_ylabel(r"$C_{\textrm{m}}$ [-]")
     ax_cm.grid(True)
     # ax_cm.legend()
     ax_cm.set_ylim(-2, 1)

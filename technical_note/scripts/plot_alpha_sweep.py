@@ -61,15 +61,37 @@ def plotting_polars_alpha_correction_comparison(
     ]
     labels = [
         r"VSM Breukels ",
-        r"VSM Breukels Stall",
+        r"VSM Breukels + Smoothening",
         r"VSM Corrected",
-        r"VSM Corrected Stall",
+        r"VSM Corrected + Smoothening",
         r"CFD Re = $5\times10^5$",
         r"WT",
     ]
     colors = ["blue", "blue", "green", "green", "black", "red"]
     linestyles = ["dotted", "dashdot", "dashed", "solid", "-", "-"]
     markers = ["", "", "", "", "*", "o"]
+
+    # ## changing the order of these lists
+    # # first do CFD, then WT, then the all the VSM results
+    # data_frame_list = [
+    #     data_CFD_Vire2020_5e5,
+    #     data_windtunnel,
+    #     data_vsm_breukels,
+    #     data_vsm_breukels_stall,
+    #     data_vsm_corrected,
+    #     data_vsm_corrected_stall,
+    # ]
+    # labels = [
+    #     r"CFD Re = $5\times10^5$",
+    #     r"WT",
+    #     r"VSM Breukels ",
+    #     r"VSM Breukels + Smoothening",
+    #     r"VSM Corrected",
+    #     r"VSM Corrected + Smoothening",
+    # ]
+    # colors = ["black", "red", "blue", "blue", "green", "green"]
+    # linestyles = ["-", "-", "dotted", "dashdot", "dashed", "solid"]
+    # markers = ["*", "o", "", "", "", ""]
 
     # Mapping columns in data_gamma
     gamma_col_map = {
@@ -89,8 +111,18 @@ def plotting_polars_alpha_correction_comparison(
     cl_col = "CL"
     cd_col = "CD"
 
-    fig = plt.figure(figsize=(12, 8))
-    gs_main = gridspec.GridSpec(nrows=1, ncols=2, width_ratios=[1, 1])
+    fig = plt.figure(figsize=(15, 9))
+    gs_main = gridspec.GridSpec(
+        nrows=1,
+        ncols=2,
+        width_ratios=[0.8, 1.2],
+        bottom=0.15,
+        left=0.07,
+        top=0.98,
+        right=0.98,
+    )
+    # fig.subplots_adjust(bottom=0.2)
+    # plt.tight_layout()
 
     linewidth = 1.5
 
@@ -237,26 +269,34 @@ def plotting_polars_alpha_correction_comparison(
     # ax_cd.legend(loc="upper left")
 
     # ax_gamma.set_xlabel(x_axis_labels["y/b"])
-    ax_gamma.set_ylabel(y_axis_labels["gamma"] + r" ($\alpha=19^\circ$)")
+    ax_gamma.set_ylabel(y_axis_labels["gamma"] + r" ($\alpha=20^\circ$)")
     ax_gamma.set_xlim(0, 0.5)
 
     ax_cd_dist.set_xlabel(x_axis_labels["y/b"])
-    ax_cd_dist.set_ylabel(y_axis_labels["CD"] + r" ($\alpha=19^\circ$)")
+    ax_cd_dist.set_ylabel(y_axis_labels["CD"] + r" ($\alpha=20^\circ$)")
     ax_cd_dist.set_xlim(0, 0.5)
     ax_cd_dist.set_ylim(-0.3, 0.8)
 
     ax_geometry.set_xlim(0, 0.5)
 
+    # fig.legend(
+    #     loc="lower center",
+    #     ncol=1,
+    #     bbox_to_anchor=(0.3, 0.36),
+    #     frameon=True,
+    # )
     fig.legend(
         loc="lower center",
-        ncol=1,
-        bbox_to_anchor=(0.3, 0.36),
+        ncol=4,
+        # nrow=5,
+        # bbox_to_anchor=(0.05, 0.96),
         frameon=True,
     )
+    # plt.subplots_adjust(bottom=0.2)
     # plt.subplots_adjust(bottom=0.22)
 
     # Tight layout & save
-    plt.tight_layout()
+    # plt.tight_layout()
     file_name = "alpha_sweep"
     saving_pdf_and_pdf_tex(results_dir, file_name)
 

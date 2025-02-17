@@ -93,9 +93,9 @@ def plotting_polars_beta_correction_comparison(
     ]
     labels = [
         r"VSM Breukels ",
-        r"VSM Breukels Stall",
+        r"VSM Breukels + Smoothening",
         r"VSM Corrected",
-        r"VSM Corrected Stall",
+        r"VSM Corrected + Smoothening",
         r"WT",
     ]
     colors = ["blue", "blue", "green", "green", "red"]
@@ -131,7 +131,8 @@ def plotting_polars_beta_correction_comparison(
     # gs_main = gridspec.GridSpec(
     #     nrows=2, ncols=4, width_ratios=[1, 1, 1, 1], height_ratios=[1, 1]
     # )  # , wspace=0.4)
-    fig, axes = plt.subplots(2, 4, figsize=(15, 7), width_ratios=[1, 1, 1, 1.6])
+    fig, axes = plt.subplots(2, 4, figsize=(13, 6), width_ratios=[1, 1, 1, 2.2])
+    plt.subplots_adjust(wspace=0.1)  # Adjust the width spacing between plots
     # gs_main = axes
     linewidth = 1.5
     # # Left subplot for CL vs AOA
@@ -405,7 +406,7 @@ def plotting_polars_beta_correction_comparison(
     # plt.subplots_adjust(hspace=-0.1, wspace=0.05)
     # Tight layout & save
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.2)
+    plt.subplots_adjust(bottom=0.22)
     file_name = f"beta_sweep_{beta_dist}"
     saving_pdf_and_pdf_tex(results_dir, file_name)
 
