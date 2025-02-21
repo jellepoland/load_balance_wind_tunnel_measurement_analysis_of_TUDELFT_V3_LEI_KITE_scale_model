@@ -154,6 +154,76 @@ def reduce_df_by_parameter_mean_and_std(
     return result_df
 
 
+def alpha_wind_tunnel_correction(alpha, CL):
+    return alpha - 0.818 * CL
+
+
+def beta_wind_tunnel_correction(beta, CS):
+    return beta - 0.72 * CS
+
+
+def apply_angle_wind_tunnel_corrections_to_df(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Apply wind-tunnel corrections to the aerodynamic coefficients and angles.
+
+    Corrections applied:
+      - Δαₜ = -0.818 * C_L       → Correct angle of attack ("aoa_kite")
+      - Δβₜ = -0.72 * C_S        → Correct sideslip ("sideslip")
+      - ΔC_D = -0.01 * C_L² - 0.01 * C_S²  → Correct drag coefficient ("C_D")
+      - ΔC_L =  0.025 * C_L       → Correct lift coefficient ("C_L")
+      - ΔC_S =  0.003 * C_S       → Correct side-force coefficient ("C_S")
+      - ΔC_M,y = -0.0053 * C_L    → Correct pitching moment coefficient ("C_pitch")
+      - ΔC_M,Z = -0.0008 * C_S    → Correct yawing moment coefficient ("C_yaw")
+
+    Assumes that the dataframe contains the following columns:
+      - "aoa_kite", "sideslip", "C_D", "C_L", "C_S", "C_pitch", "C_yaw"
+
+    Returns:
+        pd.DataFrame: DataFrame with corrected values.
+    """
+    df_corr = df.copy()
+
+    # Correct angle of attack (aoa_kite)
+    if "aoa_kite" in df_corr.columns and "C_L" in df_corr.columns:
+        df_corr["aoa_kite"] = df_corr["aoa_kite"] + (-0.818 * df_corr["C_L"])
+    elif "aoa" in df_corr.columns and "CL" in df_corr.columns:
+        df_corr["aoa"] = df_corr["aoa"] + (-0.818 * df_corr["CL"])
+
+    # Correct sideslip
+    if "sideslip" in df_corr.columns and "C_S" in df_corr.columns:
+        df_corr["sideslip"] = df_corr["sideslip"] + (-0.72 * df_corr["C_S"])
+    elif "beta" in df_corr.columns and "CS" in df_corr.columns:
+        df_corr["beta"] = df_corr["beta"] + (-0.72 * df_corr["CS"])
+
+    # # Correct drag coefficient (C_D)
+    # if (
+    #     "C_D" in df_corr.columns
+    #     and "C_L" in df_corr.columns
+    #     and "C_S" in df_corr.columns
+    # ):
+    #     df_corr["C_D"] = df_corr["C_D"] + (
+    #         -0.01 * df_corr["C_L"] ** 2 - 0.01 * df_corr["C_S"] ** 2
+    #     )
+
+    # # Correct lift coefficient (C_L)
+    # if "C_L" in df_corr.columns:
+    #     df_corr["C_L"] = df_corr["C_L"] + (0.025 * df_corr["C_L"])
+
+    # # Correct side-force coefficient (C_S)
+    # if "C_S" in df_corr.columns:
+    #     df_corr["C_S"] = df_corr["C_S"] + (0.003 * df_corr["C_S"])
+
+    # # Correct pitching moment coefficient (C_pitch)
+    # if "C_pitch" in df_corr.columns and "C_L" in df_corr.columns:
+    #     df_corr["C_pitch"] = df_corr["C_pitch"] + (-0.0053 * df_corr["C_L"])
+
+    # # Correct yawing moment coefficient (C_yaw)
+    # if "C_yaw" in df_corr.columns and "C_S" in df_corr.columns:
+    #     df_corr["C_yaw"] = df_corr["C_yaw"] + (-0.0008 * df_corr["C_S"])
+
+    return df_corr
+
+
 def save_latex_table(df_table, file_path):
     """
     Saves the LaTeX representation of the table to a .tex file.

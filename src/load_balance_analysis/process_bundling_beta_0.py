@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from pathlib import Path
 import pandas as pd
 from load_balance_analysis.functions_utils import project_dir
@@ -38,6 +39,13 @@ def main():
     vw_15 = pd.concat(vw_15)
     vw_20 = pd.concat(vw_20)
     vw_25 = pd.concat(vw_25)
+
+    # Rounding the sideslip values
+    vw_5["sideslip"] = np.round(vw_5["sideslip"], 0)
+    vw_10["sideslip"] = np.round(vw_10["sideslip"], 0)
+    vw_15["sideslip"] = np.round(vw_15["sideslip"], 0)
+    vw_20["sideslip"] = np.round(vw_20["sideslip"], 0)
+    vw_25["sideslip"] = np.round(vw_25["sideslip"], 0)
 
     # Filtering the dataframes on sideslip == 0
     vw_5 = vw_5[vw_5["sideslip"] == 0]

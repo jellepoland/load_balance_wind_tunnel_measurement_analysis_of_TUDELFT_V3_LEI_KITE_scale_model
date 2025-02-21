@@ -44,7 +44,6 @@ def get_all_raw_data_for_vw_value(vw: int, normal_csv_dir: str) -> pd.DataFrame:
 
                 # Calculate mean, std, and confidence interval for each column
                 for col in stat_columns:
-                    # print(f"col: {col}")
                     data = sideslip_df[col].values
                     row_data[f"{col}_mean"] = np.mean(data)
                     row_data[f"{col}_std"] = np.std(data)

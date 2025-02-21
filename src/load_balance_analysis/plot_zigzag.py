@@ -8,6 +8,9 @@ from load_balance_analysis.functions_utils import (
     x_axis_labels,
     y_axis_labels,
     project_dir,
+    apply_angle_wind_tunnel_corrections_to_df,
+    alpha_wind_tunnel_correction,
+    beta_wind_tunnel_correction,
 )
 from load_balance_analysis.functions_statistics import (
     calculate_confidence_interval,
@@ -32,6 +35,9 @@ def plot_zigzag(
 
     # print(f" sideslip_angles: {merged_df['sideslip'].unique()}")
 
+    print(f'merged_df["vw"].unique(): {merged_df["vw_actual_rounded"].unique()}')
+    print(f'merged df Rey: {merged_df["Rey_rounded"].unique()}')
+
     # Defining coefficients
     coefficients = ["C_L", "C_D", "C_pitch"]
     yaxis_names = ["CL", "CD", "CS"]
@@ -46,10 +52,15 @@ def plot_zigzag(
         rey = round(df_vw["Rey"].mean() * 1e-5, 1)
         if rey == 2.9:
             rey = 2.8
-        # print(f"\nvw: {vw}, rey: {rey}")
+        print(f"\nvw: {vw}, rey: {rey}")
+
         # separating into zz and no zz
         data_zz = df_vw[df_vw["Filename"].str.startswith("ZZ")]
         data_no_zz = df_vw[df_vw["Filename"].str.startswith("normal")]
+
+        ## rounding the sideslip values in data_zz and data_no_zz
+        # data_zz["sideslip"] = np.round(data_zz["sideslip"], 0)
+        # data_no_zz["sideslip"] = np.round(data_no_zz["sideslip"], 0)
 
         # if vw == 15, extracting data for each sideslip
         if vw == 15:
@@ -113,10 +124,29 @@ def plot_zigzag(
                 for coeff in coefficients
             ]
 
+            ## Computing angle differences
+            if "10" in label:
+                beta_uncorrected = 10
+            elif "-10" in label:
+                beta_uncorrected = -10
+            else:
+                beta_uncorrected = 0
+            alpha_corrected = alpha_wind_tunnel_correction(8.95, data["C_L"].mean())
+            beta_corrected = beta_wind_tunnel_correction(
+                beta_uncorrected, data["C_S"].mean()
+            )
+            print(
+                f"alpha_corrected: {alpha_corrected}, beta_corrected: {beta_corrected}"
+            )
+
             ## Appending
             rey_list.append(rey)
             data_to_print.append(data_calculated)
             labels_to_print.append(label)
+
+    # print(f"data_to_print: {data_to_print}")
+    # print(f"labels_to_print: {labels_to_print}")
+    # print(f"rey_list: {rey_list}")
 
     create_grouped_plot(
         rey_list,
@@ -283,7 +313,7 @@ def create_grouped_plot(
     plt.subplots_adjust(bottom=0.28)  # Increased from 0.24
 
     # Save the figure
-    saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_875_beta_0")
+    saving_pdf_and_pdf_tex(results_dir, "zz_re_sweep_alpha_8_beta_0")
 
 
 def main(results_dir: Path, project_dir: Path) -> None:

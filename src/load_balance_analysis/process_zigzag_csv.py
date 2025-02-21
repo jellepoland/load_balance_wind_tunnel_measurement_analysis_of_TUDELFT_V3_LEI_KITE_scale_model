@@ -12,15 +12,17 @@ def merging_zigzag_csv_files(
 
     all_dfs = []
     for file in os.listdir(zigzag_data_dir):
+        file_path = Path(zigzag_data_dir) / file
+        print(f"\nfile_path: {file_path}")
+        if not file_path.is_file():
+            continue  # Skip directories
         if "raw" in file or "lvm" in file:
             continue
-
         print(f"\n--> Processing file: {file}")
-        # Read the csv file
-        df = pd.read_csv(Path(zigzag_data_dir) / file)
-
-        # Append the dataframe to the list
+        df = pd.read_csv(file_path)
         all_dfs.append(df)
+
+    print(f"all_dfs: {all_dfs}")
 
     # Concatenate all the dataframes
     merged_df = pd.concat(all_dfs, ignore_index=True)
@@ -38,9 +40,11 @@ def main():
     is_zigzag = True
     print(f"\n Processing all the folders")
     for folder in os.listdir(Path(project_dir) / "processed_data" / "zigzag_csv"):
+        print(f"\nfolder: {folder}")
         if "alpha" not in folder:
             continue
         folder_dir = Path(project_dir) / "processed_data" / "zigzag_csv" / folder
+        print(f"\nfolder_dir: {folder_dir}")
         processing_raw_lvm_data_into_csv(
             folder_dir,
             is_kite,

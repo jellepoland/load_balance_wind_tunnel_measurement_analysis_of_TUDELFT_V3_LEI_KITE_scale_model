@@ -127,6 +127,9 @@ def main(project_dir: str) -> pd.DataFrame:
     df_vw_15 = pd.read_csv(save_csv_dir / "df_vw_15.csv")
     df_vw_20 = pd.read_csv(save_csv_dir / "df_vw_20.csv")
 
+    print(df_vw_5.columns)
+    # breakpoint()
+
     df_list = [df_vw_5, df_vw_10, df_vw_15, df_vw_20]
     Reynolds_list = ["1.4", "2.8", "4.2", "5.6"]
 

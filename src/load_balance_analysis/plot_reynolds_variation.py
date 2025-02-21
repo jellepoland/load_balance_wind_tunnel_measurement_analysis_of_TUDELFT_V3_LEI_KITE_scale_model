@@ -10,6 +10,7 @@ from load_balance_analysis.functions_utils import (
     y_axis_labels,
     reduce_df_by_parameter_mean_and_std,
     project_dir,
+    apply_angle_wind_tunnel_corrections_to_df,
 )
 from plot_styling import plot_on_ax
 
@@ -85,6 +86,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_alpha_reynolds_sweep(
                     if vw in plot_speeds:
                         Re = np.around((vw_group["Rey"].mean()) / 1e5, 1)
 
+                        vw_group = apply_angle_wind_tunnel_corrections_to_df(vw_group)
                         axs[i].set_xlim(-13, 24)
 
                         plot_on_ax(
@@ -176,6 +178,10 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                         if vw in plot_speeds:
                             Re = np.around((vw_group["Rey"].mean()) / 1e5, 1)
 
+                            vw_group = apply_angle_wind_tunnel_corrections_to_df(
+                                vw_group
+                            )
+                            print(f'column: {column}, alpha: {vw_group["aoa_kite"]}')
                             plot_on_ax(
                                 axs[i],
                                 vw_group["sideslip"],
@@ -188,6 +194,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_reynolds_sweep(
                                 x_label=x_axis_labels["beta"],
                                 y_label=y_axis_labels[y_labels[i]],
                             )
+                            axs[i].set_xlim(-20, 20)
 
                             pos_values, neg_values = [], []
 
