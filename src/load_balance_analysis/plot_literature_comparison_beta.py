@@ -109,7 +109,7 @@ def plot_single_row(
                     upper_bound,
                     color=color,
                     alpha=0.15,
-                    label=f"WT CI = {confidence_interval}%",
+                    label=f"WT CI of {confidence_interval}%",
                 )
 
             ### Also plot the negative-beta mirror curves:
@@ -154,7 +154,7 @@ def plot_single_row(
                     color="white",
                     facecolor=color,
                     alpha=0.3,
-                    label=rf"WT CI = {confidence_interval}\% (-$\beta$)",
+                    label=rf"WT CI of {confidence_interval}\% (-$\beta$)",
                     hatch="||",
                 )
 
@@ -214,7 +214,7 @@ def plot_single_row(
             label=r"WT Re = $5.6 \times 10^5$",
             linestyle="-",
         ),
-        Patch(facecolor="red", edgecolor="none", alpha=0.15, label=r"WT CI =99%"),
+        Patch(facecolor="red", edgecolor="none", alpha=0.15, label=r"WT CI of 99%"),
         plt.Line2D(
             [0],
             [0],
@@ -228,7 +228,7 @@ def plot_single_row(
             edgecolor="white",
             alpha=0.3,
             hatch="||",
-            label=r"WT CI =99% $(-\beta)$",
+            label=r"WT CI of 99\% $(-\beta)$",
         ),
     ]
     legend_elements.extend(legend_elements_WT)
@@ -340,7 +340,7 @@ def plot_double_row(
                     upper_bound,
                     color=color,
                     alpha=0.15,
-                    label=f"WT CI = {confidence_interval}%",
+                    label=f"WT CI of {confidence_interval}%",
                 )
             # Also plot negative-beta mirror curves
             for j, var in enumerate(variables_to_plot):
@@ -376,7 +376,7 @@ def plot_double_row(
                     color="white",
                     facecolor=color,
                     alpha=0.3,
-                    label=rf"WT CI = {confidence_interval}\% (-$\beta$)",
+                    label=rf"WT CI of {confidence_interval}\% (-$\beta$)",
                     hatch="||",
                 )
 
@@ -430,7 +430,7 @@ def plot_double_row(
                     upper_bound,
                     color=color,
                     alpha=0.15,
-                    label=f"WT CI = {confidence_interval}%",
+                    label=f"WT CI of {confidence_interval}%",
                 )
             for j, var in enumerate(variables_to_plot):
                 if var in ["CS", "CMx", "CMz"]:
@@ -465,7 +465,7 @@ def plot_double_row(
                     color="white",
                     facecolor=color,
                     alpha=0.3,
-                    label=rf"WT CI = {confidence_interval}\% (-$\beta$)",
+                    label=rf"WT CI of {confidence_interval}\% (-$\beta$)",
                     hatch="||",
                 )
 
@@ -536,7 +536,7 @@ def plot_double_row(
         #     label=r"WT Re = $5.6 \times 10^5$",
         #     linestyle="-",
         # ),
-        Patch(facecolor="red", edgecolor="none", alpha=0.15, label=r"WT CI =99%"),
+        Patch(facecolor="red", edgecolor="none", alpha=0.15, label="WT CI of 99%"),
         plt.Line2D(
             [0],
             [0],
@@ -550,7 +550,7 @@ def plot_double_row(
             edgecolor="white",
             alpha=0.3,
             hatch="||",
-            label=r"WT CI =99% $(-\beta)$",
+            label=r"WT CI of 99\% $(-\beta)$",
         ),
     ]
     legend_elements.extend(legend_elements_WT)
@@ -735,7 +735,7 @@ def plotting_polars_beta(
             data_WT_beta_re_56e4_alpha_11_9,
         ],
         high_labels=[
-            rf"CFD Re = $10\times10^5$, $\alpha = 11.95$°",
+            rf"CFD Re = $10\times10^5$, $\alpha = 12$°",
             rf"VSM Re = $5.6\times10^5$, $\alpha = 11.4$°",
             rf"WT Re = $5.6\times10^5$, $\alpha = 11.4$°",
         ],

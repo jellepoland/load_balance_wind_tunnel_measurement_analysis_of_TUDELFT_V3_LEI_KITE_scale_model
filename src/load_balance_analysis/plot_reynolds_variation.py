@@ -285,7 +285,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
                 continue
 
             # Create a subplot with 2 rows and 3 columns
-            fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+            fig, axs = plt.subplots(2, 3, figsize=(14, 9))
             axs = axs.flatten()
 
             for i, column in enumerate(columns):
@@ -341,10 +341,18 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
 
                 # Set x and y labels
                 ax.set_xlabel(r"$\beta$ [°]")  # , fontsize=12)
-                ax.set_ylabel(y_labels[i])  # , fontsize=12)
+                ax.set_ylabel(y_axis_labels[y_labels[i]])  # , fontsize=12)
 
                 # Enable grid
                 ax.grid(True)
+
+            # remove x_tick labels and x_axis labels of axis
+            axs[0].tick_params(labelbottom=False)
+            axs[0].set_xlabel("")
+            axs[1].tick_params(labelbottom=False)
+            axs[1].set_xlabel("")
+            axs[2].tick_params(labelbottom=False)
+            axs[2].set_xlabel("")
 
             # Adjust layout
             plt.tight_layout()
@@ -385,8 +393,11 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
                 handles=custom_lines, loc="upper center", ncol=3
             )  # , fontsize=12)
 
+            # axs[0].legend()
+            # plt.legend()
+
             # Adjust layout to make space for the legend
-            plt.subplots_adjust(top=0.92)
+            plt.subplots_adjust(top=0.93)
 
             # Define filename
             filename = f"beta_sweep_alpha_{alpha_value:.2f}_kite_support_total"
@@ -497,6 +508,7 @@ def main(results_path, project_dir):
         subplot_titles,
     )
 
+    ### plotting Support Structure Loads
     plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
         results_path,
         stats_all,

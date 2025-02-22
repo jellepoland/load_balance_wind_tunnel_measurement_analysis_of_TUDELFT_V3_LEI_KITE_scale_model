@@ -259,6 +259,26 @@ def running_vsm_to_generate_csv_data(
         22.55,
         24.0,
     ]
+    ## corrected alphas
+    alphas_to_be_plotted = [
+        -12.37,
+        -7.02,
+        -3.0,
+        -2.26,
+        1.91,
+        4.29,
+        6.18,
+        8.06,
+        10.22,
+        11.22,
+        12.0,
+        13.18,
+        14.95,
+        16.9,
+        18.95,
+        21.76,
+        23.18,
+    ]
 
     save_polar_data(
         angle_range=alphas_to_be_plotted,
@@ -316,7 +336,7 @@ def main():
     ## scaled down geometry
     vw = 20
     geom_scaling = 6.5
-    n_panels = 150
+    n_panels = 200
 
     # ## scaled down velocity
     # vw = 3.05
