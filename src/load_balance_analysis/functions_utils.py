@@ -154,15 +154,17 @@ def reduce_df_by_parameter_mean_and_std(
     return result_df
 
 
-def alpha_wind_tunnel_correction(alpha, CL):
-    return alpha - 0.818 * CL
+def alpha_wind_tunnel_correction(alpha, CL, dalpha=-0.455, dbeta=0.451):
+    return alpha + dalpha * CL
 
 
-def beta_wind_tunnel_correction(beta, CS):
-    return beta - 0.72 * CS
+def beta_wind_tunnel_correction(beta, CS, dalpha=-0.455, dbeta=0.451):
+    return beta + dbeta * CS
 
 
-def apply_angle_wind_tunnel_corrections_to_df(df: pd.DataFrame) -> pd.DataFrame:
+def apply_angle_wind_tunnel_corrections_to_df(
+    df: pd.DataFrame, dalpha=-0.455, dbeta=0.451
+) -> pd.DataFrame:
     """
     Apply wind-tunnel corrections to the aerodynamic coefficients and angles.
 
@@ -185,15 +187,15 @@ def apply_angle_wind_tunnel_corrections_to_df(df: pd.DataFrame) -> pd.DataFrame:
 
     # Correct angle of attack (aoa_kite)
     if "aoa_kite" in df_corr.columns and "C_L" in df_corr.columns:
-        df_corr["aoa_kite"] = df_corr["aoa_kite"] + (-0.818 * df_corr["C_L"])
+        df_corr["aoa_kite"] = df_corr["aoa_kite"] + (dalpha * df_corr["C_L"])
     elif "aoa" in df_corr.columns and "CL" in df_corr.columns:
-        df_corr["aoa"] = df_corr["aoa"] + (-0.818 * df_corr["CL"])
+        df_corr["aoa"] = df_corr["aoa"] + (dalpha * df_corr["CL"])
 
     # Correct sideslip
     if "sideslip" in df_corr.columns and "C_S" in df_corr.columns:
-        df_corr["sideslip"] = df_corr["sideslip"] + (-0.72 * df_corr["C_S"])
+        df_corr["sideslip"] = df_corr["sideslip"] + (dbeta * df_corr["C_S"])
     elif "beta" in df_corr.columns and "CS" in df_corr.columns:
-        df_corr["beta"] = df_corr["beta"] + (-0.72 * df_corr["CS"])
+        df_corr["beta"] = df_corr["beta"] + (dbeta * df_corr["CS"])
 
     # # Correct drag coefficient (C_D)
     # if (

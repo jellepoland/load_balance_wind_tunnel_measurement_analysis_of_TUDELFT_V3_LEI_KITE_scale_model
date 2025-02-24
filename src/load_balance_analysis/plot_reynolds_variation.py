@@ -285,7 +285,7 @@ def plotting_CL_CD_CS_Pitch_Roll_Yaw_vs_beta_total_kite_support(
                 continue
 
             # Create a subplot with 2 rows and 3 columns
-            fig, axs = plt.subplots(2, 3, figsize=(14, 9))
+            fig, axs = plt.subplots(2, 3, figsize=(14, 8))
             axs = axs.flatten()
 
             for i, column in enumerate(columns):

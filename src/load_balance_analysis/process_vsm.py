@@ -6,13 +6,13 @@ from pathlib import Path
 from load_balance_analysis.functions_utils import project_dir
 
 from VSM.WingGeometry import Wing
-from VSM.WingAerodynamics import WingAerodynamics
+from VSM.BodyAerodynamics import BodyAerodynamics
 from VSM.Solver import Solver
 from VSM.plotting import generate_polar_data
 from VSM.interactive import interactive_plot
 
 
-def create_wing_aero(
+def create_body_aero(
     file_path,
     n_panels,
     spanwise_panel_distribution,
@@ -62,9 +62,9 @@ def create_wing_aero(
             ### using breukels
             CAD_wing.add_section(CAD_rib_i_0, CAD_rib_i_1, CAD_rib_i[2])
 
-    wing_aero = WingAerodynamics([CAD_wing])
+    body_aero = BodyAerodynamics([CAD_wing])
 
-    return wing_aero
+    return body_aero
 
 
 def save_polar_data(
@@ -72,14 +72,14 @@ def save_polar_data(
     angle_type,
     angle_of_attack,
     name_appendix,
-    wing_aero,
+    body_aero,
     VSM,
     VSM_with_stall_correction,
     vw=3.05,
 ):
     polar_data, reynolds_number = generate_polar_data(
         solver=VSM,
-        wing_aero=wing_aero,
+        body_aero=body_aero,
         angle_range=angle_range,
         angle_type=angle_type,
         angle_of_attack=angle_of_attack,
@@ -89,7 +89,7 @@ def save_polar_data(
     )
     polar_data_stall, _ = generate_polar_data(
         solver=VSM_with_stall_correction,
-        wing_aero=wing_aero,
+        body_aero=body_aero,
         angle_range=angle_range,
         angle_type=angle_type,
         angle_of_attack=angle_of_attack,
@@ -171,7 +171,7 @@ def running_vsm_to_generate_csv_data(
     mu=1.76e-5,
     reference_point=None,
     n_panels=150,
-    spanwise_panel_distribution="split_provided",
+    spanwise_panel_distribution="linear",
 ) -> None:
     if is_with_corrected_polar:
         print("Running VSM with corrected polar")
@@ -182,7 +182,7 @@ def running_vsm_to_generate_csv_data(
 
     vsm_input_path = Path(project_dir) / "data" / "vsm_input"
     csv_file_path = Path(vsm_input_path) / "geometry_corrected.csv"
-    wing_aero = create_wing_aero(
+    body_aero = create_body_aero(
         csv_file_path,
         n_panels,
         spanwise_panel_distribution,
@@ -216,7 +216,7 @@ def running_vsm_to_generate_csv_data(
 
     # ### INTERACTIVE PLOT
     # interactive_plot(
-    #     wing_aero,
+    #     body_aero,
     #     vel=3.15,
     #     angle_of_attack=6.75,
     #     side_slip=0,
@@ -259,33 +259,14 @@ def running_vsm_to_generate_csv_data(
         22.55,
         24.0,
     ]
-    ## corrected alphas
-    alphas_to_be_plotted = [
-        -12.37,
-        -7.02,
-        -3.0,
-        -2.26,
-        1.91,
-        4.29,
-        6.18,
-        8.06,
-        10.22,
-        11.22,
-        12.0,
-        13.18,
-        14.95,
-        16.9,
-        18.95,
-        21.76,
-        23.18,
-    ]
+    alphas_to_be_plotted = np.linspace(-12.65, 24.0, 30)
 
     save_polar_data(
         angle_range=alphas_to_be_plotted,
         angle_type="angle_of_attack",
         angle_of_attack=0,
         name_appendix=name_appendix,
-        wing_aero=wing_aero,
+        body_aero=body_aero,
         VSM=VSM,
         VSM_with_stall_correction=VSM_with_stall_correction,
         vw=vw,
@@ -308,12 +289,13 @@ def running_vsm_to_generate_csv_data(
         14,
         20,
     ]
+    betas_to_be_plotted = np.linspace(0, 20, 20)
     save_polar_data(
         angle_range=betas_to_be_plotted,
         angle_type="side_slip",
         angle_of_attack=6.75,
         name_appendix=name_appendix,
-        wing_aero=wing_aero,
+        body_aero=body_aero,
         VSM=VSM,
         VSM_with_stall_correction=VSM_with_stall_correction,
         vw=vw,
@@ -323,7 +305,7 @@ def running_vsm_to_generate_csv_data(
         angle_type="side_slip",
         angle_of_attack=11.95,
         name_appendix=name_appendix,
-        wing_aero=wing_aero,
+        body_aero=body_aero,
         VSM=VSM,
         VSM_with_stall_correction=VSM_with_stall_correction,
         vw=vw,

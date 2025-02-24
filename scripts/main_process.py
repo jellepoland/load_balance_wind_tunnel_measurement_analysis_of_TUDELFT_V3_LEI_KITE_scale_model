@@ -26,11 +26,13 @@ def main():
     # process_support_struc_aero_interp_coeffs.main()
     # process_normal_csv.main()
     # process_zigzag_csv.main()
+
+    # takes ages..
     process_vsm.main()
     # process_bundling_beta_0.main()
 
     ## this function takes long
-    process_uncertainty_table.main(project_dir)
+    # process_uncertainty_table.main(project_dir)
 
 
 if __name__ == "__main__":

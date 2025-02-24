@@ -34,21 +34,21 @@ from load_balance_analysis.plot_literature_comparison_beta import (
 def main(results_dir, project_dir):
 
     confidence_interval = 99
-    # saving_alpha_and_beta_sweeps(
-    #     project_dir,
-    #     confidence_interval=confidence_interval,
-    #     max_lag=11,
-    # )
-    # plotting_polars_alpha(
-    #     project_dir,
-    #     results_dir,
-    #     confidence_interval=confidence_interval,
-    # )
-    # plotting_polars_alpha_moments(
-    #     project_dir,
-    #     results_dir,
-    #     confidence_interval=confidence_interval,
-    # )
+    saving_alpha_and_beta_sweeps(
+        project_dir,
+        confidence_interval=confidence_interval,
+        max_lag=11,
+    )
+    plotting_polars_alpha(
+        project_dir,
+        results_dir,
+        confidence_interval=confidence_interval,
+    )
+    plotting_polars_alpha_moments(
+        project_dir,
+        results_dir,
+        confidence_interval=confidence_interval,
+    )
     plotting_polars_beta(
         project_dir,
         results_dir,

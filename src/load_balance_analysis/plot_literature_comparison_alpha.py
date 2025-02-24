@@ -29,7 +29,7 @@ def plotting_polars_alpha(
         Path(project_dir)
         / "processed_data"
         / "polar_data"
-        / f"VSM_results_alpha_sweep_Rey_5.6_corrected_stall.csv"
+        / f"VSM_results_alpha_sweep_Rey_5.6_corrected.csv"
     )
     data_VSM_alpha_re_56e4 = pd.read_csv(path_to_csv_VSM_alpha_re_56e4)
 
@@ -70,7 +70,7 @@ def plotting_polars_alpha(
     ]
     colors = ["black", "black", "blue", "red"]
     linestyles = ["--", "-", "-", "-"]
-    markers = ["*", "*", "s", "o"]
+    markers = ["*", "*", "", "o"]
     fmt_wt = "o"
 
     # Plot CL, CD, and CL/CD in subplots
@@ -539,7 +539,7 @@ def plotting_polars_alpha_moments(
     ]
     colors = ["blue", "red"]
     linestyles = ["-", "-"]
-    markers = ["s", "o"]
+    markers = ["", "o"]
 
     # 3) Create subplots: CMx, CMy, CMz
     fig, axs = plt.subplots(1, 3, figsize=(15, 5))

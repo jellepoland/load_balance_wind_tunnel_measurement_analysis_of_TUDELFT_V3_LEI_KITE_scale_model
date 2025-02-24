@@ -583,7 +583,7 @@ def computing_kite_cg(x_hinge, z_hinge, l_cg, alpha_cg_delta_with_rod):
     breakpoint()
 
 
-def apply_angle_wind_tunnel_corrections(df: pd.DataFrame) -> pd.DataFrame:
+def apply_wind_tunnel_corrections(df: pd.DataFrame) -> pd.DataFrame:
     """
     Apply wind-tunnel corrections to the aerodynamic coefficients and angles.
 
@@ -619,24 +619,24 @@ def apply_angle_wind_tunnel_corrections(df: pd.DataFrame) -> pd.DataFrame:
         and "C_S" in df_corr.columns
     ):
         df_corr["C_D"] = df_corr["C_D"] + (
-            -0.01 * df_corr["C_L"] ** 2 - 0.01 * df_corr["C_S"] ** 2
+            -0.0078 * df_corr["C_L"] ** 2 - 0.0078 * df_corr["C_S"] ** 2
         )
 
-    # Correct lift coefficient (C_L)
-    if "C_L" in df_corr.columns:
-        df_corr["C_L"] = df_corr["C_L"] + (0.025 * df_corr["C_L"])
+    # # Correct lift coefficient (C_L)
+    # if "C_L" in df_corr.columns:
+    #     df_corr["C_L"] = df_corr["C_L"] + (0.025 * df_corr["C_L"])
 
-    # Correct side-force coefficient (C_S)
-    if "C_S" in df_corr.columns:
-        df_corr["C_S"] = df_corr["C_S"] + (0.003 * df_corr["C_S"])
+    # # Correct side-force coefficient (C_S)
+    # if "C_S" in df_corr.columns:
+    #     df_corr["C_S"] = df_corr["C_S"] + (0.003 * df_corr["C_S"])
 
-    # Correct pitching moment coefficient (C_pitch)
-    if "C_pitch" in df_corr.columns and "C_L" in df_corr.columns:
-        df_corr["C_pitch"] = df_corr["C_pitch"] + (-0.0053 * df_corr["C_L"])
+    # # Correct pitching moment coefficient (C_pitch)
+    # if "C_pitch" in df_corr.columns and "C_L" in df_corr.columns:
+    #     df_corr["C_pitch"] = df_corr["C_pitch"] + (-0.0053 * df_corr["C_L"])
 
-    # Correct yawing moment coefficient (C_yaw)
-    if "C_yaw" in df_corr.columns and "C_S" in df_corr.columns:
-        df_corr["C_yaw"] = df_corr["C_yaw"] + (-0.0008 * df_corr["C_S"])
+    # # Correct yawing moment coefficient (C_yaw)
+    # if "C_yaw" in df_corr.columns and "C_S" in df_corr.columns:
+    #     df_corr["C_yaw"] = df_corr["C_yaw"] + (-0.0008 * df_corr["C_S"])
 
     return df_corr
 
@@ -782,8 +782,8 @@ def processing_raw_lvm_data_into_csv(
                 df = substract_support_structure_aero_coefficients(
                     df, support_struc_aero_interp_coeffs_path
                 )
-                # 6. Apply wind-tunnel corrections
-                df = apply_angle_wind_tunnel_corrections(df)
+                # # 6. Apply wind-tunnel corrections
+                df = apply_wind_tunnel_corrections(df)
 
             # Dropping columns that are no longer needed
             columns_to_drop = [
