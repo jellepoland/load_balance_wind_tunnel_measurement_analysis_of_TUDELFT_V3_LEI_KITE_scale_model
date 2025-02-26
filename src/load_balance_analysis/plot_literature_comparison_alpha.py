@@ -35,14 +35,14 @@ def plotting_polars_alpha(
 
     data_CFD_Vire2020_5e5 = pd.read_csv(
         Path(project_dir)
-        / "processed_data"
-        / "polar_data"
+        / "data"
+        / "CFD_polar_data"
         / "CFD_V3_CL_CD_RANS_Vire2020_Rey_50e4.csv"
     )
     data_CFD_Vire2021_10e5 = pd.read_csv(
         Path(project_dir)
-        / "processed_data"
-        / "polar_data"
+        / "data"
+        / "CFD_polar_data"
         / "CFD_V3_CL_CD_RANS_Lebesque_2024_Rey_100e4.csv"
     )
 

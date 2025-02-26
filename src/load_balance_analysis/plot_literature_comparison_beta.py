@@ -605,8 +605,8 @@ def plotting_polars_beta(
     # Load Lebesque data
     path_to_csv_lebesque_re_100e4_alpha_1195 = (
         Path(project_dir)
-        / "processed_data"
-        / "polar_data"
+        / "data"
+        / "CFD_polar_data"
         / "CFD_V3_CL_CD_CS_RANS_Lebesque_2024_Rey_100e4_beta_sweep.csv"
     )
     data_lebesque_re_100e4_alpha_1195 = pd.read_csv(
